@@ -63,6 +63,12 @@
     .pane { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; flex-direction: column; }
     .pane.active { display: flex; }
 
+    /* ===== Calendar layout ===== */
+    #pane-calendar { flex-direction: column; overflow: hidden; }
+    .cal-fixed { flex-shrink: 0; display: flex; flex-direction: column; }
+    .cal-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .summary-bar { flex-shrink: 0; }
+
     /* ===== Calendar ===== */
     .cal-dow { display: grid; grid-template-columns: repeat(7,1fr);
       background: white; border-bottom: 1px solid #fce7f3; flex-shrink: 0; }
@@ -468,35 +474,41 @@
 
   <!-- Calendar -->
   <div class="pane active" id="pane-calendar">
-    <div class="cal-dow">
-      <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div class="summary-bar">
-      <div class="summary-items">
-        <div class="sum-item">
-          <div class="sum-item-lbl" id="sum-label">日付を選択</div>
-          <div class="sum-item-val" id="sum-day">¥0</div>
-        </div>
-        <div class="sum-item">
-          <div class="sum-item-lbl">今日までの給料</div>
-          <div class="sum-item-val" id="sum-todate">¥0</div>
-        </div>
-        <div class="sum-item">
-          <div class="sum-item-lbl">今月の見込み</div>
-          <div class="sum-item-val accent" id="sum-forecast">¥0</div>
-        </div>
+    <!-- カレンダー固定部分 -->
+    <div class="cal-fixed">
+      <div class="cal-dow">
+        <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
       </div>
-      <button class="add-shift-btn" id="add-shift-btn">
-        <span class="add-shift-icon">＋</span>
-        <span class="add-shift-label">シフトを登録</span>
-      </button>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <!-- スクロール可能な下部 -->
+    <div class="cal-scroll">
+      <div class="summary-bar">
+        <div class="summary-items">
+          <div class="sum-item">
+            <div class="sum-item-lbl" id="sum-label">日付を選択</div>
+            <div class="sum-item-val" id="sum-day">¥0</div>
+          </div>
+          <div class="sum-item">
+            <div class="sum-item-lbl">今日までの給料</div>
+            <div class="sum-item-val" id="sum-todate">¥0</div>
+          </div>
+          <div class="sum-item">
+            <div class="sum-item-lbl">今月の見込み</div>
+            <div class="sum-item-val accent" id="sum-forecast">¥0</div>
+          </div>
+        </div>
+        <button class="add-shift-btn" id="add-shift-btn">
+          <span class="add-shift-icon">＋</span>
+          <span class="add-shift-label">シフトを登録</span>
+        </button>
+      </div>
+      <div class="det-charts" id="det-charts"></div>
     </div>
   </div>
 
   <!-- Detail -->
   <div class="pane" id="pane-detail">
-    <div class="det-charts" id="det-charts"></div>
     <div id="det-content" style="padding: 0 0 16px"></div>
   </div>
 
@@ -676,12 +688,23 @@ function periodTotal(wpId,start,end) {
     .reduce((sum,s)=>sum+shiftPay(s).total,0);
 }
 
+// 手取り計算（税金・社会保険料を引いた後）
+function periodNetPay(wpId,start,end) {
+  const wp=D.workplaces.find(w=>w.id===wpId);
+  const afterDD=periodTotal(wpId,start,end);
+  if (!wp) return afterDD;
+  const si=afterDD*(wp.socialInsuranceRate||0)/100;
+  const it=(afterDD-si)*(wp.incomeTaxRate||0)/100;
+  return afterDD-si-it;
+}
+
 // ===== MONTH NAV =====
 function initState() {
   const n=new Date(); S.y=n.getFullYear(); S.m=n.getMonth()+1; S.sel=todayStr();
 }
 function onMonthChange() {
   renderCal(); renderSummary();
+  if (document.getElementById('pane-calendar').classList.contains('active')) renderDetailCharts();
   if (document.getElementById('pane-detail').classList.contains('active')) renderDetail();
 }
 document.getElementById('prev-month').onclick=()=>{S.m--;if(S.m<1){S.m=12;S.y--;}onMonthChange();};
@@ -706,7 +729,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
     document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
     if (btn.dataset.tab==='detail') renderDetail();
     if (btn.dataset.tab==='settings') { renderSettings(); initThemeUI(); }
-    if (btn.dataset.tab==='calendar'){renderCal();renderSummary();}
+    if (btn.dataset.tab==='calendar'){renderCal();renderSummary();renderDetailCharts();}
   };
 });
 
@@ -763,17 +786,27 @@ function renderCal() {
 // ===== SUMMARY =====
 function renderSummary() {
   const sel=S.sel, todS=todayStr();
-  const dayTotal=D.shifts.filter(s=>s.date===sel).reduce((sum,s)=>sum+shiftPay(s).total,0);
+  // その日の手取り
+  const dayShifts=D.shifts.filter(s=>s.date===sel);
+  const dayGross=dayShifts.reduce((sum,s)=>sum+shiftPay(s).total,0);
+  const dayNet=dayShifts.reduce((sum,s)=>{
+    const wp=D.workplaces.find(w=>w.id===s.workplaceId);
+    if(!wp) return sum+shiftPay(s).total;
+    const g=shiftPay(s).total;
+    const si=g*(wp.socialInsuranceRate||0)/100;
+    const it=(g-si)*(wp.incomeTaxRate||0)/100;
+    return sum+g-si-it;
+  },0);
   let toDate=0, forecast=0;
   D.workplaces.forEach(wp=>{
     const p=payPeriod(wp,S.y,S.m);
     const todEnd=todS<p.end?todS:p.end;
-    if (todS>=p.start) toDate+=periodTotal(wp.id,p.start,todEnd);
-    forecast+=periodTotal(wp.id,p.start,p.end);
+    if (todS>=p.start) toDate+=periodNetPay(wp.id,p.start,todEnd);
+    forecast+=periodNetPay(wp.id,p.start,p.end);
   });
   const [,mm,dd]=sel?sel.split('-').map(Number):[0,0,0];
   document.getElementById('sum-label').textContent=sel?`${mm}月${dd}日の給料`:'日付を選択';
-  document.getElementById('sum-day').textContent=fmt(dayTotal);
+  document.getElementById('sum-day').textContent=fmt(dayNet);
   document.getElementById('sum-todate').textContent=fmt(toDate);
   document.getElementById('sum-forecast').textContent=fmt(forecast);
 }
@@ -1587,7 +1620,7 @@ document.getElementById('btn-import').onchange = (e) => {
 };
 
 // ===== INIT =====
-initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
+initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary(); renderDetailCharts();
 </script>
 </body>
 </html>
