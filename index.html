@@ -63,12 +63,6 @@
     .pane { display: none; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; flex-direction: column; }
     .pane.active { display: flex; }
 
-    /* ===== Calendar layout ===== */
-    #pane-calendar { flex-direction: column; overflow: hidden; }
-    .cal-fixed { flex-shrink: 0; display: flex; flex-direction: column; }
-    .cal-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .summary-bar { flex-shrink: 0; }
-
     /* ===== Calendar ===== */
     .cal-dow { display: grid; grid-template-columns: repeat(7,1fr);
       background: white; border-bottom: 1px solid #fce7f3; flex-shrink: 0; }
@@ -467,6 +461,7 @@
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
+      <button class="tab" data-tab="charts">グラフ</button>
       <button class="tab" data-tab="detail">明細</button>
       <button class="tab" data-tab="settings">設定</button>
     </nav>
@@ -474,37 +469,35 @@
 
   <!-- Calendar -->
   <div class="pane active" id="pane-calendar">
-    <!-- カレンダー固定部分 -->
-    <div class="cal-fixed">
-      <div class="cal-dow">
-        <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-dow">
+      <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
     </div>
-    <!-- スクロール可能な下部 -->
-    <div class="cal-scroll">
-      <div class="summary-bar">
-        <div class="summary-items">
-          <div class="sum-item">
-            <div class="sum-item-lbl" id="sum-label">日付を選択</div>
-            <div class="sum-item-val" id="sum-day">¥0</div>
-          </div>
-          <div class="sum-item">
-            <div class="sum-item-lbl">今日までの給料</div>
-            <div class="sum-item-val" id="sum-todate">¥0</div>
-          </div>
-          <div class="sum-item">
-            <div class="sum-item-lbl">今月の見込み</div>
-            <div class="sum-item-val accent" id="sum-forecast">¥0</div>
-          </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="summary-bar">
+      <div class="summary-items">
+        <div class="sum-item">
+          <div class="sum-item-lbl" id="sum-label">日付を選択</div>
+          <div class="sum-item-val" id="sum-day">¥0</div>
         </div>
-        <button class="add-shift-btn" id="add-shift-btn">
-          <span class="add-shift-icon">＋</span>
-          <span class="add-shift-label">シフトを登録</span>
-        </button>
+        <div class="sum-item">
+          <div class="sum-item-lbl">今日までの給料</div>
+          <div class="sum-item-val" id="sum-todate">¥0</div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-item-lbl">今月の見込み</div>
+          <div class="sum-item-val accent" id="sum-forecast">¥0</div>
+        </div>
       </div>
-      <div class="det-charts" id="det-charts"></div>
+      <button class="add-shift-btn" id="add-shift-btn">
+        <span class="add-shift-icon">＋</span>
+        <span class="add-shift-label">シフトを登録</span>
+      </button>
     </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="pane" id="pane-charts">
+    <div class="det-charts" id="det-charts"></div>
   </div>
 
   <!-- Detail -->
@@ -704,7 +697,7 @@ function initState() {
 }
 function onMonthChange() {
   renderCal(); renderSummary();
-  if (document.getElementById('pane-calendar').classList.contains('active')) renderDetailCharts();
+  if (document.getElementById('pane-charts').classList.contains('active')) renderDetailCharts();
   if (document.getElementById('pane-detail').classList.contains('active')) renderDetail();
 }
 document.getElementById('prev-month').onclick=()=>{S.m--;if(S.m<1){S.m=12;S.y--;}onMonthChange();};
@@ -727,9 +720,10 @@ document.querySelectorAll('.tab').forEach(btn=>{
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
+    if (btn.dataset.tab==='charts') renderDetailCharts();
     if (btn.dataset.tab==='detail') renderDetail();
     if (btn.dataset.tab==='settings') { renderSettings(); initThemeUI(); }
-    if (btn.dataset.tab==='calendar'){renderCal();renderSummary();renderDetailCharts();}
+    if (btn.dataset.tab==='calendar') { renderCal(); renderSummary(); }
   };
 });
 
@@ -1620,7 +1614,7 @@ document.getElementById('btn-import').onchange = (e) => {
 };
 
 // ===== INIT =====
-initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary(); renderDetailCharts();
+initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
 </script>
 </body>
 </html>
