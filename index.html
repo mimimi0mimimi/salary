@@ -26,7 +26,24 @@
     /* ===== Header ===== */
     header { background: linear-gradient(135deg,#f9a8d4,#ec4899); color: white; flex-shrink: 0;
       box-shadow: 0 2px 12px rgba(236,72,153,.3); }
-    .header-top { display: flex; align-items: center; padding: 14px 16px 10px; gap: 8px; }
+    .header-top { display: flex; align-items: center; padding: 14px 16px 6px; gap: 8px; }
+    .header-usagi {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 16px 12px;
+    }
+    .usagi-svg {
+      width: 52px; height: 52px; flex-shrink: 0;
+      filter: drop-shadow(0 2px 6px rgba(236,72,153,.4));
+    }
+    .header-usagi-text { display: flex; flex-direction: column; }
+    .app-title-main {
+      font-size: 1.05rem; font-weight: 800; color: white;
+      letter-spacing: .02em; text-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .app-title-sub {
+      font-size: .68rem; color: rgba(255,255,255,.8);
+      margin-top: 1px; letter-spacing: .05em;
+    }
     .nav-btn {
       background: rgba(255,255,255,.25); border: none; color: white;
       width: 34px; height: 34px; border-radius: 50%; font-size: 1.2rem;
@@ -267,6 +284,39 @@
       <button class="nav-btn" id="prev-month">‹</button>
       <div id="month-title"></div>
       <button class="nav-btn" id="next-month">›</button>
+    </div>
+    <div class="header-usagi">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="usagi-svg">
+        <defs>
+          <linearGradient id="ug4b" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fff"/>
+            <stop offset="100%" stop-color="#fce7f3"/>
+          </linearGradient>
+        </defs>
+        <rect x="16" y="40" width="88" height="64" rx="14" fill="url(#ug4b)" stroke="#f9a8d4" stroke-width="1.5"/>
+        <path d="M16 54 L60 82 L104 54 L104 40 Q104 26 90 26 L30 26 Q16 26 16 40Z" fill="#ffb3d1" opacity=".9"/>
+        <path d="M16 54 L60 76 L104 54" stroke="#f9a8d4" stroke-width="1" fill="none" opacity=".6"/>
+        <text x="43" y="100" font-size="30" fill="#ec4899" font-weight="900" opacity=".85">¥</text>
+        <ellipse cx="48" cy="12" rx="7" ry="14" fill="#fff" stroke="#f9a8d4" stroke-width="1.2"/>
+        <ellipse cx="72" cy="12" rx="7" ry="14" fill="#fff" stroke="#f9a8d4" stroke-width="1.2"/>
+        <ellipse cx="48" cy="12" rx="4" ry="9.5" fill="#ffcce4"/>
+        <ellipse cx="72" cy="12" rx="4" ry="9.5" fill="#ffcce4"/>
+        <ellipse cx="60" cy="38" rx="20" ry="18" fill="white" stroke="#f9a8d4" stroke-width="1.2"/>
+        <ellipse cx="53" cy="35" rx="2.8" ry="3.2" fill="#3d1a2e"/>
+        <ellipse cx="67" cy="35" rx="2.8" ry="3.2" fill="#3d1a2e"/>
+        <circle cx="54" cy="34" r="1" fill="white"/>
+        <circle cx="68" cy="34" r="1" fill="white"/>
+        <ellipse cx="60" cy="40" rx="2" ry="1.5" fill="#ffb3d1"/>
+        <path d="M56.5 43 Q60 46.5 63.5 43" stroke="#ffb3d1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="46" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+        <ellipse cx="74" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+        <path d="M96 32 C96 32 93 29 91 31 C89 33 91 36 96 39 C101 36 103 33 101 31 C99 29 96 32 96 32Z" fill="#ec4899" opacity=".7"/>
+        <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 C27 29 24 32 24 32Z" fill="#ec4899" opacity=".7"/>
+      </svg>
+      <div class="header-usagi-text">
+        <span class="app-title-main">バイト給料計算</span>
+        <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
+      </div>
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
