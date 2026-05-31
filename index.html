@@ -251,6 +251,86 @@
     .empty-ico { font-size: 2.5rem; margin-bottom: 10px; }
     .empty-txt { font-size: .9rem; }
 
+    /* ===== Day Detail Sheet ===== */
+    .dd-mask {
+      position: fixed; inset: 0; z-index: 40;
+      display: flex; align-items: flex-end;
+      pointer-events: none;
+    }
+    .dd-mask.hidden { display: none; }
+    .dd-mask.show { pointer-events: all; }
+    .dd-sheet {
+      background: white; border-radius: 22px 22px 0 0;
+      width: 100%; max-width: 480px; margin: 0 auto;
+      max-height: 60vh; display: flex; flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(236,72,153,.18);
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,1,.4,1);
+    }
+    .dd-mask.show .dd-sheet { transform: translateY(0); }
+    .dd-handle {
+      width: 36px; height: 4px; background: #fce7f3;
+      border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; cursor: grab;
+    }
+    .dd-head {
+      padding: 10px 16px 10px; border-bottom: 1px solid #fce7f3; flex-shrink: 0;
+      font-size: 1rem; font-weight: 700; color: #3d1a2e;
+    }
+    .dd-list { overflow-y: auto; flex: 1; }
+    .dd-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; border-bottom: 1px solid #fff5f9;
+    }
+    .dd-item:last-child { border-bottom: none; }
+    .dd-time {
+      font-size: .78rem; color: #be185d; font-weight: 600;
+      width: 52px; flex-shrink: 0; line-height: 1.5;
+    }
+    .dd-bar {
+      width: 3px; border-radius: 2px; align-self: stretch;
+      min-height: 36px; flex-shrink: 0;
+    }
+    .dd-info { flex: 1; }
+    .dd-title { font-size: .93rem; font-weight: 700; color: #3d1a2e; }
+    .dd-wp { font-size: .75rem; color: #f9a8d4; margin-top: 2px; }
+    .dd-pay { font-size: .88rem; font-weight: 700; color: #ec4899; white-space: nowrap; }
+    .dd-foot { padding: 10px 16px 20px; flex-shrink: 0; }
+    .dd-pencil {
+      background: none; border: none; cursor: pointer;
+      font-size: 1rem; padding: 4px; opacity: .6;
+    }
+    .dd-pencil:active { opacity: 1; }
+    .dd-edit-form {
+      padding: 10px 16px 14px; background: #fff5f9;
+      border-bottom: 1px solid #fce7f3;
+    }
+    .dd-edit-form.hidden { display: none; }
+    .dd-ef-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .dd-ef-row label { font-size: .75rem; color: #be185d; width: 36px; flex-shrink: 0; }
+    .dd-ef-in {
+      flex: 1; padding: 7px 10px; border: 1px solid #fce7f3;
+      border-radius: 8px; font-size: .87rem; outline: none;
+    }
+    .dd-ef-in:focus { border-color: #ec4899; }
+    .dd-ef-unit { font-size: .75rem; color: #be185d; }
+    .dd-ef-btns { display: flex; gap: 8px; margin-top: 4px; }
+    .dd-ef-cancel {
+      flex: 1; padding: 9px; background: #fff0f7; border: none;
+      border-radius: 9px; color: #be185d; font-size: .85rem; font-weight: 600; cursor: pointer;
+    }
+    .dd-ef-save {
+      flex: 2; padding: 9px;
+      background: linear-gradient(135deg,#f9a8d4,#ec4899); border: none;
+      border-radius: 9px; color: white; font-size: .85rem; font-weight: 700; cursor: pointer;
+    }
+    .dd-edit-btn {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg,#f9a8d4,#ec4899); border: none;
+      border-radius: 12px; color: white; font-size: .9rem; font-weight: 700; cursor: pointer;
+    }
+
     /* ===== Backup ===== */
     .backup-card { background: white; border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
@@ -394,6 +474,18 @@
   </div>
 </div>
 
+<!-- Day Detail Sheet -->
+<div class="dd-mask hidden" id="dd-mask">
+  <div class="dd-sheet" id="dd-sheet">
+    <div class="dd-handle"></div>
+    <div class="dd-head" id="dd-head"></div>
+    <div class="dd-list" id="dd-list"></div>
+    <div class="dd-foot">
+      <button class="dd-edit-btn" id="dd-edit-btn">＋ シフトを編集</button>
+    </div>
+  </div>
+</div>
+
 <!-- Bottom Sheet -->
 <div class="bs-mask hidden" id="bs-mask">
   <div class="bs-sheet">
@@ -432,6 +524,7 @@ const COLORS = [
 let D = { workplaces: [], templates: [], shifts: [] };
 let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
+let calTabLastTap = 0;
 let chartPie = null, chartBar = null;
 
 // ===== PERSIST =====
@@ -520,6 +613,16 @@ document.getElementById('next-month').onclick=()=>{S.m++;if(S.m>12){S.m=1;S.y++;
 // ===== TABS =====
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.onclick=()=>{
+    const now = Date.now();
+    if (btn.dataset.tab==='calendar') {
+      // ダブルタップで今日に戻る
+      if (now - calTabLastTap < 400) {
+        const t = new Date();
+        S.y = t.getFullYear(); S.m = t.getMonth()+1; S.sel = todayStr();
+        closeDayDetail();
+      }
+      calTabLastTap = now;
+    }
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
@@ -562,7 +665,8 @@ function renderCal() {
       const isDouble=lastTap.date===dstr&&now-lastTap.time<400;
       lastTap={date:dstr,time:now};
       S.sel=dstr; renderCal(); renderSummary();
-      if (isDouble) openBS(dstr);
+      if (isDouble) { closeDayDetail(); openBS(dstr); }
+      else if (D.shifts.some(s=>s.date===dstr)) openDayDetail(dstr);
     };
     return cell;
   }
@@ -1041,6 +1145,91 @@ function openTemplateModal(tmplId){
     foot.appendChild(sb);
   });
 }
+
+// ===== DAY DETAIL SHEET =====
+const ddMask = document.getElementById('dd-mask');
+const ddSheet = document.getElementById('dd-sheet');
+
+function openDayDetail(dstr) {
+  const [y, m, d] = dstr.split('-').map(Number);
+  const dow = ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()];
+  const dayTotal = D.shifts.filter(s=>s.date===dstr).reduce((sum,s)=>sum+shiftPay(s).total,0);
+  document.getElementById('dd-head').innerHTML =
+    `<span>${m}月${d}日（${dow}）</span><span style="font-size:.95rem;color:#ec4899">${fmt(dayTotal)}</span>`;
+
+  const list = document.getElementById('dd-list');
+  list.innerHTML = '';
+  D.shifts.filter(s => s.date === dstr).forEach(sh => {
+    const wp = D.workplaces.find(w => w.id === sh.workplaceId);
+    const pay = shiftPay(sh);
+
+    const wrapper = document.createElement('div');
+
+    // シフト行
+    const item = document.createElement('div');
+    item.className = 'dd-item';
+    item.innerHTML = `
+      <div class="dd-time">${sh.startTime}<br>${sh.endTime}</div>
+      <div class="dd-bar" style="background:${sh.color||'#ec4899'}"></div>
+      <div class="dd-info">
+        <div class="dd-title">${sh.title||'シフト'}</div>
+        <div class="dd-wp">[${wp ? wp.name : '未設定'}]</div>
+      </div>
+      <div class="dd-pay">${fmt(pay.total)}</div>
+      <button class="dd-pencil" title="編集">✏️</button>`;
+
+    // インライン編集フォーム（初期は非表示）
+    const form = document.createElement('div');
+    form.className = 'dd-edit-form hidden';
+    form.innerHTML = `
+      <div class="dd-ef-row"><label>開始</label><input type="time" class="dd-ef-in" id="ef-start-${sh.id}" value="${sh.startTime}"></div>
+      <div class="dd-ef-row"><label>終了</label><input type="time" class="dd-ef-in" id="ef-end-${sh.id}" value="${sh.endTime}"></div>
+      <div class="dd-ef-row"><label>休憩</label><input type="number" class="dd-ef-in" id="ef-break-${sh.id}" value="${sh.breakMinutes||0}" min="0" step="15"><span class="dd-ef-unit">分</span></div>
+      <div class="dd-ef-btns">
+        <button class="dd-ef-cancel">キャンセル</button>
+        <button class="dd-ef-save">保存</button>
+      </div>`;
+
+    // 鉛筆ボタンでフォームをトグル
+    item.querySelector('.dd-pencil').onclick = e => {
+      e.stopPropagation();
+      form.classList.toggle('hidden');
+    };
+    form.querySelector('.dd-ef-cancel').onclick = () => form.classList.add('hidden');
+    form.querySelector('.dd-ef-save').onclick = () => {
+      sh.startTime = document.getElementById(`ef-start-${sh.id}`).value;
+      sh.endTime   = document.getElementById(`ef-end-${sh.id}`).value;
+      sh.breakMinutes = parseInt(document.getElementById(`ef-break-${sh.id}`).value)||0;
+      save();
+      openDayDetail(dstr); // シートを再描画
+      renderCal(); renderSummary();
+    };
+
+    wrapper.appendChild(item);
+    wrapper.appendChild(form);
+    list.appendChild(wrapper);
+  });
+
+  document.getElementById('dd-edit-btn').onclick = () => { closeDayDetail(); openBS(dstr); };
+
+  ddMask.classList.remove('hidden');
+  requestAnimationFrame(() => ddMask.classList.add('show'));
+}
+
+function closeDayDetail() {
+  ddMask.classList.remove('show');
+  setTimeout(() => ddMask.classList.add('hidden'), 300);
+}
+
+// 背景タップで閉じる
+ddMask.addEventListener('click', e => { if (e.target === ddMask) closeDayDetail(); });
+
+// スワイプダウンで閉じる
+let ddTouchY = 0;
+ddSheet.addEventListener('touchstart', e => { ddTouchY = e.touches[0].clientY; }, { passive: true });
+ddSheet.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - ddTouchY > 60) closeDayDetail();
+}, { passive: true });
 
 // ===== BACKUP / RESTORE =====
 document.getElementById('btn-export').onclick = () => {
