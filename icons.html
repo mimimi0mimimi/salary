@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アイコン候補</title>
+  <style>
+    body { background: #fdf0f7; font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      display: flex; flex-direction: column; align-items: center; padding: 40px 16px; gap: 40px; }
+    h1 { font-size: 1.1rem; color: #be185d; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .icon-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .icon-box {
+      width: 120px; height: 120px; border-radius: 28px;
+      overflow: hidden; box-shadow: 0 8px 24px rgba(236,72,153,.25);
+    }
+    .icon-box svg { width: 100%; height: 100%; }
+    .icon-name { font-size: .85rem; font-weight: 700; color: #be185d; }
+    .icon-desc { font-size: .72rem; color: #f9a8d4; text-align: center; max-width: 110px; }
+  </style>
+</head>
+<body>
+  <h1>🌸 アイコン候補 4パターン</h1>
+  <div class="grid">
+
+    <!-- ① お財布ねこちゃん -->
+    <div class="icon-wrap">
+      <div class="icon-box">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffd6e7"/>
+              <stop offset="100%" stop-color="#ffb3d1"/>
+            </linearGradient>
+          </defs>
+          <!-- 背景 -->
+          <rect width="120" height="120" fill="url(#g1)"/>
+          <!-- 星デコ -->
+          <text x="12" y="22" font-size="11" opacity=".5">✦</text>
+          <text x="96" y="18" font-size="8" opacity=".4">✦</text>
+          <text x="100" y="108" font-size="10" opacity=".4">✦</text>
+          <!-- 財布本体 -->
+          <rect x="22" y="44" width="76" height="52" rx="14" fill="#fff" opacity=".95"/>
+          <rect x="22" y="44" width="76" height="18" rx="9" fill="#ff94c2"/>
+          <!-- 留め具(ハート) -->
+          <path d="M60 54 C60 54 56 50 53 53 C50 56 53 60 60 65 C67 60 70 56 67 53 C64 50 60 54 60 54Z" fill="white" opacity=".9"/>
+          <!-- ポケット -->
+          <rect x="72" y="68" width="20" height="18" rx="8" fill="#ffcce4"/>
+          <circle cx="82" cy="77" r="4" fill="#ff94c2"/>
+          <!-- 猫耳 -->
+          <polygon points="32,44 24,28 44,38" fill="#ff94c2"/>
+          <polygon points="35,43 29,31 44,39" fill="#ffb3d1"/>
+          <polygon points="88,44 96,28 76,38" fill="#ff94c2"/>
+          <polygon points="85,43 91,31 76,39" fill="#ffb3d1"/>
+          <!-- 目 -->
+          <ellipse cx="46" cy="37" rx="3" ry="3.5" fill="#3d1a2e"/>
+          <ellipse cx="74" cy="37" rx="3" ry="3.5" fill="#3d1a2e"/>
+          <circle cx="47.2" cy="35.8" r="1" fill="white"/>
+          <circle cx="75.2" cy="35.8" r="1" fill="white"/>
+          <!-- 口 -->
+          <path d="M57 42 Q60 45 63 42" stroke="#ff94c2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- ほっぺ -->
+          <ellipse cx="40" cy="41" rx="4" ry="2.5" fill="#ffb3d1" opacity=".6"/>
+          <ellipse cx="80" cy="41" rx="4" ry="2.5" fill="#ffb3d1" opacity=".6"/>
+          <!-- コイン -->
+          <circle cx="45" cy="77" r="8" fill="#ffd700" opacity=".9"/>
+          <circle cx="45" cy="77" r="5.5" fill="#ffc107" opacity=".6"/>
+          <text x="42" y="81" font-size="7" fill="#fff" font-weight="bold">¥</text>
+        </svg>
+      </div>
+      <div class="icon-name">① お財布ねこちゃん</div>
+      <div class="icon-desc">猫耳つき財布でキュート</div>
+    </div>
+
+    <!-- ② コインうさぎちゃん -->
+    <div class="icon-wrap">
+      <div class="icon-box">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffecd2"/>
+              <stop offset="100%" stop-color="#fcb69f"/>
+            </linearGradient>
+            <linearGradient id="gc" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffe066"/>
+              <stop offset="100%" stop-color="#ffc200"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" fill="url(#g2)"/>
+          <!-- キラキラ -->
+          <text x="10" y="20" font-size="10" opacity=".5">✦</text>
+          <text x="100" y="15" font-size="8" opacity=".4">★</text>
+          <text x="104" y="110" font-size="9" opacity=".35">✦</text>
+          <text x="8" y="108" font-size="7" opacity=".4">★</text>
+          <!-- 大きなコイン -->
+          <circle cx="60" cy="62" r="38" fill="url(#gc)" opacity=".95"/>
+          <circle cx="60" cy="62" r="33" fill="none" stroke="#ffd700" stroke-width="2" opacity=".6"/>
+          <circle cx="60" cy="62" r="28" fill="#ffd700" opacity=".25"/>
+          <!-- ¥マーク -->
+          <text x="47" y="73" font-size="28" fill="white" font-weight="900" opacity=".95">¥</text>
+          <!-- うさぎ耳 -->
+          <ellipse cx="42" cy="26" rx="8" ry="16" fill="#fff" opacity=".95"/>
+          <ellipse cx="78" cy="26" rx="8" ry="16" fill="#fff" opacity=".95"/>
+          <ellipse cx="42" cy="26" rx="4.5" ry="11" fill="#ffb3d1"/>
+          <ellipse cx="78" cy="26" rx="4.5" ry="11" fill="#ffb3d1"/>
+          <!-- 顔 -->
+          <circle cx="60" cy="62" r="22" fill="white" opacity=".9"/>
+          <!-- 目 -->
+          <ellipse cx="52" cy="58" rx="3" ry="3.5" fill="#3d1a2e"/>
+          <ellipse cx="68" cy="58" rx="3" ry="3.5" fill="#3d1a2e"/>
+          <circle cx="53.2" cy="56.8" r="1.2" fill="white"/>
+          <circle cx="69.2" cy="56.8" r="1.2" fill="white"/>
+          <!-- 鼻 -->
+          <ellipse cx="60" cy="63.5" rx="2" ry="1.5" fill="#ffb3d1"/>
+          <!-- 口 -->
+          <path d="M56 66.5 Q60 70 64 66.5" stroke="#ffb3d1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- ほっぺ -->
+          <ellipse cx="45" cy="63" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+          <ellipse cx="75" cy="63" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+          <!-- 星デコ -->
+          <text x="18" y="58" font-size="10" fill="#ffd700" opacity=".7">★</text>
+          <text x="96" y="64" font-size="10" fill="#ffd700" opacity=".7">★</text>
+        </svg>
+      </div>
+      <div class="icon-name">② コインうさぎちゃん</div>
+      <div class="icon-desc">うさぎ耳つき金貨でポップ</div>
+    </div>
+
+    <!-- ③ ハートカレンダーちゃん -->
+    <div class="icon-wrap">
+      <div class="icon-box">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#c9d6ff"/>
+              <stop offset="100%" stop-color="#e2b0ff"/>
+            </linearGradient>
+            <linearGradient id="g3b" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff9fcf"/>
+              <stop offset="100%" stop-color="#ec4899"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" fill="url(#g3)"/>
+          <text x="8" y="18" font-size="10" opacity=".4">✦</text>
+          <text x="100" y="16" font-size="9" opacity=".35">✦</text>
+          <!-- カレンダー本体 -->
+          <rect x="14" y="32" width="92" height="76" rx="16" fill="white" opacity=".95"/>
+          <!-- ヘッダー -->
+          <rect x="14" y="32" width="92" height="28" rx="16" fill="url(#g3b)"/>
+          <rect x="14" y="48" width="92" height="12" fill="url(#g3b)"/>
+          <!-- リング -->
+          <rect x="37" y="24" width="8" height="18" rx="4" fill="#be185d"/>
+          <rect x="75" y="24" width="8" height="18" rx="4" fill="#be185d"/>
+          <!-- 月ラベル -->
+          <text x="60" y="52" font-size="11" fill="white" font-weight="700" text-anchor="middle">SALARY</text>
+          <!-- 曜日 -->
+          <text x="25" y="74" font-size="7.5" fill="#f9a8d4" text-anchor="middle">日</text>
+          <text x="38" y="74" font-size="7.5" fill="#c0c8e0" text-anchor="middle">月</text>
+          <text x="51" y="74" font-size="7.5" fill="#c0c8e0" text-anchor="middle">火</text>
+          <text x="64" y="74" font-size="7.5" fill="#c0c8e0" text-anchor="middle">水</text>
+          <text x="77" y="74" font-size="7.5" fill="#c0c8e0" text-anchor="middle">木</text>
+          <text x="90" y="74" font-size="7.5" fill="#c0c8e0" text-anchor="middle">金</text>
+          <text x="103" y="74" font-size="7.5" fill="#9eb1ff" text-anchor="middle">土</text>
+          <!-- 日付 (小さいドット) -->
+          <circle cx="38" cy="86" r="3.5" fill="#e8eaf0"/>
+          <circle cx="51" cy="86" r="3.5" fill="#e8eaf0"/>
+          <circle cx="64" cy="86" r="3.5" fill="#e8eaf0"/>
+          <circle cx="77" cy="86" r="3.5" fill="#e8eaf0"/>
+          <circle cx="90" cy="86" r="3.5" fill="#e8eaf0"/>
+          <circle cx="103" cy="86" r="3.5" fill="#e8eaf0"/>
+          <!-- ハート(今日強調) -->
+          <path d="M25 90 C25 90 21 86.5 18.5 89 C16 91.5 18.5 95 25 99 C31.5 95 34 91.5 31.5 89 C29 86.5 25 90 25 90Z" fill="#ec4899"/>
+          <!-- 下段 -->
+          <circle cx="25" cy="105" r="3.5" fill="#ffd6e7"/>
+          <circle cx="38" cy="105" r="3.5" fill="#e8eaf0"/>
+          <circle cx="51" cy="105" r="3.5" fill="#e8eaf0"/>
+          <circle cx="64" cy="105" r="3.5" fill="#e8eaf0"/>
+          <!-- ¥バッジ -->
+          <circle cx="96" cy="100" r="12" fill="#ffd700"/>
+          <text x="90" y="105" font-size="13" fill="white" font-weight="900">¥</text>
+          <!-- キラキラ -->
+          <text x="6" y="100" font-size="12" opacity=".4">✦</text>
+        </svg>
+      </div>
+      <div class="icon-name">③ ハートカレンダーちゃん</div>
+      <div class="icon-desc">カレンダー×ハートで清楚かわいい</div>
+    </div>
+
+    <!-- ④ 給料袋ちゃん -->
+    <div class="icon-wrap">
+      <div class="icon-box">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fdcfe8"/>
+              <stop offset="100%" stop-color="#f9a8d4"/>
+            </linearGradient>
+            <linearGradient id="g4b" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fff"/>
+              <stop offset="100%" stop-color="#fce7f3"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" fill="url(#g4)"/>
+          <text x="9" y="19" font-size="10" opacity=".45">✦</text>
+          <text x="100" y="17" font-size="8" opacity=".4">★</text>
+          <text x="6" y="108" font-size="9" opacity=".35">★</text>
+          <text x="102" y="110" font-size="8" opacity=".4">✦</text>
+          <!-- 封筒本体 -->
+          <rect x="16" y="40" width="88" height="64" rx="14" fill="url(#g4b)" stroke="#f9a8d4" stroke-width="1.5"/>
+          <!-- 封筒フラップ(上部三角) -->
+          <path d="M16 54 L60 82 L104 54 L104 40 Q104 26 90 26 L30 26 Q16 26 16 40Z" fill="#ffb3d1" opacity=".9"/>
+          <!-- フラップの折り線 -->
+          <path d="M16 54 L60 76 L104 54" stroke="#f9a8d4" stroke-width="1" fill="none" opacity=".6"/>
+          <!-- ¥マーク大 -->
+          <text x="43" y="100" font-size="30" fill="#ec4899" font-weight="900" opacity=".85">¥</text>
+          <!-- うさぎ顔がフラップから顔出し -->
+          <!-- うさぎ耳 -->
+          <ellipse cx="48" cy="12" rx="7" ry="14" fill="#fff" stroke="#f9a8d4" stroke-width="1.2"/>
+          <ellipse cx="72" cy="12" rx="7" ry="14" fill="#fff" stroke="#f9a8d4" stroke-width="1.2"/>
+          <ellipse cx="48" cy="12" rx="4" ry="9.5" fill="#ffcce4"/>
+          <ellipse cx="72" cy="12" rx="4" ry="9.5" fill="#ffcce4"/>
+          <!-- うさぎ顔 -->
+          <ellipse cx="60" cy="38" rx="20" ry="18" fill="white" stroke="#f9a8d4" stroke-width="1.2"/>
+          <!-- 目 -->
+          <ellipse cx="53" cy="35" rx="2.8" ry="3.2" fill="#3d1a2e"/>
+          <ellipse cx="67" cy="35" rx="2.8" ry="3.2" fill="#3d1a2e"/>
+          <circle cx="54" cy="34" r="1" fill="white"/>
+          <circle cx="68" cy="34" r="1" fill="white"/>
+          <!-- 鼻 -->
+          <ellipse cx="60" cy="40" rx="2" ry="1.5" fill="#ffb3d1"/>
+          <!-- 口 -->
+          <path d="M56.5 43 Q60 46.5 63.5 43" stroke="#ffb3d1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- ほっぺ -->
+          <ellipse cx="46" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+          <ellipse cx="74" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
+          <!-- ハートデコ -->
+          <path d="M96 32 C96 32 93 29 91 31 C89 33 91 36 96 39 C101 36 103 33 101 31 C99 29 96 32 96 32Z" fill="#ec4899" opacity=".7"/>
+          <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 C27 29 24 32 24 32Z" fill="#ec4899" opacity=".7"/>
+        </svg>
+      </div>
+      <div class="icon-name">④ 給料袋うさぎちゃん</div>
+      <div class="icon-desc">封筒から顔を出すうさぎ</div>
+    </div>
+
+  </div>
+</body>
+</html>
