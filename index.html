@@ -91,6 +91,19 @@
     .sum-item-lbl { font-size: .6rem; color: #be185d; margin-bottom: 3px; font-weight: 600; }
     .sum-item-val { font-size: .92rem; font-weight: 800; color: #3d1a2e; }
     .sum-item-val.accent { color: #ec4899; }
+    .add-shift-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; margin: 10px 0 2px;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff9fcf, #ec4899);
+      border: none; border-radius: 16px; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(236,72,153,.35);
+      transition: transform .1s, box-shadow .1s;
+    }
+    .add-shift-btn:active { transform: scale(.97); box-shadow: 0 2px 8px rgba(236,72,153,.25); }
+    .add-shift-icon { font-size: 1.2rem; font-weight: 900; color: white; line-height: 1; }
+    .add-shift-label { font-size: .95rem; font-weight: 800; color: white; letter-spacing: .03em; }
+    .add-shift-deco { font-size: 1.1rem; }
 
     /* ===== Bottom sheet ===== */
     .bs-mask { position: fixed; inset: 0; background: rgba(61,26,46,.45);
@@ -430,6 +443,11 @@
           <div class="sum-item-val accent" id="sum-forecast">¥0</div>
         </div>
       </div>
+      <button class="add-shift-btn" id="add-shift-btn">
+        <span class="add-shift-icon">＋</span>
+        <span class="add-shift-label">シフトを登録</span>
+        <span class="add-shift-deco">🐰</span>
+      </button>
     </div>
   </div>
 
@@ -712,6 +730,7 @@ function openBS(dstr) {
 }
 function closeBS(){document.getElementById('bs-mask').classList.add('hidden');}
 document.getElementById('btn-bs-close').onclick=closeBS;
+document.getElementById('add-shift-btn').onclick=()=>{ if(S.sel) openBS(S.sel); };
 document.getElementById('bs-mask').onclick=e=>{if(e.target===document.getElementById('bs-mask'))closeBS();};
 
 function renderBSContent(dstr) {
