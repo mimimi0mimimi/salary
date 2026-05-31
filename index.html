@@ -316,6 +316,10 @@
     .dd-ef-in:focus { border-color: #ec4899; }
     .dd-ef-unit { font-size: .75rem; color: #be185d; }
     .dd-ef-btns { display: flex; gap: 8px; margin-top: 4px; }
+    .dd-ef-del {
+      padding: 9px 12px; background: #fff5f5; border: none;
+      border-radius: 9px; color: #e11d48; font-size: .82rem; font-weight: 600; cursor: pointer;
+    }
     .dd-ef-cancel {
       flex: 1; padding: 9px; background: #fff0f7; border: none;
       border-radius: 9px; color: #be185d; font-size: .85rem; font-weight: 600; cursor: pointer;
@@ -445,7 +449,7 @@
             <div class="backup-name">バックアップ</div>
             <div class="backup-sub">全データをJSONファイルで保存</div>
           </div>
-          <button class="btn-backup" id="btn-export">↓ 書き出し</button>
+          <button class="btn-backup" id="btn-export">↑ 書き出し</button>
         </div>
         <div class="backup-divider"></div>
         <div class="backup-row">
@@ -454,7 +458,7 @@
             <div class="backup-sub">JSONファイルからデータを復元</div>
           </div>
           <label class="btn-restore" id="btn-import-label">
-            ↑ 読み込み
+            ↓ 読み込み
             <input type="file" id="btn-import" accept=".json" style="display:none">
           </label>
         </div>
@@ -480,9 +484,7 @@
     <div class="dd-handle"></div>
     <div class="dd-head" id="dd-head"></div>
     <div class="dd-list" id="dd-list"></div>
-    <div class="dd-foot">
-      <button class="dd-edit-btn" id="dd-edit-btn">＋ シフトを編集</button>
-    </div>
+    <div class="dd-foot"></div>
   </div>
 </div>
 
@@ -1181,14 +1183,30 @@ function openDayDetail(dstr) {
     // インライン編集フォーム（初期は非表示）
     const form = document.createElement('div');
     form.className = 'dd-edit-form hidden';
+    const colorSwatchesHTML = COLORS.map(c =>
+      `<span class="sw dd-sw${c===sh.color?' on':''}" style="background:${c}" data-c="${c}"></span>`
+    ).join('');
     form.innerHTML = `
+      <div class="dd-ef-row"><label>名前</label><input type="text" class="dd-ef-in" id="ef-title-${sh.id}" value="${sh.title||''}"></div>
+      <div class="dd-ef-row"><label>カラー</label><div class="swatches" id="ef-swatches-${sh.id}">${colorSwatchesHTML}</div></div>
       <div class="dd-ef-row"><label>開始</label><input type="time" class="dd-ef-in" id="ef-start-${sh.id}" value="${sh.startTime}"></div>
       <div class="dd-ef-row"><label>終了</label><input type="time" class="dd-ef-in" id="ef-end-${sh.id}" value="${sh.endTime}"></div>
       <div class="dd-ef-row"><label>休憩</label><input type="number" class="dd-ef-in" id="ef-break-${sh.id}" value="${sh.breakMinutes||0}" min="0" step="15"><span class="dd-ef-unit">分</span></div>
       <div class="dd-ef-btns">
+        <button class="dd-ef-del">🗑 削除</button>
         <button class="dd-ef-cancel">キャンセル</button>
         <button class="dd-ef-save">保存</button>
       </div>`;
+
+    // カラー選択
+    let editColor = sh.color || COLORS[0];
+    form.querySelectorAll('.dd-sw').forEach(sw => {
+      sw.onclick = () => {
+        form.querySelectorAll('.dd-sw').forEach(s => s.classList.remove('on'));
+        sw.classList.add('on');
+        editColor = sw.dataset.c;
+      };
+    });
 
     // 鉛筆ボタンでフォームをトグル
     item.querySelector('.dd-pencil').onclick = e => {
@@ -1196,12 +1214,22 @@ function openDayDetail(dstr) {
       form.classList.toggle('hidden');
     };
     form.querySelector('.dd-ef-cancel').onclick = () => form.classList.add('hidden');
+    form.querySelector('.dd-ef-del').onclick = () => {
+      if (!confirm('このシフトを削除しますか？')) return;
+      D.shifts = D.shifts.filter(s => s.id !== sh.id);
+      save();
+      if (D.shifts.some(s => s.date === dstr)) openDayDetail(dstr);
+      else closeDayDetail();
+      renderCal(); renderSummary();
+    };
     form.querySelector('.dd-ef-save').onclick = () => {
-      sh.startTime = document.getElementById(`ef-start-${sh.id}`).value;
-      sh.endTime   = document.getElementById(`ef-end-${sh.id}`).value;
+      sh.title      = document.getElementById(`ef-title-${sh.id}`).value || sh.title;
+      sh.color      = editColor;
+      sh.startTime  = document.getElementById(`ef-start-${sh.id}`).value;
+      sh.endTime    = document.getElementById(`ef-end-${sh.id}`).value;
       sh.breakMinutes = parseInt(document.getElementById(`ef-break-${sh.id}`).value)||0;
       save();
-      openDayDetail(dstr); // シートを再描画
+      openDayDetail(dstr);
       renderCal(); renderSummary();
     };
 
@@ -1210,7 +1238,6 @@ function openDayDetail(dstr) {
     list.appendChild(wrapper);
   });
 
-  document.getElementById('dd-edit-btn').onclick = () => { closeDayDetail(); openBS(dstr); };
 
   ddMask.classList.remove('hidden');
   requestAnimationFrame(() => ddMask.classList.add('show'));
