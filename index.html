@@ -2468,6 +2468,83 @@ document.getElementById('btn-import').onchange = e => {
   }, { passive: true });
 })();
 
+// ===== SHARE =====
+document.getElementById('btn-share').onclick = () => {
+  const DOW = ['日','月','火','水','木','金','土'];
+  const lines = [];
+  lines.push(`📅 ${S.y}年${S.m}月 給料まとめ`);
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  let grandTotal = 0;
+
+  D.workplaces.forEach(wp => {
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    cdList.forEach((cd, cdIdx) => {
+      const p = payPeriod(wp, S.y, S.m, cd);
+      const res = calcPeriodSummary(wp, p.start, p.end);
+      const periodShifts = D.shifts
+        .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (!periodShifts.length) return;
+
+      const [,ps,pd] = p.start.split('-').map(Number);
+      const [,pe,ped] = p.end.split('-').map(Number);
+      const cdLabel = cdList.length > 1 ? `（締め${cdIdx+1}）` : '';
+      lines.push(`【${wp.name}${cdLabel}】${ps}/${pd}〜${pe}/${ped}`);
+
+      periodShifts.forEach(s => {
+        const [,sm,sd] = s.date.split('-').map(Number);
+        const dow = DOW[new Date(s.date+'T00:00:00').getDay()];
+        const end = toMin(s.endTime), start = toMin(s.startTime);
+        let tMin = (end <= start ? end + 1440 - start : end - start) - (s.breakMinutes || 0);
+        const rUnit = parseInt(wp.roundUnit) || 1;
+        if (rUnit > 1) tMin = roundMinutes(tMin, rUnit);
+        const h = (tMin / 60).toFixed(1);
+        const pay = shiftPay(s);
+        let line = `  ${sm}/${sd}(${dow}) ${s.startTime}〜${s.endTime} ${h}h ${fmt(pay.total)}`;
+        if (s.adjustment) line += ` [調整${s.adjustment > 0 ? '+' : ''}${Math.round(s.adjustment).toLocaleString('ja-JP')}]`;
+        if (s.memo) line += ` ※${s.memo}`;
+        lines.push(line);
+      });
+
+      if (res.allowanceDetails.length) {
+        res.allowanceDetails.forEach(a => lines.push(`  [手当] ${a.name}: +${fmt(a.value)}`));
+      }
+      if (res.deductionDetails.length) {
+        res.deductionDetails.forEach(d => lines.push(`  [控除] ${d.name}: -${fmt(d.value)}`));
+      }
+      if (res.totalAdjustment) {
+        lines.push(`  [調整合計]: ${res.totalAdjustment > 0 ? '+' : ''}${fmt(res.totalAdjustment)}`);
+      }
+      lines.push(`  総支給額: ${fmt(res.gross)}`);
+      lines.push(`  💰 手取り ${fmt(res.netPay)}`);
+      grandTotal += res.netPay;
+    });
+  });
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`合計手取り ${fmt(grandTotal)}`);
+
+  const text = lines.join('\n');
+
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('クリップボードにコピーしました！');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('クリップボードにコピーしました！');
+    });
+  }
+};
+
 // ===== INIT =====
 initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
 </script>
