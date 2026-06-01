@@ -58,7 +58,7 @@
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
     #month-title { flex: 1; text-align: center; font-size: 1.1rem; font-weight: 700; color: white; text-shadow: 0 1px 6px rgba(236,72,153,.3); }
-    .tabs { display: flex; border-top: 1px solid rgba(255,255,255,.25); }
+    .tabs { display: flex; border-top: 1px solid transparent; }
     .tab {
       flex: 1; padding: 10px 0; background: none; border: none;
       color: rgba(190,24,93,.5); font-size: 0.85rem; font-weight: 600;
@@ -433,6 +433,19 @@
     /* ===== Theme settings ===== */
     .theme-card { background: white; border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); padding: 4px 0; }
+    .theme-presets-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 12px 16px 8px; }
+    .theme-preset-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 10px 4px; border-radius: 12px; border: 2px solid transparent;
+      cursor: pointer; background: #fff5f9; transition: transform .1s;
+    }
+    .theme-preset-btn:active { transform: scale(.95); }
+    .theme-preset-btn.active { border-color: #3d1a2e; }
+    .theme-preset-swatch {
+      width: 36px; height: 36px; border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+    .theme-preset-name { font-size: .68rem; font-weight: 700; color: #3d1a2e; }
     .theme-row { display: flex; align-items: center; justify-content: space-between;
       padding: 11px 16px; border-bottom: 1px solid #fce7f3; }
     .theme-row:last-of-type { border-bottom: none; }
@@ -447,9 +460,6 @@
       border-radius: 8px; font-size: .82rem; color: #3d1a2e; outline: none;
       font-family: monospace; text-align: center; }
     .theme-hex:focus { border-color: #ec4899; }
-    .theme-reset { display: block; width: calc(100% - 32px); margin: 10px 16px 14px;
-      padding: 10px; background: #fff0f7; border: none; border-radius: 10px;
-      color: #be185d; font-size: .83rem; font-weight: 600; cursor: pointer; }
 
     /* ===== Backup ===== */
     .backup-card { background: white; border-radius: 14px; overflow: hidden;
@@ -605,7 +615,7 @@
   </div>
 
   <div class="pane" id="pane-detail">
-    <div id="det-content" style="padding: 0 0 16px"></div>
+    <div id="det-content" style="padding: 12px 0 16px"></div>
   </div>
 
   <div class="pane" id="pane-tax">
@@ -650,11 +660,11 @@
     <div class="set-sec">
       <div class="set-sec-title">テーマカラー</div>
       <div class="theme-card" id="theme-card">
+        <div id="theme-presets"></div>
         <div class="theme-row"><span class="theme-lbl">グラデーション（薄）</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-g1"><input type="text" class="theme-hex" id="th-g1" maxlength="7" placeholder="#fdd5e8"></div></div>
         <div class="theme-row"><span class="theme-lbl">グラデーション（濃）</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-g2"><input type="text" class="theme-hex" id="th-g2" maxlength="7" placeholder="#f9a8d4"></div></div>
         <div class="theme-row"><span class="theme-lbl">アクセントカラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-ac"><input type="text" class="theme-hex" id="th-ac" maxlength="7" placeholder="#ec4899"></div></div>
         <div class="theme-row"><span class="theme-lbl">文字カラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-tx"><input type="text" class="theme-hex" id="th-tx" maxlength="7" placeholder="#ec5b97"></div></div>
-        <button class="theme-reset" id="theme-reset">デフォルトに戻す</button>
       </div>
     </div>
   </div>
@@ -1194,8 +1204,9 @@ function renderDetailCharts() {
     const collapsed = (JSON.parse(localStorage.getItem('chart_collapsed')||'{}'))[key];
     const card = document.createElement('div');
     card.className = 'det-chart-card full';
+    const t = loadTheme();
     const modeTag = doubletapable
-      ? `<span style="font-size:.58rem;color:#f9a8d4;font-weight:400;margin-left:4px">${chartShowGross?'総支給':'手取り'}</span>`
+      ? `<span style="font-size:.58rem;color:${t.ac};font-weight:400;margin-left:4px">${chartShowGross?'総支給':'手取り'}</span>`
       : '';
     card.innerHTML = `
       <div class="det-chart-title chart-toggle-row" data-key="${key}">
@@ -1319,6 +1330,7 @@ function renderTimeline() {
   if (!el) return;
   const DOW = ['日','月','火','水','木','金','土'];
   const RRANGE = 1440;
+  const th = loadTheme();
   const gridHTML = [6,12,18].map(h => `<div class="tl-grid" style="left:${h/24*100}%"></div>`).join('');
 
   const dim = daysInMonth(S.y, S.m);
@@ -1338,7 +1350,7 @@ function renderTimeline() {
       ...overShifts.map(s => {
         const end = toMin(s.endTime);
         const barWidth = end / RRANGE * 100;
-        return `<div class="tl-bar tl-bar-cont-left" style="left:0%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||'#ec4899'}" title="${s.title||''} 〜${s.endTime}"><span class="tl-bar-ov" style="left:2px;right:auto">‹</span></div>`;
+        return `<div class="tl-bar tl-bar-cont-left" style="left:0%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||th.ac}" title="${s.title||''} 〜${s.endTime}"><span class="tl-bar-ov" style="left:2px;right:auto">‹</span></div>`;
       }),
       ...dayShifts.map(s => {
         const start = toMin(s.startTime);
@@ -1347,11 +1359,11 @@ function renderTimeline() {
         const barLeft = start / RRANGE * 100;
         const barWidth = Math.min(100-barLeft, (Math.min(end,1440)-start)/RRANGE*100);
         const over = end > 1440;
-        return `<div class="tl-bar" style="left:${barLeft.toFixed(1)}%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||'#ec4899'}">${over?'<span class="tl-bar-ov">›</span>':''}</div>`;
+        return `<div class="tl-bar" style="left:${barLeft.toFixed(1)}%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||th.ac}">${over?'<span class="tl-bar-ov">›</span>':''}</div>`;
       }),
     ].join('');
     return `<div class="tl-row">
-      <div class="tl-dc${isRed?' tl-sun':isSat?' tl-sat':''}">${S.m}/${i+1}<span class="tl-dow">${dow}</span></div>
+      <div class="tl-dc${isRed?' tl-sun':isSat?' tl-sat':''}" style="color:${isRed?'#e11d48':isSat?'#4a90d9':th.tx}">${S.m}/${i+1}<span class="tl-dow">${dow}</span></div>
       <div class="tl-ba">${gridHTML}${barsHTML}</div>
     </div>`;
   }).join('');
@@ -1394,8 +1406,9 @@ function renderDetailCards() {
       dynamicDeductHTML += `<div class="det-row deduct"><span class="lbl">${d.name}</span><span class="val">-${fmt(d.value)}</span></div>`;
     });
 
+    const th = loadTheme();
     const cardId = `${wp.id}${cdSuffix}`;
-    const nameLabel = cdList.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:#f9a8d4">（締め${cdIdx+1}）</span>` : wp.name;
+    const nameLabel = cdList.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:${th.ac}">（締め${cdIdx+1}）</span>` : wp.name;
     const card=document.createElement('div'); card.className='det-card';
     card.innerHTML=`
       <div class="det-card-head det-card-toggle">
@@ -1430,7 +1443,9 @@ function renderDetailCards() {
         <div class="shift-list-body hidden" id="slb-${cardId}">
           ${periodShifts.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
             const [,sm,sd]=s.date.split('-').map(Number);
-            const dow=['日','月','火','水','木','金','土'][new Date(s.date+'T00:00:00').getDay()];
+            const dowIdx = new Date(s.date+'T00:00:00').getDay();
+            const dow=['日','月','火','水','木','金','土'][dowIdx];
+            const dowColor = dowIdx===0?'#e11d48':dowIdx===6?'#4a90d9':th.tx;
             const end=toMin(s.endTime), start=toMin(s.startTime);
             let tMin = (end<=start?end+1440-start:end-start)-(s.breakMinutes||0);
             const rUnit = parseInt(wp.roundUnit) || 1;
@@ -1440,11 +1455,11 @@ function renderDetailCards() {
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
             const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${s.memo}</span>` : '';
             return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto">
-              <span class="sli-date">${sm}/${sd}<span class="sli-dow">${dow}</span></span>
+              <span class="sli-date" style="color:${th.tx}">${sm}/${sd}<span class="sli-dow" style="color:${dowColor}">${dow}</span></span>
               <span class="sli-time">${s.startTime}〜${s.endTime}${memoStr}</span>
               <span class="sli-h">${h.toFixed(1)}h</span>
               ${adjStr}
-              <span class="sli-pay">${fmt(pay.total)}</span>
+              <span class="sli-pay" style="color:${th.ac}">${fmt(pay.total)}</span>
             </div>`;
           }).join('')}
         </div>
@@ -1947,7 +1962,14 @@ ddSheet.addEventListener('touchend', e => {
 }, { passive: true });
 
 // ===== THEME =====
-const DEFAULT_THEME = { g1:'#fdd5e8', g2:'#f9a8d4', ac:'#ec4899', tx:'#ec5b97' };
+const THEME_PRESETS = [
+  { id:'peach',     name:'ピーチ',     g1:'#fdd5e8', g2:'#f9a8d4', ac:'#db2777', tx:'#9d174d' },
+  { id:'lemon',     name:'レモン',     g1:'#fffbeb', g2:'#fde68a', ac:'#d97706', tx:'#78350f' },
+  { id:'mint',      name:'ミント',     g1:'#ecfdf5', g2:'#6ee7b7', ac:'#059669', tx:'#064e3b' },
+  { id:'sky',       name:'スカイ',     g1:'#eff6ff', g2:'#93c5fd', ac:'#1d4ed8', tx:'#1e3a8a' },
+  { id:'lavender',  name:'ラベンダー', g1:'#f5f3ff', g2:'#c4b5fd', ac:'#6d28d9', tx:'#3b0764' },
+];
+const DEFAULT_THEME = THEME_PRESETS[0];
 
 function mixColor(hex, ratio) {
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
@@ -1964,7 +1986,7 @@ function applyTheme(t) {
 
   document.getElementById('theme-vars').textContent = `
     body { background: ${bodyBg} !important; }
-    header { background: linear-gradient(135deg,${t.g1},${t.g2}) !important; }
+    header { background: linear-gradient(135deg,${t.g1},${t.g2}) !important; box-shadow: 0 2px 12px ${t.g2}40 !important; }
     .nav-btn { color: ${t.tx} !important; background: rgba(255,255,255,.5) !important; }
     .tab { color: ${t.tx}80 !important; }
     .tab.active { color: ${t.tx} !important; border-bottom-color: ${t.tx} !important; }
@@ -2046,10 +2068,12 @@ function applyTheme(t) {
     .dd-ef-in:focus { border-color: ${t.ac} !important; }
     .dd-ef-cancel { color: ${t.tx} !important; background: ${lightBg} !important; }
     .theme-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
+    .theme-preset-btn { background: ${subtleBg} !important; }
+    .theme-preset-btn.active { border-color: ${t.tx} !important; }
+    .theme-preset-name { color: ${t.tx} !important; }
     .theme-row { border-bottom-color: ${border} !important; }
     .theme-hex { border-color: ${border} !important; }
     .theme-hex:focus { border-color: ${t.ac} !important; }
-    .theme-reset { color: ${t.tx} !important; background: ${lightBg} !important; }
     .dyn-item { background: ${subtleBg} !important; border-color: ${border} !important; }
     .cutoff-item { background: ${subtleBg} !important; border-color: ${border} !important; }
     .tax-year-btn { background: ${lightBg} !important; color: ${t.tx} !important; }
@@ -2069,45 +2093,105 @@ function applyTheme(t) {
     .tax-inp { border-color: ${border} !important; }
     .tax-inp:focus { border-color: ${t.ac} !important; }
     .tax-month-sec-title { color: ${mutedTx} !important; }
+    /* 残存ハードコードピンクの全上書き */
+    .tl-dc { color: ${t.tx} !important; }
+    .tl-dow { color: ${mutedTx} !important; }
+    .tl-sun, .tl-sun .tl-dow { color: #e11d48 !important; }
+    .tl-sat, .tl-sat .tl-dow { color: #4a90d9 !important; }
+    .chart-toggle-icon { color: ${mutedTx} !important; }
+    .set-empty { color: ${mutedTx} !important; }
+    .tabs { border-top-color: ${border} !important; }
+    .cal-cell.other .cal-day { color: ${mixColor(t.g2, 0.35)} !important; }
+    .cal-cell.other { background: ${mixColor(t.g2, 0.88)} !important; }
+    .det-toggle-icon, .shift-list-toggle { color: ${mutedTx} !important; }
+    .shift-list-toggle { border-top-color: ${border} !important; }
+    .shift-list-toggle:active { background: ${lightBg} !important; }
+    .shift-list-body { background: ${subtleBg} !important; }
+    .sli { border-bottom-color: ${border} !important; }
+    .det-row.gross-row { background: ${lightBg} !important; }
+    .det-row.gross-row .lbl, .det-row.gross-row .val { color: ${t.tx} !important; }
+    .det-total { background: linear-gradient(135deg,${lightBg},${mixColor(t.g1,0.6)}) !important; border-top-color: ${border} !important; }
+    .det-card-toggle:active { background: ${lightBg} !important; }
+    .det-net-inline { color: ${t.ac} !important; }
+    .tl-ba { background: ${lightBg} !important; }
+    .tl-grid { background: ${t.g2}55 !important; }
+    .tl-tick { color: ${mutedTx} !important; }
+    #sum-mode-hint { color: ${mutedTx} !important; }
   `;
 }
 
 function saveTheme(t) { localStorage.setItem('payapp_theme', JSON.stringify(t)); }
 function loadTheme() {
-  try { return JSON.parse(localStorage.getItem('payapp_theme')) || DEFAULT_THEME; }
-  catch(e) { return DEFAULT_THEME; }
+  try {
+    const saved = JSON.parse(localStorage.getItem('payapp_theme'));
+    if (saved) return saved;
+  } catch(e) {}
+  return DEFAULT_THEME;
 }
 
 function initThemeUI() {
-  const t = loadTheme();
-  applyTheme(t);
+  const cur = loadTheme();
+  const container = document.getElementById('theme-presets');
+  if (!container) return;
+
+  // プリセットボタン
+  const grid = document.createElement('div');
+  grid.className = 'theme-presets-grid';
+  THEME_PRESETS.forEach(preset => {
+    const btn = document.createElement('button');
+    btn.className = 'theme-preset-btn' + (cur.ac === preset.ac ? ' active' : '');
+    btn.innerHTML = `
+      <div class="theme-preset-swatch" style="background:linear-gradient(135deg,${preset.g1},${preset.g2});border:2px solid ${preset.g2}"></div>
+      <span class="theme-preset-name">${preset.name}</span>`;
+    btn.onclick = () => {
+      saveTheme(preset); applyTheme(preset);
+      container.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // カラーピッカーも更新
+      syncPickers(preset);
+    };
+    grid.appendChild(btn);
+  });
+  container.innerHTML = '';
+  container.appendChild(grid);
+
+  // カラーピッカー
+  function syncPickers(t) {
+    const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx' };
+    const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx' };
+    Object.entries(fields).forEach(([key, id]) => {
+      const picker = document.getElementById(id);
+      const hexInput = document.getElementById(hexFields[key]);
+      if (!picker || !hexInput) return;
+      picker.value = t[key];
+      hexInput.value = t[key];
+    });
+  }
+  syncPickers(cur);
+
   const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx' };
   const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx' };
   Object.entries(fields).forEach(([key, id]) => {
     const picker = document.getElementById(id);
     const hexInput = document.getElementById(hexFields[key]);
     if (!picker) return;
-    picker.value = t[key];
-    hexInput.value = t[key];
     picker.oninput = () => {
       hexInput.value = picker.value;
-      const cur = loadTheme(); cur[key] = picker.value;
-      saveTheme(cur); applyTheme(cur);
+      const t = loadTheme(); t[key] = picker.value;
+      saveTheme(t); applyTheme(t);
+      // プリセットの選択解除
+      container.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
     };
     hexInput.oninput = () => {
       const val = hexInput.value;
       if (/^#[0-9a-fA-F]{6}$/.test(val)) {
         picker.value = val;
-        const cur = loadTheme(); cur[key] = val;
-        saveTheme(cur); applyTheme(cur);
+        const t = loadTheme(); t[key] = val;
+        saveTheme(t); applyTheme(t);
+        container.querySelectorAll('.theme-preset-btn').forEach(b => b.classList.remove('active'));
       }
     };
   });
-  document.getElementById('theme-reset').onclick = () => {
-    saveTheme(DEFAULT_THEME);
-    applyTheme(DEFAULT_THEME);
-    initThemeUI();
-  };
 }
 
 // ===== TAX TAB =====
@@ -2259,7 +2343,7 @@ function renderTaxSummary() {
         <div class="tax-calc-row"><span class="lbl">源泉徴収済み</span><span class="val">${fmt(totalWithholding)}</span></div>
         <div class="tax-calc-row total"><span class="lbl">${diff >= 0 ? '不足額（追納）' : '超過額（還付）'}</span><span class="val" style="font-weight:800;color:${diff > 0 ? '#e11d48' : '#16a34a'}">${diff >= 0 ? '+' : ''}${fmt(diff)}</span></div>
       </div>
-    </div>` : '<div style="padding:16px;text-align:center;font-size:.83rem;color:#f9a8d4;">各締め日期間の給与明細を入力すると計算されます</div>'}
+    </div>` : `<div style="padding:16px;text-align:center;font-size:.83rem;color:${loadTheme().ac};">各締め日期間の給与明細を入力すると計算されます</div>`}
   `;
 
   if (totalIncome > 0) {
