@@ -241,6 +241,107 @@
     .det-payday { font-size: .72rem; color: #f9a8d4; text-align: center;
       padding: 6px 14px 8px; background: white; }
 
+    /* ===== 手入力補正 ===== */
+    .det-row-manual {
+      display: grid; grid-template-columns: 1fr auto auto;
+      align-items: center; padding: 7px 14px;
+      border-bottom: 1px solid #fff5f9; font-size: .84rem; gap: 8px;
+    }
+    .det-row-manual .lbl { color: #be185d; font-size: .8rem; }
+    .det-row-manual .lbl.indent { padding-left: 8px; font-size: .76rem; opacity: .8; }
+    .det-row-manual .val-auto { color: #3d1a2e; font-weight: 600; text-align: right; font-size: .84rem; }
+    .det-row-manual .val-auto.overridden { color: #ccc; text-decoration: line-through; font-weight: 400; font-size:.76rem; }
+    .det-row-manual .manual-inp {
+      width: 88px; padding: 4px 7px; border: 1px dashed #f9a8d4; border-radius: 6px;
+      font-size: .8rem; text-align: right; outline: none; background: #fff8fb; color: #3d1a2e;
+    }
+    .det-row-manual .manual-inp:focus { border-color: #ec4899; background: white; }
+    .det-row-manual .manual-inp.has-value { border-color: #ec4899; border-style: solid; background: #fff0f7; font-weight: 700; color: #be185d; }
+    .det-row-manual.gross-row { background: #fff5f9; }
+    .det-row-manual.deduct .val-auto { color: #e11d48; }
+    .det-row-manual.deduct .val-auto::before { content: '-'; }
+    .det-row-manual.deduct .val-auto.overridden { color: #ccc; }
+    .det-total-manual { display: flex; justify-content: space-between; align-items: center;
+      padding: 13px 14px; background: linear-gradient(135deg,#fdf2f8,#fce7f3);
+      border-top: 1px solid #fce7f3; }
+    .det-total-manual .lbl { font-size: .88rem; font-weight: 700; color: #be185d; }
+    .det-total-manual .val { font-size: 1.25rem; font-weight: 800; color: #ec4899; }
+    .manual-sync-badge {
+      display: inline-block; font-size: .58rem; background: #ec4899; color: white;
+      border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle; font-weight: 700;
+    }
+    .det-inp-hint { padding: 5px 14px 3px; font-size: .64rem; color: #f9a8d4; letter-spacing: .03em; }
+    .det-row-manual .lbl.sub { padding-left: 10px; color: #be185d; opacity: .75; font-size: .76rem; }
+    /* ===== 業務委託・経費 (Tax tab) ===== */
+    .commission-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #fef9c3; color: #854d0e; font-size: .6rem; font-weight: 700;
+      padding: 2px 6px; border-radius: 99px; border: 1px solid #fde68a; margin-left: 6px;
+    }
+    .tax-expense-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      background: #fffbeb; border-bottom: 1px solid #fde68a; font-size: .82rem;
+    }
+    .tax-expense-row label { color: #854d0e; font-weight: 600; flex: 1; font-size: .78rem; }
+    .tax-expense-inp {
+      width: 120px; padding: 5px 8px; border: 1px solid #fde68a; border-radius: 7px;
+      font-size: .82rem; text-align: right; outline: none; background: white; color: #3d1a2e;
+    }
+    .tax-expense-inp:focus { border-color: #d97706; }
+    .tax-calc-row.expense { background: #fffbeb; }
+    .tax-calc-row.expense .lbl { color: #854d0e; }
+    .contract-type-row {
+      display: flex; align-items: center; gap: 8px; padding: 6px 0;
+    }
+    .contract-type-row label { font-size: .78rem; font-weight: 700; color: #be185d; min-width: 80px; }
+    .contract-select {
+      flex: 1; padding: 7px 10px; border: 1px solid #fce7f3;
+      border-radius: 7px; font-size: .82rem; outline: none; background: white; color: #3d1a2e;
+    }
+    .contract-select:focus { border-color: #ec4899; }
+
+    /* ===== 総勤務時間サマリー ===== */
+    .total-hours-card {
+      background: white; border-radius: 14px; margin: 0 12px 10px;
+      overflow: hidden; box-shadow: 0 2px 8px rgba(236,72,153,.08);
+    }
+    .total-hours-head {
+      padding: 9px 12px; font-size: .72rem; font-weight: 700;
+      color: #be185d; letter-spacing: .03em;
+      border-bottom: 1px solid #fce7f3;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .thb-header {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px 4px; background: #fff8fb;
+      border-bottom: 1px solid #fce7f3;
+    }
+    .thb-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-bottom: 1px solid #fff5f9;
+      font-size: .78rem;
+    }
+    .thb-row:last-of-type { border-bottom: none; }
+    .thb-total {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px; background: #fff0f7;
+      border-top: 1px solid #fce7f3; font-size: .78rem;
+    }
+    .thb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .thb-name { flex: 1; font-weight: 600; color: #3d1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .thb-days { width: 28px; text-align: center; color: #718096; flex-shrink: 0; font-size: .72rem; }
+    .thb-hours { width: 90px; text-align: right; color: #3d1a2e; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+    .thb-pay { width: 72px; text-align: right; color: #ec4899; font-weight: 700; flex-shrink: 0; }
+    .thb-night { font-size: .58rem; color: #7c3aed; margin-left: 2px; font-weight: 700; }
+    .night-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #ede9fe; color: #6d28d9;
+      font-size: .6rem; font-weight: 700; padding: 2px 6px;
+      border-radius: 99px; white-space: nowrap;
+    }
+    .night-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #7c3aed; flex-shrink: 0; }
+    .sli-night { color: #7c3aed; font-size: .62rem; font-weight: 700; }
+
     /* ===== Settings tab ===== */
     .set-sec { padding: 12px 12px 0; }
     .set-sec:last-child { padding-bottom: 20px; }
@@ -528,6 +629,14 @@
     .tax-inp:focus { border-color:#ec4899; }
     .tax-inp.si { border-color:#bde0fe; background:#f0f8ff; }
     .tax-no-si { grid-template-columns:1fr 1fr; }
+    /* 読み取り専用の値表示 */
+    .tax-val-display {
+      font-size: .85rem; font-weight: 700; color: #3d1a2e; text-align: right;
+      padding: 5px 0; min-height: 28px; display: flex; align-items: center; justify-content: flex-end;
+    }
+    .tax-val-display.empty { color: #ccc; font-weight: 400; font-size: .78rem; }
+    .tax-val-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    .tax-val-grid.no-si { grid-template-columns: 1fr 1fr; }
     .tax-add-btn { display:flex; align-items:center; justify-content:center; gap:6px; margin:4px 12px 16px; padding:12px; background:white; border:1.5px dashed #fce7f3; border-radius:14px; color:#ec4899; font-size:.87rem; font-weight:600; cursor:pointer; }
     .tax-add-btn:active { background:#fff0f7; border-color:#ec4899; }
   </style>
@@ -576,8 +685,8 @@
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
       <button class="tab" data-tab="charts">グラフ</button>
-      <button class="tab" data-tab="detail">見込</button>
-      <button class="tab" data-tab="tax">明細</button>
+      <button class="tab" data-tab="detail">明細</button>
+      <button class="tab" data-tab="tax">税金</button>
       <button class="tab" data-tab="settings">設定</button>
     </nav>
   </header>
@@ -713,7 +822,7 @@ const COLORS = [
 ];
 
 // ===== STATE =====
-let D = { workplaces: [], templates: [], shifts: [], taxRecords: {} };
+let D = { workplaces: [], templates: [], shifts: [], taxRecords: {}, salaryRecords: {} };
 let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
 let calTabLastTap = 0;
@@ -726,7 +835,7 @@ let chartShowGross = false; // グラフ用
 const KEY = 'payapp_v4';
 function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
 function load() {
-  try { const r = localStorage.getItem(KEY); if (r) { D = JSON.parse(r); if (!D.taxRecords) D.taxRecords = {}; } } catch(e) {}
+  try { const r = localStorage.getItem(KEY); if (r) { D = JSON.parse(r); if (!D.taxRecords) D.taxRecords = {}; if (!D.salaryRecords) D.salaryRecords = {}; } } catch(e) {}
 }
 
 // ===== UTILS =====
@@ -740,6 +849,13 @@ function addDay(s,n=1) {
   return ds(d.getFullYear(),d.getMonth()+1,d.getDate());
 }
 function daysInMonth(y,m) { return new Date(y,m,0).getDate(); }
+// 時間を h:mm 形式に変換（例: 6.5→6:30, 1.3→1:18）
+function fmtH(h) {
+  const totalMin = Math.round(h * 60);
+  const hh = Math.floor(totalMin / 60);
+  const mm = totalMin % 60;
+  return `${hh}:${String(mm).padStart(2,'0')}`;
+}
 
 // ===== SALARY CALC =====
 function getWage(wp, dateS) {
@@ -789,6 +905,8 @@ function shiftPay(sh) {
 
   const np = (normalMin / 60) * wage;
   const dp = (nightMin / 60) * (+wp.nightWage?.wage || 0);
+  // 深夜割増＝深夜時間帯に対して「深夜時給－通常時給」の差額分のみ
+  const dpPremium = (nightMin / 60) * Math.max(0, (+wp.nightWage?.wage || 0) - wage);
   const baseSal = np + dp;
 
   let dayAllowances = 0;
@@ -807,7 +925,7 @@ function shiftPay(sh) {
 
   const gross = baseSal + dayAllowances;
   const adjustment = sh.adjustment || 0;
-  return {nh:normalMin/60,dh:nightMin/60,np,dp,gross,total:gross-dayDeductions+adjustment,allowances:dayAllowances,deductions:dayDeductions,adjustment};
+  return {nh:normalMin/60,dh:nightMin/60,np,dp,dpPremium,gross,total:gross-dayDeductions+adjustment,allowances:dayAllowances,deductions:dayDeductions,adjustment};
 }
 
 function payPeriod(wp,refY,refM,cdEntry) {
@@ -820,11 +938,11 @@ function payPeriod(wp,refY,refM,cdEntry) {
 
 function calcPeriodSummary(wp, start, end) {
   const periodShifts = D.shifts.filter(s => s.workplaceId === wp.id && s.date >= start && s.date <= end);
-  let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0, totalAdjustment = 0;
+  let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0, dpPremium = 0, totalAdjustment = 0;
   
   periodShifts.forEach(s => {
     const x = shiftPay(s);
-    workDays++; nh += x.nh; dh += x.dh; np += x.np; dp += x.dp;
+    workDays++; nh += x.nh; dh += x.dh; np += x.np; dp += x.dp; dpPremium += (x.dpPremium||0);
     totalAdjustment += (s.adjustment || 0);
   });
 
@@ -841,7 +959,7 @@ function calcPeriodSummary(wp, start, end) {
         if (a.mode === 'fix') amt = (+a.value || 0);
         else if (a.mode === 'pct') amt = timeSalaryTotal * ((+a.value || 0) / 100);
       }
-      if (amt > 0) {
+      if (amt >= 0) {
         totalAllowances += amt;
         allowanceDetails.push({ name: a.name, value: amt });
       }
@@ -861,7 +979,7 @@ function calcPeriodSummary(wp, start, end) {
         if (d.mode === 'fix') amt = (+d.value || 0);
         else if (d.mode === 'pct') amt = gross * ((+d.value || 0) / 100);
       }
-      if (amt > 0) {
+      if (amt >= 0) {
         totalDeductions += amt;
         deductionDetails.push({ name: d.name, value: amt });
       }
@@ -871,7 +989,7 @@ function calcPeriodSummary(wp, start, end) {
   const netPay = Math.max(0, gross - totalDeductions + totalAdjustment);
 
   return {
-    workDays, nh, dh, np, dp, gross, netPay,
+    workDays, nh, dh, np, dp, dpPremium, gross, netPay,
     allowances: totalAllowances, deductions: totalDeductions,
     allowanceDetails, deductionDetails, totalAdjustment
   };
@@ -1375,12 +1493,106 @@ function renderTimeline() {
     </div>`;
 }
 
+function renderDetailSummary() {
+  const el = document.getElementById('det-content');
+  if (!el) return;
+  // 既存のサマリーカードだけ差し替え
+  const existing = el.querySelector('.total-hours-card');
+  if (existing) existing.remove();
+
+  const th = loadTheme();
+  let grandH = 0, grandNightH = 0, grandNet = 0, grandDays = 0;
+  const wpRows = [];
+  D.workplaces.forEach(wp => {
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    cdList.forEach((cd, cdIdx) => {
+      const p = payPeriod(wp, S.y, S.m, cd);
+      const res = calcPeriodSummary(wp, p.start, p.end);
+      if (res.workDays === 0) return;
+      const sr = getSalaryRecord(wp.id, S.y, S.m, cdIdx);
+      function srEff(f, autoVal) {
+        const v = sr[f]; return (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : autoVal;
+      }
+      let effGrossSm;
+      if (sr.gross !== '' && !isNaN(parseFloat(sr.gross))) {
+        effGrossSm = parseFloat(sr.gross);
+      } else {
+        const eNp = (sr.np !== '' && !isNaN(parseFloat(sr.np))) ? parseFloat(sr.np) : res.np;
+        const eDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dpPremium;
+        let eAllow = 0;
+        res.allowanceDetails.forEach(a => {
+          const av = sr[`allowance_${a.name}`];
+          eAllow += (av !== '' && !isNaN(parseFloat(av))) ? parseFloat(av) : a.value;
+        });
+        effGrossSm = eNp + eDp + eAllow;
+      }
+      let effDeductSm = 0;
+      res.deductionDetails.forEach(d => {
+        const v = sr[`deduct_${d.name}`];
+        effDeductSm += (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : d.value;
+      });
+      const effNet = effGrossSm - effDeductSm;
+      function parseHHMM(v) {
+        const parts = String(v).split(':');
+        return parts.length === 2 ? parseInt(parts[0]) + (parseInt(parts[1]) || 0) / 60 : parseFloat(v) || 0;
+      }
+      let effDh = sr.dh !== '' ? parseHHMM(sr.dh) : res.dh;
+      // nhは「深夜込み合計」として入力する欄。手入力があればそれが totalH
+      let totalH;
+      if (sr.nh !== '') {
+        totalH = parseHHMM(sr.nh);
+      } else {
+        totalH = res.nh + effDh;
+      }
+      const effDays = srEff('workDays', res.workDays);
+      grandH += totalH; grandNightH += effDh; grandNet += effNet; grandDays += effDays;
+      const hasNightWage = wp.nightWage?.enabled;
+      const cdLabel = cdList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
+      wpRows.push(`<div class="thb-row">
+        <span class="thb-dot" style="background:${wp.color||th.ac}"></span>
+        <span class="thb-name">${wp.name}${cdLabel}</span>
+        <span class="thb-days">${effDays}日</span>
+        <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtH(totalH)}<span class="thb-night">🌙</span>` : fmtH(totalH)}</span>
+        <span class="thb-pay">${fmt(effNet)}</span>
+      </div>`);
+    });
+  });
+  if (wpRows.length === 0) return;
+  const hasAnyNight = grandNightH > 0;
+  const sumCard = document.createElement('div');
+  sumCard.className = 'total-hours-card';
+  sumCard.innerHTML = `
+    <div class="total-hours-head">
+      <span>📊 ${S.m}月 勤務先別まとめ</span>
+      ${hasAnyNight ? '<span class="night-badge"><span class="night-badge-dot"></span>深夜あり</span>' : ''}
+    </div>
+    <div class="thb-header">
+      <span class="thb-name" style="flex:1;font-size:.6rem;color:#be185d;font-weight:700">勤務先</span>
+      <span class="thb-days" style="font-size:.6rem;color:#be185d;font-weight:700">日数</span>
+      <span class="thb-hours" style="font-size:.6rem;color:#be185d;font-weight:700">総時間</span>
+      <span class="thb-pay" style="font-size:.6rem;color:#be185d;font-weight:700">手取り</span>
+    </div>
+    ${wpRows.join('')}
+    ${wpRows.length > 1 ? `<div class="thb-total">
+      <span style="flex:1;font-size:.72rem;font-weight:700;color:#3d1a2e">合計</span>
+      <span class="thb-days" style="font-weight:700;color:#3d1a2e">${grandDays}日</span>
+      <span class="thb-hours" style="font-weight:700;color:#3d1a2e">${fmtH(grandH)}<span style="font-size:.6rem;color:#718096">（計）</span></span>
+      <span class="thb-pay" style="font-weight:800;color:#ec4899">${fmt(grandNet)}</span>
+    </div>` : ''}`;
+  // 先頭に挿入
+  el.insertBefore(sumCard, el.firstChild);
+}
+
 function renderDetailCards() {
   const el=document.getElementById('det-content'); el.innerHTML='';
   if (!D.workplaces.length){
     el.innerHTML='<div class="empty"><div class="empty-ico">🌸</div><div class="empty-txt">勤務先を登録してください</div></div>';
     return;
   }
+
+  // サマリーカードを描画
+  renderDetailSummary();
+
   D.workplaces.forEach(wp=>{
     const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
     cdList.forEach((cd, cdIdx) => {
@@ -1396,15 +1608,73 @@ function renderDetailCards() {
     const colKey = `wp_collapsed_${wp.id}${cdSuffix}`;
     const isCollapsed = localStorage.getItem(colKey) === '1';
 
+    // 手入力補正レコードを取得
+    const sr = getSalaryRecord(wp.id, S.y, S.m, cdIdx);
+
+    // 有効値を返すヘルパー（手入力 > 自動計算）
+    function eff(field, autoVal) {
+      const v = sr[field];
+      return (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : autoVal;
+    }
+    function hasVal(field) {
+      return sr[field] !== '' && !isNaN(parseFloat(sr[field]));
+    }
+
+    // 行ビルダー: label / 自動計算値 / 入力ボックス
+    // inputType: 'number'(デフォルト) or 'text'(時間系)
+    function mRow(label, autoDisplay, field, isDeduct, isGross, inputType, rowId) {
+      const v = sr[field] !== undefined ? sr[field] : '';
+      const has = v !== '' && (inputType === 'text' ? v.trim() !== '' : !isNaN(parseFloat(v)));
+      const autoClass = 'val-auto' + (has ? ' overridden' : '');
+      const deductClass = isDeduct ? ' deduct' : '';
+      const grossClass  = isGross  ? ' gross-row' : '';
+      const itype = inputType || 'number';
+      const placeholder = itype === 'text' ? '例: 128:23' : '実績';
+      const idAttr = rowId ? ` id="${rowId}"` : '';
+      const lblClass = label.startsWith('└') ? 'lbl indent' : 'lbl';
+      return `<div class="det-row-manual${deductClass}${grossClass}"${idAttr}>
+        <span class="${lblClass}">${label}</span>
+        <span class="${autoClass}">${autoDisplay}</span>
+        <input type="${itype}" class="manual-inp${has?' has-value':''}" placeholder="${placeholder}" value="${v}"
+          data-wp="${wp.id}" data-y="${S.y}" data-m="${S.m}" data-cdidx="${cdIdx}" data-field="${field}">
+      </div>`;
+    }
+
     let dynamicAllowHTML = '';
     res.allowanceDetails.forEach(a => {
-      dynamicAllowHTML += `<div class="det-row"><span class="lbl">${a.name}</span><span class="val">${fmt(a.value)}</span></div>`;
+      dynamicAllowHTML += mRow(a.name, fmt(a.value), `allowance_${a.name}`, false, false);
     });
 
     let dynamicDeductHTML = '';
     res.deductionDetails.forEach(d => {
-      dynamicDeductHTML += `<div class="det-row deduct"><span class="lbl">${d.name}</span><span class="val">-${fmt(d.value)}</span></div>`;
+      dynamicDeductHTML += mRow(d.name, fmt(d.value), `deduct_${d.name}`, true, false);
     });
+
+    // gross手入力がなければ np + dp（深夜割増） + 手当 の単純合計
+    let effGross;
+    if (sr.gross !== '' && !isNaN(parseFloat(sr.gross))) {
+      effGross = parseFloat(sr.gross);
+    } else {
+      const effNp = (sr.np !== '' && !isNaN(parseFloat(sr.np))) ? parseFloat(sr.np) : res.np;
+      const effDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dpPremium;
+      let effAllow = 0;
+      res.allowanceDetails.forEach(a => {
+        const av = sr[`allowance_${a.name}`];
+        effAllow += (av !== '' && !isNaN(parseFloat(av))) ? parseFloat(av) : a.value;
+      });
+      effGross = effNp + effDp + effAllow;
+    }
+    // 控除合計：手入力値（正の数）or 自動計算値 を引く
+    let effDeductions = 0;
+    res.deductionDetails.forEach(d => {
+      const field = `deduct_${d.name}`;
+      const v = sr[field];
+      const manualAmt = (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
+      effDeductions += manualAmt !== null ? manualAmt : d.value;
+    });
+    const manualNet = effGross - effDeductions;
+    // 全フィールドにひとつでも入力があるか
+    const hasAnyManual = Object.values(sr).some(v => v !== '' && !isNaN(parseFloat(v)));
 
     const th = loadTheme();
     const cardId = `${wp.id}${cdSuffix}`;
@@ -1420,22 +1690,31 @@ function renderDetailCards() {
           </div>
           <div class="det-head-sub${isCollapsed?'':' hidden'}">
             <span class="det-period">${ps}/${pd}〜${pe}/${ped}</span>
-            <span class="det-net-inline">手取り ${fmt(res.netPay)}</span>
+            <span class="det-net-inline">手取り ${fmt(hasAnyManual ? manualNet : res.netPay)}</span>
           </div>
           <span class="det-period det-period-open${isCollapsed?' hidden':''}">${ps}/${pd}〜${pe}/${ped}</span>
         </div>
       </div>
       <div class="det-card-body${isCollapsed?' hidden':''}">
-        <div class="det-row"><span class="lbl">出勤日数</span><span class="val">${res.workDays}日</span></div>
-        <div class="det-row"><span class="lbl">通常時間（丸め後）</span><span class="val">${res.nh.toFixed(1)}h</span></div>
-        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜時間（丸め後）</span><span class="val">${res.dh.toFixed(1)}h</span></div>`:''}
-        <div class="det-row"><span class="lbl">通常給料</span><span class="val">${fmt(res.np)}</span></div>
-        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜割増</span><span class="val">${fmt(res.dp)}</span></div>`:''}
+        <div class="det-inp-hint">✏️ 実績値を入力すると自動計算より優先・税金タブへ反映</div>
+        <div class="det-row-manual" style="background:#fff8fb;padding:5px 14px 4px">
+          <span class="lbl" style="font-size:.62rem;color:#f9a8d4">項目</span>
+          <span class="val-auto" style="font-size:.62rem;color:#f9a8d4;text-align:right">自動計算</span>
+          <span style="font-size:.62rem;color:#f9a8d4;width:88px;text-align:right">実績入力</span>
+        </div>
+        ${mRow('出勤日数', res.workDays + '日', 'workDays', false, false)}
+        ${mRow('勤務時間', fmtH(res.nh + res.dh), 'nh', false, false, 'text')}
+        ${res.dh > 0 || hasVal('dh') ? mRow('└ 深夜時間', fmtH(res.dh), 'dh', false, false, 'text') : ''}
+        ${mRow('通常給料', fmt(res.np), 'np', false, false)}
+        ${res.dh > 0 || hasVal('dp') ? mRow('深夜割増', fmt(res.dpPremium), 'dp', false, false) : ''}
         ${dynamicAllowHTML}
-        <div class="det-row gross-row"><span class="lbl">総支給額</span><span class="val">${fmt(res.gross)}</span></div>
+        ${mRow('総支給額', fmt(effGross), 'gross', false, true, null, `gross-row-${cardId}`)}
         ${dynamicDeductHTML}
-        ${res.totalAdjustment!==0?`<div class="det-row${res.totalAdjustment<0?' deduct':''}"><span class="lbl">調整額合計</span><span class="val">${res.totalAdjustment>0?'+':''}${fmt(Math.abs(res.totalAdjustment))}</span></div>`:''}
-        <div class="det-total"><span class="lbl">💰 手取り</span><span class="val">${fmt(res.netPay)}</span></div>
+        ${res.totalAdjustment!==0 ? mRow('調整額合計', (res.totalAdjustment>0?'+':'')+fmt(Math.abs(res.totalAdjustment)), 'adjustment', false, false) : ''}
+        <div class="det-total-manual" id="det-total-${cardId}">
+          <span class="lbl">💰 手取り${hasAnyManual?`<span class="manual-sync-badge">実績</span>`:''}</span>
+          <span class="val">${fmt(hasAnyManual ? manualNet : res.netPay)}</span>
+        </div>
         <div class="det-payday">給料日: ${payMLabel}</div>
         <div class="shift-list-toggle" id="slt-${cardId}">
           <span>シフト一覧（${res.workDays}件）</span><span class="slt-icon">▶</span>
@@ -1454,10 +1733,12 @@ function renderDetailCards() {
             const pay = shiftPay(s);
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
             const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${s.memo}</span>` : '';
-            return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto">
+            const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">🌙${fmtH(pay.dh)}</span>` : '';
+            return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto auto">
               <span class="sli-date" style="color:${th.tx}">${sm}/${sd}<span class="sli-dow" style="color:${dowColor}">${dow}</span></span>
               <span class="sli-time">${s.startTime}〜${s.endTime}${memoStr}</span>
-              <span class="sli-h">${h.toFixed(1)}h</span>
+              <span class="sli-h">${fmtH(h)}</span>
+              ${nightStr}
               ${adjStr}
               <span class="sli-pay" style="color:${th.ac}">${fmt(pay.total)}</span>
             </div>`;
@@ -1476,6 +1757,86 @@ function renderDetailCards() {
       subOpen.classList.toggle('hidden', nowCollapsed);
       localStorage.setItem(colKey, nowCollapsed ? '1' : '0');
     };
+
+    // 手入力補正イベント
+    card.querySelectorAll('.manual-inp').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('input', () => {
+        const { wp: wpId, y, m, cdidx, field } = inp.dataset;
+        setSalaryRecord(wpId, parseInt(y), parseInt(m), parseInt(cdidx), field, inp.value);
+        inp.classList.toggle('has-value', inp.value !== '');
+        // 自動計算の打ち消し線をトグル
+        const autoEl = inp.closest('.det-row-manual')?.querySelector('.val-auto');
+        if (autoEl) autoEl.classList.toggle('overridden', inp.value !== '');
+
+        // 最新レコードを取得
+        const sr2 = getSalaryRecord(wpId, parseInt(y), parseInt(m), parseInt(cdidx));
+
+        // HH:MM → 時間（小数）変換ヘルパー
+        function parseHours(v, fallback) {
+          if (v === '' || v === undefined) return fallback;
+          if (String(v).includes(':')) {
+            const [h, min] = String(v).split(':').map(Number);
+            return h + (min || 0) / 60;
+          }
+          return !isNaN(parseFloat(v)) ? parseFloat(v) : fallback;
+        }
+
+        function eff2(f, autoVal) {
+          const v = sr2[f];
+          return (v !== '' && !isNaN(parseFloat(String(v).replace(':','')))) ? parseFloat(v) : autoVal;
+        }
+
+        // 各入力ボックスの現在値を直接DOMから読んで総支給額を計算
+        function getInpVal(field) {
+          const el = card.querySelector(`[data-field="${field}"]`);
+          const v = el ? el.value : '';
+          return (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
+        }
+
+        // grossの再計算
+        let effGross2;
+        const grossManual = getInpVal('gross');
+        if (grossManual !== null) {
+          effGross2 = grossManual;
+        } else {
+          const effNp2 = getInpVal('np') ?? res.np;
+          const effDp2 = getInpVal('dp') ?? res.dpPremium;
+          let effAllowances2 = 0;
+          res.allowanceDetails.forEach(a => {
+            const av = getInpVal(`allowance_${a.name}`);
+            effAllowances2 += av !== null ? av : a.value;
+          });
+          effGross2 = effNp2 + effDp2 + effAllowances2;
+        }
+
+        // 控除合計もDOMから直接読む
+        let deductions2 = 0;
+        res.deductionDetails.forEach(d => {
+          const dv = getInpVal(`deduct_${d.name}`);
+          deductions2 += dv !== null ? dv : d.value;
+        });
+
+        const net = effGross2 - deductions2;
+        const hasAny = [...card.querySelectorAll('.manual-inp')].some(el => el.value !== '');
+
+        // 総支給額の表示を更新（gross手入力がない場合）
+        if (!sr2.gross || sr2.gross === '') {
+          const grossRowEl = card.querySelector(`#gross-row-${cardId}`);
+          const grossAutoSpan = grossRowEl?.querySelector('.val-auto');
+          if (grossAutoSpan) grossAutoSpan.textContent = fmt(effGross2);
+        }
+
+        const totalEl = card.querySelector(`#det-total-${cardId}`);
+        if (totalEl) {
+          totalEl.querySelector('.lbl').innerHTML = `💰 手取り${hasAny?'<span class="manual-sync-badge">実績</span>':''}`;
+          totalEl.querySelector('.val').textContent = fmt(hasAny ? net : res.netPay);
+        }
+        // ヘッダーの手取りも更新
+        const netInline = card.querySelector('.det-net-inline');
+        if (netInline) netInline.textContent = `手取り ${fmt(hasAny ? net : res.netPay)}`;
+      });
+    });
 
     const sltKey = `slt_${cardId}`;
     const sltOpen = localStorage.getItem(sltKey) === '1';
@@ -1547,9 +1908,15 @@ function bindSwatches(container,cb){
   });
 }
 
-function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', value:''}) {
+function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', value:'', isSocialInsurance: false}) {
   const div = document.createElement('div');
   div.className = 'dyn-item';
+  const siCheck = type === 'deduct'
+    ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding:4px 2px">
+        <input type="checkbox" class="dyn-si" id="dyn-si-${Math.random().toString(36).slice(2)}"${item.isSocialInsurance?' checked':''}>
+        <label style="font-size:.75rem;color:#be185d;font-weight:600;cursor:pointer">社会保険対象（年末調整で社保控除に算入）</label>
+       </div>`
+    : '';
   div.innerHTML = `
     <div class="dyn-row-top">
       <input type="text" class="fi dyn-name" style="flex:1.5; padding:6px 8px; font-size:0.82rem;" value="${item.name}" placeholder="項目名（例: ${type==='allow'?'交通費':'所得税'}）">
@@ -1566,6 +1933,7 @@ function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', v
       </select>
       <input type="number" class="fi dyn-value" style="flex:1.2; padding:6px 8px; font-size:0.82rem;" value="${item.value}" placeholder="金額 / ％">
     </div>
+    ${siCheck}
   `;
   
   const timingSel = div.querySelector('.dyn-timing');
@@ -1621,6 +1989,14 @@ function openWpModal(wpId){
   const body=`
     <div class="fg"><label>勤務先名</label><input class="fi" id="wm-name" value="${wp?.name||''}" placeholder="例: カフェ"></div>
     <div class="fg"><label>カラー</label>${swatchHTML(selColor)}</div>
+    
+    <div class="fg" style="margin-top:8px">
+      <label>契約形態</label>
+      <select class="fi contract-select" id="wm-contract">
+        <option value="salary"${(wp?.contractType||'salary')==='salary'?' selected':''}>給与所得（一般バイト）</option>
+        <option value="commission"${wp?.contractType==='commission'?' selected':''}>業務委託・報酬（キャバクラ等の夜職）</option>
+      </select>
+    </div>
     
     <div class="fsec" style="margin-top:12px">締め日・給料日設定</div>
     <div id="wm-cutoffs">${cutoffRowsHTML}</div>
@@ -1757,10 +2133,12 @@ function openWpModal(wpId){
         const t = el.querySelector('.dyn-timing').value;
         const m = el.querySelector('.dyn-mode').value;
         const v = parseFloat(el.querySelector('.dyn-value').value) || 0;
-        deductions.push({ name: n, timing: t, mode: m, value: v });
+        const si = el.querySelector('.dyn-si')?.checked || false;
+        deductions.push({ name: n, timing: t, mode: m, value: v, isSocialInsurance: si });
       });
 
       const obj={id:wpId||uid(),name,color,
+        contractType: document.getElementById('wm-contract').value,
         cutoffDay: cutoffDays[0]?.cutoffDay ?? 20,
         payDay: cutoffDays[0]?.payDay ?? 25,
         cutoffDays,
@@ -2093,6 +2471,16 @@ function applyTheme(t) {
     .tax-inp { border-color: ${border} !important; }
     .tax-inp:focus { border-color: ${t.ac} !important; }
     .tax-month-sec-title { color: ${mutedTx} !important; }
+    .total-hours-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
+    .total-hours-head { color: ${t.tx} !important; border-bottom-color: ${border} !important; }
+    .total-hours-grid { background: ${border} !important; }
+    .th-cell-lbl { color: ${t.tx} !important; }
+    .th-cell-val { color: ${t.tx} !important; }
+    .thb-header { background: ${subtleBg} !important; border-bottom-color: ${border} !important; }
+    .thb-row { border-bottom-color: ${subtleBg} !important; }
+    .thb-total { background: ${lightBg} !important; border-top-color: ${border} !important; }
+    .thb-name { color: ${t.tx} !important; }
+    .thb-pay { color: ${t.ac} !important; }
     /* 残存ハードコードピンクの全上書き */
     .tl-dc { color: ${t.tx} !important; }
     .tl-dow { color: ${mutedTx} !important; }
@@ -2116,7 +2504,21 @@ function applyTheme(t) {
     .tl-ba { background: ${lightBg} !important; }
     .tl-grid { background: ${t.g2}55 !important; }
     .tl-tick { color: ${mutedTx} !important; }
-    #sum-mode-hint { color: ${mutedTx} !important; }
+    .tax-expense-inp { border-color: #fde68a !important; }
+    .tax-expense-inp:focus { border-color: #d97706 !important; }
+    .manual-inp { border-color: ${border} !important; background: ${subtleBg} !important; }
+    .manual-inp:focus { border-color: ${t.ac} !important; background: white !important; }
+    .manual-inp.has-value { border-color: ${t.ac} !important; background: ${lightBg} !important; }
+    .det-row-manual { border-bottom-color: ${subtleBg} !important; }
+    .det-row-manual .lbl { color: ${t.tx} !important; }
+    .det-row-manual.gross-row { background: ${lightBg} !important; }
+    .det-total-manual { background: linear-gradient(135deg,${lightBg},${mixColor(t.g1,0.6)}) !important; border-top-color: ${border} !important; }
+    .det-total-manual .lbl { color: ${t.tx} !important; }
+    .det-total-manual .val { color: ${t.ac} !important; }
+    .manual-sync-badge { background: ${t.ac} !important; }
+    .contract-select { border-color: ${border} !important; }
+    .contract-select:focus { border-color: ${t.ac} !important; }
+    .tax-val-display { color: ${t.tx} !important; }
   `;
 }
 
@@ -2192,6 +2594,35 @@ function initThemeUI() {
       }
     };
   });
+}
+
+// ===== SALARY RECORDS (手入力補正) =====
+const SR_EMPTY = () => ({ workDays: '', nh: '', dh: '', np: '', dp: '', gross: '', si: '', tax: '' });
+
+function getSalaryRecordKey(wpId, year, month, cdIdx) {
+  if (!cdIdx) return `${wpId}_${year}_${String(month).padStart(2,'0')}`;
+  return `${wpId}_${year}_${String(month).padStart(2,'0')}_cd${cdIdx}`;
+}
+function getSalaryRecord(wpId, year, month, cdIdx) {
+  if (!D.salaryRecords) D.salaryRecords = {};
+  const key = getSalaryRecordKey(wpId, year, month, cdIdx);
+  return Object.assign(SR_EMPTY(), D.salaryRecords[key] || {});
+}
+function setSalaryRecord(wpId, year, month, cdIdx, field, value) {
+  if (!D.salaryRecords) D.salaryRecords = {};
+  const key = getSalaryRecordKey(wpId, year, month, cdIdx);
+  if (!D.salaryRecords[key]) D.salaryRecords[key] = SR_EMPTY();
+  D.salaryRecords[key][field] = value;
+  save();
+  syncSalaryRecordToTax(wpId, year, month, cdIdx);
+}
+function syncSalaryRecordToTax(wpId, year, month, cdIdx) {
+  save();
+  renderTaxSummary();
+  // 明細タブが表示中なら上部サマリーカードだけ更新（フォーカスを維持）
+  if (document.getElementById('pane-detail')?.classList.contains('active')) {
+    renderDetailSummary();
+  }
 }
 
 // ===== TAX TAB =====
@@ -2287,20 +2718,48 @@ function renderTaxSummary() {
   if (!el) return;
 
   let totalIncome = 0, totalWithholding = 0, totalSI = 0;
+  let salaryIncome = 0, commissionIncome = 0, totalExpenses = 0;
+
   D.workplaces.forEach(wp => {
-    getTaxPeriods(wp).forEach(({ m, cdIdx }) => {
-      const rec = getTaxRecord(wp.id, taxYear, m, cdIdx);
-      totalIncome += parseFloat(rec.income) || 0;
-      totalWithholding += parseFloat(rec.withholding) || 0;
-      totalSI += parseFloat(rec.si) || 0;
+    const isCommission = wp.contractType === 'commission';
+    getTaxPeriods(wp).forEach(({ m, cdIdx, start, end }) => {
+      const sr = getSalaryRecord(wp.id, taxYear, m, cdIdx);
+      const autoRes = calcPeriodSummary(wp, start, end);
+
+      // 総支給：手入力gross > 自動計算gross
+      const inc = (sr.gross !== '' && !isNaN(parseFloat(sr.gross)))
+        ? parseFloat(sr.gross) : autoRes.gross;
+      totalIncome += inc || 0;
+      if (isCommission) commissionIncome += inc || 0;
+      else salaryIncome += inc || 0;
+
+      // 各控除をisSocialInsuranceフラグで社保控除と源泉徴収に分類
+      if (wp.deductions?.length) {
+        wp.deductions.forEach(d => {
+          const field = `deduct_${d.name}`;
+          const manualVal = sr[field];
+          const hasManual = manualVal !== '' && !isNaN(parseFloat(manualVal));
+          const autoDetail = autoRes.deductionDetails.find(x => x.name === d.name);
+          const autoAmt = autoDetail ? autoDetail.value : 0;
+          const amt = hasManual ? parseFloat(manualVal) : autoAmt;
+          if (d.isSocialInsurance) totalSI += amt;
+          else totalWithholding += amt;
+        });
+      }
     });
+    if (isCommission) {
+      totalExpenses += parseFloat(wp.annualExpenses || 0);
+    }
   });
 
-  const employmentDeduction = calcIncomeTax(totalIncome);
+  const salaryDeduction = calcIncomeTax(salaryIncome);
+  const employmentDeduction = salaryDeduction; // 給与所得控除は給与所得部分のみ
   const basicDeduction = totalIncome > 0 ? 480000 : 0;
-  const taxableIncome = Math.max(0, totalIncome - employmentDeduction - basicDeduction - totalSI);
+  const taxableIncome = Math.max(0, totalIncome - employmentDeduction - totalExpenses - basicDeduction - totalSI);
   const properTax = calcTaxAmount(taxableIncome);
   const diff = properTax - totalWithholding;
+
+  const hasCommission = D.workplaces.some(w => w.contractType === 'commission');
 
   el.innerHTML = `
     <div class="tax-summary-cards">
@@ -2318,7 +2777,7 @@ function renderTaxSummary() {
       </div>
       <div class="tax-sum-card">
         <div class="tax-sum-lbl">${diff >= 0 ? '追加納税の可能性' : '還付の可能性'}</div>
-        <div class="tax-sum-val ${diff > 0 ? 'warn' : diff < 0 ? 'ok' : ''}">${totalIncome > 0 ? (diff >= 0 ? '+' : '') + fmt(diff) : '―'}</div>
+        <div class="tax-sum-val ${diff > 0 ? 'warn' : diff < 0 ? 'ok' : ''}">${totalIncome > 0 ? (diff > 0 ? '+' : diff < 0 ? '+' : '') + fmt(Math.abs(diff)) + (diff < 0 ? '（還付）' : diff > 0 ? '（追納）' : '') : '―'}</div>
       </div>
     </div>
     ${totalIncome > 0 ? `
@@ -2335,13 +2794,16 @@ function renderTaxSummary() {
       </div>
       <div class="tax-calc-body" id="tax-calc-body">
         <div class="tax-calc-row"><span class="lbl">年間総収入</span><span class="val">${fmt(totalIncome)}</span></div>
-        <div class="tax-calc-row deduct"><span class="lbl">給与所得控除</span><span class="val">－${fmt(employmentDeduction)}</span></div>
+        ${salaryIncome > 0 ? `<div class="tax-calc-row"><span class="lbl" style="padding-left:8px;font-size:.75rem">うち給与所得</span><span class="val" style="font-size:.75rem">${fmt(salaryIncome)}</span></div>` : ''}
+        ${commissionIncome > 0 ? `<div class="tax-calc-row"><span class="lbl" style="padding-left:8px;font-size:.75rem">うち業務委託報酬</span><span class="val" style="font-size:.75rem">${fmt(commissionIncome)}</span></div>` : ''}
+        ${salaryIncome > 0 ? `<div class="tax-calc-row deduct"><span class="lbl">給与所得控除（給与部分のみ）</span><span class="val">－${fmt(employmentDeduction)}</span></div>` : ''}
+        ${totalExpenses > 0 ? `<div class="tax-calc-row deduct expense"><span class="lbl">必要経費（業務委託）</span><span class="val">－${fmt(totalExpenses)}</span></div>` : ''}
         <div class="tax-calc-row deduct"><span class="lbl">基礎控除</span><span class="val">－${fmt(basicDeduction)}</span></div>
         ${totalSI > 0 ? `<div class="tax-calc-row deduct"><span class="lbl">社会保険料控除</span><span class="val">－${fmt(totalSI)}</span></div>` : ''}
         <div class="tax-calc-row total"><span class="lbl">課税所得</span><span class="val">${fmt(taxableIncome)}</span></div>
         <div class="tax-calc-row total"><span class="lbl">本来の所得税（推定）</span><span class="val">${fmt(properTax)}</span></div>
         <div class="tax-calc-row"><span class="lbl">源泉徴収済み</span><span class="val">${fmt(totalWithholding)}</span></div>
-        <div class="tax-calc-row total"><span class="lbl">${diff >= 0 ? '不足額（追納）' : '超過額（還付）'}</span><span class="val" style="font-weight:800;color:${diff > 0 ? '#e11d48' : '#16a34a'}">${diff >= 0 ? '+' : ''}${fmt(diff)}</span></div>
+        <div class="tax-calc-row total"><span class="lbl">${diff >= 0 ? '不足額（追納）' : '還付見込み額'}</span><span class="val" style="font-weight:800;color:${diff > 0 ? '#e11d48' : '#16a34a'}">${diff > 0 ? '+' : ''}${fmt(Math.abs(diff))}</span></div>
       </div>
     </div>` : `<div style="padding:16px;text-align:center;font-size:.83rem;color:${loadTheme().ac};">各締め日期間の給与明細を入力すると計算されます</div>`}
   `;
@@ -2420,10 +2882,12 @@ function renderTax() {
   Object.keys(byEndMonth).sort((a,b)=>+a-+b).forEach(endM => {
     const periods = byEndMonth[endM];
 
-    // カードヘッダー用の月合計
     let monthTotal = 0;
-    periods.forEach(({ wp, m, cdIdx }) => {
-      monthTotal += parseFloat(getTaxRecord(wp.id, taxYear, m, cdIdx).income) || 0;
+    periods.forEach(({ wp, m, cdIdx, start, end }) => {
+      const sr = getSalaryRecord(wp.id, taxYear, m, cdIdx);
+      const autoRes = calcPeriodSummary(wp, start, end);
+      const v = sr.gross;
+      monthTotal += (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : autoRes.gross;
     });
 
     const card = document.createElement('div');
@@ -2440,35 +2904,51 @@ function renderTax() {
     body.className = 'tax-month-body' + (isOpen ? '' : ' hidden');
 
     periods.forEach(({ wp, m, cdIdx, cd, start, end }) => {
-      const rec = getTaxRecord(wp.id, taxYear, m, cdIdx);
-      const showSI = hasSI(wp.id) || parseFloat(rec.si) > 0;
       const cdList = getWpCutoffs(wp);
       const periodLabel = cdList.length > 1
         ? `${wp.name}（締め${cdIdx + 1}：${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`
         : `${wp.name}（${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`;
 
+      const sr = getSalaryRecord(wp.id, taxYear, m, cdIdx);
+      const autoRes = calcPeriodSummary(wp, start, end);
+
+      const income = (sr.gross !== '' && !isNaN(parseFloat(sr.gross)))
+        ? parseFloat(sr.gross) : autoRes.gross;
+
+      // 控除をisSocialInsuranceで分類して合計
+      let siTotal = 0, withholdingTotal = 0;
+      if (wp.deductions?.length) {
+        wp.deductions.forEach(d => {
+          const field = `deduct_${d.name}`;
+          const manualVal = sr[field];
+          const hasManual = manualVal !== '' && !isNaN(parseFloat(manualVal));
+          const autoDetail = autoRes.deductionDetails.find(x => x.name === d.name);
+          const amt = hasManual ? parseFloat(manualVal) : (autoDetail ? autoDetail.value : 0);
+          if (d.isSocialInsurance) siTotal += amt;
+          else withholdingTotal += amt;
+        });
+      }
+
+      const isCommission = wp.contractType === 'commission';
       const row = document.createElement('div');
       row.className = 'tax-wp-row';
       row.innerHTML = `
         <div class="tax-wp-name">
           <span style="width:10px;height:10px;border-radius:50%;background:${wp.color||'#ec4899'};display:inline-block;flex-shrink:0"></span>
-          ${periodLabel}
+          ${periodLabel}${isCommission ? '<span class="commission-badge">業務委託</span>' : ''}
         </div>
-        <div class="tax-inp-grid ${showSI ? '' : 'tax-no-si'}">
+        <div class="tax-val-grid${siTotal > 0 ? '' : ' no-si'}">
           <div class="tax-inp-wrap">
-            <span class="tax-inp-lbl">額面給与（円）</span>
-            <input type="number" class="tax-inp" placeholder="0" value="${rec.income}"
-              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="income">
+            <span class="tax-inp-lbl">額面給与</span>
+            <div class="tax-val-display${income === 0 ? ' empty' : ''}">${income > 0 ? fmt(income) : '―'}</div>
           </div>
           <div class="tax-inp-wrap">
-            <span class="tax-inp-lbl">源泉徴収額（円）</span>
-            <input type="number" class="tax-inp" placeholder="0" value="${rec.withholding}"
-              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="withholding">
+            <span class="tax-inp-lbl">源泉徴収（非社保控除計）</span>
+            <div class="tax-val-display${withholdingTotal === 0 ? ' empty' : ''}">${withholdingTotal > 0 ? fmt(withholdingTotal) : '―'}</div>
           </div>
-          ${showSI ? `<div class="tax-inp-wrap">
-            <span class="tax-inp-lbl">社会保険料（円）</span>
-            <input type="number" class="tax-inp si" placeholder="0" value="${rec.si}"
-              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="si">
+          ${siTotal > 0 ? `<div class="tax-inp-wrap">
+            <span class="tax-inp-lbl">社会保険料計</span>
+            <div class="tax-val-display">${fmt(siTotal)}</div>
           </div>` : ''}
         </div>`;
       body.appendChild(row);
@@ -2484,13 +2964,58 @@ function renderTax() {
 
   el.appendChild(sec);
 
-  // 入力イベント
-  el.querySelectorAll('.tax-inp').forEach(inp => {
-    inp.oninput = () => {
-      const { wp, m, cdidx, field } = inp.dataset;
-      setTaxRecord(wp, taxYear, parseInt(m), parseInt(cdidx), field, inp.value);
-    };
-  });
+  // 業務委託職場の年間経費入力
+  const commissionWps = D.workplaces.filter(w => w.contractType === 'commission');
+  if (commissionWps.length > 0) {
+    const expSec = document.createElement('div');
+    expSec.className = 'tax-month-sec';
+    const expTitle = document.createElement('div');
+    expTitle.className = 'tax-month-sec-title';
+    expTitle.textContent = '業務委託：年間必要経費入力';
+    expSec.appendChild(expTitle);
+
+    const expCard = document.createElement('div');
+    expCard.className = 'tax-month-card';
+    expCard.style.marginBottom = '8px';
+    const expHead = document.createElement('div');
+    expHead.className = 'tax-month-head';
+    expHead.innerHTML = `<span class="tax-month-lbl">📋 必要経費（確定申告で控除）</span>`;
+    expCard.appendChild(expHead);
+
+    const expBody = document.createElement('div');
+    expBody.className = 'tax-month-body';
+    expBody.style.padding = '4px 0';
+
+    const expNote = document.createElement('div');
+    expNote.style.cssText = 'padding:6px 14px;font-size:.72rem;color:#854d0e;background:#fffbeb;border-bottom:1px solid #fde68a;';
+    expNote.textContent = '衣装代・交通費・通信費など、業務に必要な経費を入力してください。給与所得控除の代わりに課税所得から差し引かれます。';
+    expBody.appendChild(expNote);
+
+    commissionWps.forEach(wp => {
+      const row = document.createElement('div');
+      row.className = 'tax-expense-row';
+      row.innerHTML = `
+        <label><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${wp.color||'#ec4899'};margin-right:5px;vertical-align:middle;"></span>${wp.name} の年間経費（円）</label>
+        <input type="number" class="tax-expense-inp" placeholder="0" value="${wp.annualExpenses||''}" data-wpid="${wp.id}">`;
+      expBody.appendChild(row);
+    });
+
+    expCard.appendChild(expBody);
+    expSec.appendChild(expCard);
+
+    // イベント
+    expSec.querySelectorAll('.tax-expense-inp').forEach(inp => {
+      inp.oninput = () => {
+        const wpObj = D.workplaces.find(w => w.id === inp.dataset.wpid);
+        if (wpObj) {
+          wpObj.annualExpenses = parseFloat(inp.value) || 0;
+          save();
+          renderTaxSummary();
+        }
+      };
+    });
+    el.appendChild(expSec);
+  }
 }
 document.getElementById('btn-export').onclick = () => {
   const now = new Date();
@@ -2514,14 +3039,18 @@ document.getElementById('btn-import').onchange = e => {
       if (!parsed.workplaces || !parsed.shifts) throw new Error('形式が違います');
       D = parsed;
       if (!D.taxRecords) D.taxRecords = {};
+      if (!D.salaryRecords) D.salaryRecords = {};
       // cutoffDays の互換処理
       D.workplaces.forEach(wp => {
         if (!wp.cutoffDays) {
           wp.cutoffDays = [{ cutoffDay: wp.cutoffDay ?? 0, payDay: wp.payDay ?? 25 }];
         }
+        if (!wp.contractType) wp.contractType = 'salary';
       });
       save();
-      renderCal(); renderSummary();
+      renderCal(); renderSummary(); renderSettings();
+      if (document.getElementById('pane-detail')?.classList.contains('active')) renderDetail();
+      if (document.getElementById('pane-tax')?.classList.contains('active')) renderTax();
       msg.className='restore-msg ok'; msg.textContent='✓ 読み込みました！';
     } catch(err) {
       msg.className='restore-msg err'; msg.textContent='✕ 読み込みに失敗しました: ' + err.message;
@@ -2572,10 +3101,31 @@ document.getElementById('btn-share').onclick = () => {
 
       if (!periodShifts.length) return;
 
+      const sr = getSalaryRecord(wp.id, S.y, S.m, cdIdx);
+      function srV(field, autoVal) {
+        const v = sr[field];
+        return (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : autoVal;
+      }
+      // 実効総支給額
+      let shareGross;
+      if (sr.gross !== '' && !isNaN(parseFloat(sr.gross))) {
+        shareGross = parseFloat(sr.gross);
+      } else {
+        const sNp = srV('np', res.np);
+        const sDp = srV('dp', res.dpPremium);
+        let sAllow = 0;
+        res.allowanceDetails.forEach(a => { sAllow += srV(`allowance_${a.name}`, a.value); });
+        shareGross = sNp + sDp + sAllow;
+      }
+      let shareDeduct = 0;
+      res.deductionDetails.forEach(d => { shareDeduct += srV(`deduct_${d.name}`, d.value); });
+      const shareNet = shareGross - shareDeduct;
+      const hasManual = Object.values(sr).some(v => v !== '' && !isNaN(parseFloat(v)));
+
       const [,ps,pd] = p.start.split('-').map(Number);
       const [,pe,ped] = p.end.split('-').map(Number);
       const cdLabel = cdList.length > 1 ? `（締め${cdIdx+1}）` : '';
-      lines.push(`【${wp.name}${cdLabel}】${ps}/${pd}〜${pe}/${ped}`);
+      lines.push(`【${wp.name}${cdLabel}】${ps}/${pd}〜${pe}/${ped}${hasManual ? ' ✏️実績' : ''}`);
 
       periodShifts.forEach(s => {
         const [,sm,sd] = s.date.split('-').map(Number);
@@ -2593,17 +3143,20 @@ document.getElementById('btn-share').onclick = () => {
       });
 
       if (res.allowanceDetails.length) {
-        res.allowanceDetails.forEach(a => lines.push(`  [手当] ${a.name}: +${fmt(a.value)}`));
+        res.allowanceDetails.forEach(a => {
+          const v = srV(`allowance_${a.name}`, a.value);
+          lines.push(`  [手当] ${a.name}: +${fmt(v)}`);
+        });
       }
       if (res.deductionDetails.length) {
-        res.deductionDetails.forEach(d => lines.push(`  [控除] ${d.name}: -${fmt(d.value)}`));
+        res.deductionDetails.forEach(d => {
+          const v = srV(`deduct_${d.name}`, d.value);
+          lines.push(`  [控除] ${d.name}: -${fmt(v)}`);
+        });
       }
-      if (res.totalAdjustment) {
-        lines.push(`  [調整合計]: ${res.totalAdjustment > 0 ? '+' : ''}${fmt(res.totalAdjustment)}`);
-      }
-      lines.push(`  総支給額: ${fmt(res.gross)}`);
-      lines.push(`  💰 手取り ${fmt(res.netPay)}`);
-      grandTotal += res.netPay;
+      lines.push(`  総支給額: ${fmt(shareGross)}`);
+      lines.push(`  💰 手取り ${fmt(shareNet)}`);
+      grandTotal += shareNet;
     });
   });
 
