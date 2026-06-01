@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>バイト給料計算</title>
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link class="favicon" rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -77,22 +77,22 @@
     .cal-dow div:nth-child(1) { color: #e11d48; }
     .cal-dow div:nth-child(7) { color: #db2777; }
     .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: #fce7f3; flex: 1; }
-    .cal-cell { background: white; min-height: 68px; padding: 4px 3px; cursor: pointer; transition: background .1s; min-width: 0; }
+    .cal-cell { background: white; min-height: 68px; padding: 4px 3px; cursor: pointer; transition: background .1s; min-width: 0; position: relative; }
     .cal-cell:active { background: #fdf2f8; }
     .cal-cell.other { background: #fff5f9; }
     .cal-cell.sel { background: #fdf2f8; outline: 2px solid #f9a8d4; outline-offset: -2px; }
     .cal-day { width: 22px; height: 22px; border-radius: 50%;
       font-size: .75rem; font-weight: 700; color: #3d1a2e;
-      display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+      display: flex; align-items: center; justify-content: center; margin-bottom: 2px; pointer-events: none; }
     .cal-cell.other .cal-day { color: #f0abcc; }
     .cal-cell.sun .cal-day { color: #e11d48; }
     .cal-cell.sat .cal-day { color: #db2777; }
     .cal-cell.tod .cal-day { background: #ec4899; color: white !important; }
-    .cal-badges { display: flex; flex-direction: column; gap: 2px; }
+    .cal-badges { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
     .cal-badge { font-size: .6rem; font-weight: 700; padding: 1px 3px; border-radius: 3px;
       color: white; line-height: 1.5; width: 100%; box-sizing: border-box;
       overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-      display: flex; align-items: center; gap: 2px; }
+      display: flex; align-items: center; gap: 2px; pointer-events: none; }
     .badge-t { font-weight: 700; flex-shrink: 0; }
     .badge-time { font-size: .52rem; opacity: .92; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
@@ -126,8 +126,10 @@
       overflow-y: auto; padding-bottom: 20px; }
     .bs-bar { width: 36px; height: 4px; background: #fce7f3; border-radius: 2px; margin: 12px auto 0; }
     .bs-head { padding: 10px 16px 10px; border-bottom: 1px solid #fce7f3; }
-    .bs-head-date { font-size: 1rem; font-weight: 700; color: #3d1a2e; }
-    .bs-head-hint { font-size: .74rem; color: #f9a8d4; margin-top: 2px; }
+    .bs-head-nav { display: flex; align-items: center; gap: 8px; }
+    .bs-nav-btn { width: 30px; height: 30px; font-size: 1.1rem; background: rgba(253,212,232,.5); flex-shrink: 0; }
+    .bs-head-date { flex: 1; text-align: center; font-size: 1rem; font-weight: 700; color: #3d1a2e; }
+    .bs-head-hint { font-size: .74rem; color: #f9a8d4; margin-top: 4px; text-align: center; }
     .bs-sec-lbl { font-size: .68rem; font-weight: 700; color: #f9a8d4;
       letter-spacing: .06em; padding: 10px 16px 4px; text-transform: uppercase; }
     .bs-reg-row { display: flex; align-items: center; gap: 10px;
@@ -176,15 +178,14 @@
     .chart-toggle-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
     .chart-toggle-icon { font-size: .75rem; color: #f9a8d4; }
     .chart-body.chart-collapsed { display: none; }
-    .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 16px; }
-    .donut-wrap canvas { width: 140px !important; height: 140px !important; flex-shrink: 0; }
-    .donut-legend { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-    .donut-legend-row { display: flex; align-items: center; gap: 8px; }
-    .donut-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; align-self: flex-start; margin-top: 3px; }
-.donut-legend-info { display: flex; flex-direction: column; gap: 2px; width: 100%; }
+    .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+    .donut-wrap canvas { width: 140px !important; height: 140px !important; flex-shrink: 0; flex-grow: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 10px; justify-content: center; width: 130px; flex-shrink: 0; }
+    .donut-legend-row { display: flex; align-items: flex-start; gap: 8px; width: 100%; }
+    .donut-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .donut-legend-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
     .donut-legend-name { font-size: .8rem; color: #3d1a2e; }
-    /* 金額のフォントは元のまま、赤線の幅（ブロック内）で右詰めにします */
-    .donut-legend-amt { font-size: .92rem; font-weight: 800; color: #ec4899; text-align: right; width: 100%; display: block; }
+    .donut-legend-amt { font-size: .92rem; font-weight: 800; color: #ec4899; display: block; text-align: right; }
     .det-card { background: white; border-radius: 14px; margin: 0 12px 10px;
       overflow: hidden; box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .det-card:first-of-type { margin-top: 0; }
@@ -218,7 +219,7 @@
     }
     .sli:last-child { border-bottom: none; }
     .sli-date { font-weight: 700; color: #3d1a2e; white-space: nowrap; }
-    .sli-dow { font-size: .72rem; color: #f9a8d4; }
+    .sli-dow { font-size: .72rem; color: #f9a8d4; margin-left: 1px; }
     .sli-time { color: #718096; }
     .sli-h { color: #718096; text-align: right; }
     .sli-pay { font-weight: 700; color: #ec4899; text-align: right; }
@@ -322,35 +323,35 @@
 
     /* ===== 手当・控除 独自レイアウト ===== */
     .dyn-item { display: flex; flex-direction: column; background: #fff5f9; border-radius: 12px; padding: 10px; margin-bottom: 8px; border: 1px solid #fce7f3; gap: 8px; }
-    .dyn-row-top { display: flex; align-items: center; gap: 6px; }
-    .dyn-row-bottom { display: flex; align-items: center; gap: 6px; }
+    .dyn-item .dyn-row-top { display: flex; align-items: center; gap: 6px; }
+    .dyn-item .dyn-row-bottom { display: flex; align-items: center; gap: 6px; }
     .btn-rdyn { background: none; border: none; cursor: pointer; color: #f9a8d4; font-size: .95rem; padding: 2px 6px; }
     .btn-rdyn:active { color: #e11d48; }
+    .cutoff-item { background: #fff5f9; border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; border: 1px solid #fce7f3; }
+    .cutoff-row-inner { display: flex; align-items: flex-end; gap: 8px; }
 
     /* ===== Day Detail Sheet ===== */
-    .dd-mask {
-      position: fixed; inset: 0; z-index: 40;
-      display: flex; align-items: flex-end;
-      pointer-events: none;
-    }
-    .dd-mask.hidden { display: none; }
-    .dd-mask.show { pointer-events: all; }
     .dd-sheet {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+      z-index: 40;
       background: white; border-radius: 22px 22px 0 0;
-      width: 100%; max-width: 480px; margin: 0 auto;
+      width: 100%; max-width: 480px;
       max-height: 60vh; display: flex; flex-direction: column;
       box-shadow: 0 -4px 24px rgba(236,72,153,.18);
-      transform: translateY(100%);
       transition: transform .3s cubic-bezier(.32,1,.4,1);
+      pointer-events: none;
     }
-    .dd-mask.show .dd-sheet { transform: translateY(0); }
+    .dd-sheet.show {
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
     .dd-handle {
       width: 36px; height: 4px; background: #fce7f3;
-      border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; cursor: grab;
+      border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; cursor: pointer;
     }
     .dd-head {
       padding: 10px 16px 10px; border-bottom: 1px solid #fce7f3; flex-shrink: 0;
-      font-size: 1rem; font-weight: 700; color: #3d1a2e;
+      font-size: 1rem; font-weight: 700; color: #3d1a2e; display: flex; justify-content: space-between; align-items: center;
     }
     .dd-list { overflow-y: auto; flex: 1; }
     .dd-item {
@@ -609,20 +610,22 @@
   </div>
 </div>
 
-<div class="dd-mask hidden" id="dd-mask">
-  <div class="dd-sheet" id="dd-sheet">
-    <div class="dd-handle"></div>
-    <div class="dd-head" id="dd-head"></div>
-    <div class="dd-list" id="dd-list"></div>
-    <div class="dd-foot"></div>
-  </div>
+<div class="dd-sheet" id="dd-sheet">
+  <div class="dd-handle" id="dd-handle"></div>
+  <div class="dd-head" id="dd-head"></div>
+  <div class="dd-list" id="dd-list"></div>
+  <div class="dd-foot"></div>
 </div>
 
 <div class="bs-mask hidden" id="bs-mask">
   <div class="bs-sheet">
     <div class="bs-bar"></div>
     <div class="bs-head">
-      <div class="bs-head-date" id="bs-date-lbl"></div>
+      <div class="bs-head-nav">
+        <button class="nav-btn bs-nav-btn" id="bs-prev-day">‹</button>
+        <div class="bs-head-date" id="bs-date-lbl"></div>
+        <button class="nav-btn bs-nav-btn" id="bs-next-day">›</button>
+      </div>
       <div class="bs-head-hint">ダブルタップで開いています ✦</div>
     </div>
     <div id="bs-registered"></div>
@@ -655,6 +658,7 @@ let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
 let calTabLastTap = 0;
 let charts = { pie: null, bar: null, daily: null };
+let currentBSDate = null;
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
@@ -683,6 +687,11 @@ function getWage(wp, dateS) {
   return e ? +e.wage : (+sorted[sorted.length-1]?.wage||0);
 }
 
+function roundMinutes(min, unit) {
+  if (!unit || unit <= 1) return min;
+  return Math.floor(min / unit) * unit;
+}
+
 function nightOverlapMin(ss,se,ns,ne) {
   let a=toMin(ss),b=toMin(se),c=toMin(ns),d=toMin(ne);
   if (b<=a) b+=1440;
@@ -700,15 +709,24 @@ function shiftPay(sh) {
   if (!wp) return {nh:0,dh:0,np:0,dp:0,gross:0,total:0,allowances:0,deductions:0};
   const wage=getWage(wp,sh.date);
   const end=toMin(sh.endTime), start=toMin(sh.startTime);
-  const durMin=(end<=start?end+1440-start:end-start)-(sh.breakMinutes||0);
-  let nightMin=0;
+  let totalWorkMin = (end <= start ? end + 1440 - start : end - start) - (sh.breakMinutes || 0);
+  if (totalWorkMin <= 0) return {nh:0,dh:0,np:0,dp:0,gross:0,total:0,allowances:0,deductions:0};
+
+  let nightMin = 0;
   if (wp.nightWage?.enabled && wp.nightWage.startTime && wp.nightWage.endTime) {
-    nightMin=Math.min(nightOverlapMin(sh.startTime,sh.endTime,wp.nightWage.startTime,wp.nightWage.endTime),durMin);
+    nightMin = Math.min(nightOverlapMin(sh.startTime, sh.endTime, wp.nightWage.startTime, wp.nightWage.endTime), totalWorkMin);
   }
-  const normalMin=Math.max(0,durMin-nightMin);
-  const np=(normalMin/60)*wage;
-  const dp=(nightMin/60)*(+wp.nightWage?.wage||0);
-  
+
+  let normalMin = Math.max(0, totalWorkMin - nightMin);
+
+  const rUnit = parseInt(wp.roundUnit) || 1;
+  if (rUnit > 1) {
+    normalMin = roundMinutes(normalMin, rUnit);
+    nightMin = roundMinutes(nightMin, rUnit);
+  }
+
+  const np = (normalMin / 60) * wage;
+  const dp = (nightMin / 60) * (+wp.nightWage?.wage || 0);
   const baseSal = np + dp;
 
   let dayAllowances = 0;
@@ -726,24 +744,26 @@ function shiftPay(sh) {
   }
 
   const gross = baseSal + dayAllowances;
-  return {nh:normalMin/60,dh:nightMin/60,np,dp,gross,total:gross-dayDeductions,allowances:dayAllowances,deductions:dayDeductions};
+  const adjustment = sh.adjustment || 0;
+  return {nh:normalMin/60,dh:nightMin/60,np,dp,gross,total:gross-dayDeductions+adjustment,allowances:dayAllowances,deductions:dayDeductions,adjustment};
 }
 
-function payPeriod(wp,refY,refM) {
-  const c=wp.cutoffDay||0;
-  if (c===0) return {start:ds(refY,refM,1),end:ds(refY,refM,daysInMonth(refY,refM))};
+function payPeriod(wp,refY,refM,cdEntry) {
+  const c=(cdEntry?.cutoffDay ?? wp.cutoffDay) ?? 0;
+  if (c===0) return {start:ds(refY,refM,1),end:ds(refY,refM,daysInMonth(refY,refM)),payDay:cdEntry?.payDay??wp.payDay??25};
   let py=refY, pm=refM-1;
   if (pm<1){pm=12;py--;}
-  return {start:ds(py,pm,c+1),end:ds(refY,refM,c)};
+  return {start:ds(py,pm,c+1),end:ds(refY,refM,c),payDay:cdEntry?.payDay??wp.payDay??25};
 }
 
 function calcPeriodSummary(wp, start, end) {
   const periodShifts = D.shifts.filter(s => s.workplaceId === wp.id && s.date >= start && s.date <= end);
-  let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0;
+  let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0, totalAdjustment = 0;
   
   periodShifts.forEach(s => {
     const x = shiftPay(s);
     workDays++; nh += x.nh; dh += x.dh; np += x.np; dp += x.dp;
+    totalAdjustment += (s.adjustment || 0);
   });
 
   const timeSalaryTotal = np + dp;
@@ -786,12 +806,12 @@ function calcPeriodSummary(wp, start, end) {
     });
   }
 
-  const netPay = Math.max(0, gross - totalDeductions);
+  const netPay = Math.max(0, gross - totalDeductions + totalAdjustment);
 
   return {
     workDays, nh, dh, np, dp, gross, netPay,
     allowances: totalAllowances, deductions: totalDeductions,
-    allowanceDetails, deductionDetails
+    allowanceDetails, deductionDetails, totalAdjustment
   };
 }
 
@@ -835,6 +855,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
+    if (btn.dataset.tab!=='calendar') closeDayDetail();
     if (btn.dataset.tab==='charts') renderDetailCharts();
     if (btn.dataset.tab==='detail') renderDetail();
     if (btn.dataset.tab==='settings') { renderSettings(); initThemeUI(); }
@@ -843,6 +864,17 @@ document.querySelectorAll('.tab').forEach(btn=>{
 });
 
 // ===== CALENDAR =====
+// セル全体を再描画せずに選択状態（.sel クラス）だけを付け替える
+function updateSelCell(dstr) {
+  document.querySelectorAll('#cal-grid .cal-cell').forEach(cell => {
+    if (cell.dataset.date === dstr) {
+      cell.classList.add('sel');
+    } else {
+      cell.classList.remove('sel');
+    }
+  });
+}
+
 function renderCal() {
   document.getElementById('month-title').textContent=`${S.y}年 ${S.m}月`;
   const grid=document.getElementById('cal-grid');
@@ -857,6 +889,7 @@ function renderCal() {
     const cell=document.createElement('div');
     cell.className='cal-cell'+(other?' other':'')+(dstr===S.sel?' sel':'')+(dstr===todS?' tod':'')
       +(dow===0?' sun':'')+(dow===6?' sat':'');
+    cell.dataset.date = dstr;
     const num=document.createElement('div'); num.className='cal-day'; num.textContent=cd;
     cell.appendChild(num);
     const dayShifts=D.shifts.filter(s=>s.date===dstr);
@@ -866,19 +899,38 @@ function renderCal() {
         const fh=t=>{const[h,m]=t.split(':').map(Number);return m===0?String(h):`${h}${String(m).padStart(2,'0')}`;}
         const b=document.createElement('div'); b.className='cal-badge';
         b.style.background=sh.color||'#ec4899';
-        const titleChar=(sh.title||'?')[0];
+        const titleChars = Array.from(sh.title || '？');
+        const titleChar = titleChars[0] || '?';
         b.innerHTML=`<span class="badge-t">${titleChar}</span><span class="badge-time">${fh(sh.startTime)}-${fh(sh.endTime)}</span>`;
         wrap.appendChild(b);
       });
       cell.appendChild(wrap);
     }
-    cell.onclick=()=>{
+    
+    // カレンダーマスのタップイベント
+    cell.onclick=(e)=>{
+      // マス内の文字やバッジをタップした際も親要素(cell)のイベントとして確実に発火させる
       const now=Date.now();
       const isDouble=lastTap.date===dstr&&now-lastTap.time<400;
       lastTap={date:dstr,time:now};
-      S.sel=dstr; renderCal(); renderSummary();
-      if (isDouble) { closeDayDetail(); openBS(dstr); }
-      else if (D.shifts.some(s=>s.date===dstr)) openDayDetail(dstr);
+      S.sel=dstr;
+      // renderCal() を呼ばず、.sel クラスの付け替えと下部サマリーの更新のみ行う
+      updateSelCell(dstr);
+      renderSummary();
+      
+      if (isDouble) { 
+        closeDayDetail(); 
+        openBS(dstr); 
+      } else {
+        const hasShifts = D.shifts.some(s=>s.date===dstr);
+        if (hasShifts) {
+          // シフトがある日：画面を閉じずに中身だけをサクサク書き換え
+          openDayDetail(dstr);
+        } else {
+          // シフトがない日：詳細画面を閉じる
+          closeDayDetail();
+        }
+      }
     };
     return cell;
   }
@@ -907,10 +959,13 @@ function renderSummary() {
 
   let toDate=0, forecast=0;
   D.workplaces.forEach(wp=>{
-    const p=payPeriod(wp,S.y,S.m);
-    const todEnd=todS<p.end?todS:p.end;
-    if (todS>=p.start) toDate+=periodNetPay(wp.id,p.start,todEnd);
-    forecast+=periodNetPay(wp.id,p.start,p.end);
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    cdList.forEach(cd => {
+      const p=payPeriod(wp,S.y,S.m,cd);
+      const todEnd=todS<p.end?todS:p.end;
+      if (todS>=p.start) toDate+=periodNetPay(wp.id,p.start,todEnd);
+      forecast+=periodNetPay(wp.id,p.start,p.end);
+    });
   });
   const [,mm,dd]=sel?sel.split('-').map(Number):[0,0,0];
   document.getElementById('sum-label').textContent=sel?`${mm}月${dd}日の目安給料`:'日付を選択';
@@ -921,15 +976,29 @@ function renderSummary() {
 
 // ===== BOTTOM SHEET =====
 function openBS(dstr) {
+  currentBSDate = dstr;
   const [y,m,d]=dstr.split('-').map(Number);
   document.getElementById('bs-date-lbl').textContent=`${y}年${m}月${d}日`;
   document.getElementById('bs-mask').classList.remove('hidden');
   renderBSContent(dstr);
 }
-function closeBS(){document.getElementById('bs-mask').classList.add('hidden');}
+function closeBS(){document.getElementById('bs-mask').classList.add('hidden');currentBSDate=null;}
 document.getElementById('btn-bs-close').onclick=closeBS;
 document.getElementById('add-shift-btn').onclick=()=>{ if(S.sel) openBS(S.sel); };
 document.getElementById('bs-mask').onclick=e=>{if(e.target===document.getElementById('bs-mask'))closeBS();};
+
+document.getElementById('bs-prev-day').onclick=()=>{
+  if(!currentBSDate) return;
+  const prev=addDay(currentBSDate,-1);
+  S.sel=prev; updateSelCell(prev); renderSummary();
+  openBS(prev);
+};
+document.getElementById('bs-next-day').onclick=()=>{
+  if(!currentBSDate) return;
+  const next=addDay(currentBSDate,1);
+  S.sel=next; updateSelCell(next); renderSummary();
+  openBS(next);
+};
 
 function renderBSContent(dstr) {
   const reg=document.getElementById('bs-registered'); reg.innerHTML='';
@@ -974,7 +1043,7 @@ function renderBSContent(dstr) {
   }
   const acts=document.createElement('div'); acts.className='bs-act';
   acts.innerHTML=`<button class="bs-act-btn" id="btn-manual">✏ 手動で入力</button>
-    <button class="bs-act-btn" id="btn-new-tmpl">＋ 新しいシフト</button>`;
+    <button class="bs-act-btn" id="btn-new-tmpl">＋ テンプレート追加</button>`;
   body.appendChild(acts);
   document.getElementById('btn-manual').onclick=()=>showManualForm(dstr,body);
   document.getElementById('btn-new-tmpl').onclick=()=>{closeBS();openTemplateModal(null);};
@@ -984,9 +1053,8 @@ function registerFromTemplate(dstr,t){
   D.shifts.push({id:uid(),date:dstr,workplaceId:t.workplaceId,
     title:t.title,color:t.color,startTime:t.startTime,endTime:t.endTime,breakMinutes:t.breakMinutes||0});
   save();
-  const next=addDay(dstr); S.sel=next;
   closeBS(); renderCal(); renderSummary();
-  setTimeout(()=>openBS(next),160);
+  setTimeout(()=>openBS(dstr),160);
 }
 
 function showManualForm(dstr,container){
@@ -1000,6 +1068,8 @@ function showManualForm(dstr,container){
     <div class="bf-row"><label>開始</label><input type="time" id="mf-start" value="09:00"></div>
     <div class="bf-row"><label>終了</label><input type="time" id="mf-end" value="17:00"></div>
     <div class="bf-row"><label>休憩</label><input type="number" id="mf-break" value="60" min="0" step="15"><span class="bf-unit">分</span></div>
+    <div class="bf-row"><label>調整額</label><input type="number" id="mf-adj" value="0" step="1" placeholder="±円（手当＋/控除－）"><span class="bf-unit">円</span></div>
+    <div class="bf-row"><label>メモ</label><input type="text" id="mf-memo" placeholder="任意メモ"></div>
     <button class="btn-bs-save" id="btn-mf-save">登録する ✦</button>`;
   container.insertBefore(form,container.querySelector('.bs-act'));
   document.getElementById('btn-mf-save').onclick=()=>{
@@ -1010,11 +1080,12 @@ function showManualForm(dstr,container){
       color:wp?.color||'#ec4899',
       startTime:document.getElementById('mf-start').value,
       endTime:document.getElementById('mf-end').value,
-      breakMinutes:parseInt(document.getElementById('mf-break').value)||0});
+      breakMinutes:parseInt(document.getElementById('mf-break').value)||0,
+      adjustment:parseFloat(document.getElementById('mf-adj').value)||0,
+      memo:document.getElementById('mf-memo').value||''});
     save();
-    const next=addDay(dstr); S.sel=next;
     closeBS(); renderCal(); renderSummary();
-    setTimeout(()=>openBS(next),160);
+    setTimeout(()=>openBS(dstr),160);
   };
 }
 
@@ -1028,7 +1099,6 @@ function renderDetailCharts() {
   const el=document.getElementById('det-charts'); el.innerHTML='';
   if (!D.workplaces.length) return;
 
-  // 【手取り基準へ修正】グラフ用のデータ集計（amountをnetPayに変更）
   const wpAmounts=D.workplaces.map(wp=>{
     const p=payPeriod(wp,S.y,S.m);
     return {name:wp.name,color:wp.color||'#ec4899',
@@ -1100,7 +1170,6 @@ function renderDetailCharts() {
     });
   }
 
-  // 【手取り基準へ修正】過去6ヶ月グラフの縦棒の集計を手取り額（periodNetPay）に統一
   const datasets=D.workplaces.map(wp=>({
     label:wp.name,
     data:months.map(({y,m})=>{
@@ -1127,8 +1196,12 @@ function renderDetailCharts() {
       const dstr=ds(S.y,S.m,i+1);
       const sh=list.find(s=>s.date===dstr);
       if (!sh) return 0;
+      
       const end=toMin(sh.endTime),start=toMin(sh.startTime);
-      return ((end<=start?end+1440-start:end-start)-(sh.breakMinutes||0))/60;
+      let tMin = (end<=start?end+1440-start:end-start)-(sh.breakMinutes||0);
+      const rUnit = parseInt(wp.roundUnit) || 1;
+      if (rUnit > 1) tMin = roundMinutes(tMin, rUnit);
+      return tMin / 60;
     });
     return {label:wp.name,data,backgroundColor:wp.color||'#ec4899',borderRadius:3};
   });
@@ -1200,16 +1273,18 @@ function renderDetailCards() {
     return;
   }
   D.workplaces.forEach(wp=>{
-    const p=payPeriod(wp,S.y,S.m);
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    cdList.forEach((cd, cdIdx) => {
+    const p = payPeriod(wp,S.y,S.m,cd);
     const res = calcPeriodSummary(wp, p.start, p.end);
     
     const periodShifts=D.shifts.filter(s=>s.workplaceId===wp.id&&s.date>=p.start&&s.date<=p.end);
     const [,ps,pd]=p.start.split('-').map(Number);
     const [,pe,ped]=p.end.split('-').map(Number);
-    const payD=wp.payDay===0?'月末':`${wp.payDay}日`;
+    const payD=p.payDay===0?'月末':`${p.payDay}日`;
     const payMLabel=p.end.slice(0,7)===`${S.y}-${String(S.m).padStart(2,'0')}`?`翌月${payD}`:`${S.m}月${payD}`;
-
-    const colKey = `wp_collapsed_${wp.id}`;
+    const cdSuffix = cdList.length > 1 ? `-cd${cdIdx}` : '';
+    const colKey = `wp_collapsed_${wp.id}${cdSuffix}`;
     const isCollapsed = localStorage.getItem(colKey) === '1';
 
     let dynamicAllowHTML = '';
@@ -1222,13 +1297,15 @@ function renderDetailCards() {
       dynamicDeductHTML += `<div class="det-row deduct"><span class="lbl">${d.name}</span><span class="val">-${fmt(d.value)}</span></div>`;
     });
 
+    const cardId = `${wp.id}${cdSuffix}`;
+    const nameLabel = cdList.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:#f9a8d4">（締め${cdIdx+1}）</span>` : wp.name;
     const card=document.createElement('div'); card.className='det-card';
     card.innerHTML=`
       <div class="det-card-head det-card-toggle">
         <span class="det-dot" style="background:${wp.color||'#ec4899'}"></span>
         <div class="det-head-main">
           <div class="det-head-top">
-            <span class="det-name">${wp.name}</span>
+            <span class="det-name">${nameLabel}</span>
             <span class="det-toggle-icon">${isCollapsed?'▶':'▼'}</span>
           </div>
           <div class="det-head-sub${isCollapsed?'':' hidden'}">
@@ -1240,29 +1317,36 @@ function renderDetailCards() {
       </div>
       <div class="det-card-body${isCollapsed?' hidden':''}">
         <div class="det-row"><span class="lbl">出勤日数</span><span class="val">${res.workDays}日</span></div>
-        <div class="det-row"><span class="lbl">通常時間</span><span class="val">${res.nh.toFixed(1)}h</span></div>
-        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜時間</span><span class="val">${res.dh.toFixed(1)}h</span></div>`:''}
+        <div class="det-row"><span class="lbl">通常時間（丸め後）</span><span class="val">${res.nh.toFixed(1)}h</span></div>
+        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜時間（丸め後）</span><span class="val">${res.dh.toFixed(1)}h</span></div>`:''}
         <div class="det-row"><span class="lbl">通常給料</span><span class="val">${fmt(res.np)}</span></div>
         ${res.dh>0?`<div class="det-row"><span class="lbl">深夜割増</span><span class="val">${fmt(res.dp)}</span></div>`:''}
         ${dynamicAllowHTML}
         <div class="det-row gross-row"><span class="lbl">総支給額</span><span class="val">${fmt(res.gross)}</span></div>
         ${dynamicDeductHTML}
+        ${res.totalAdjustment!==0?`<div class="det-row${res.totalAdjustment<0?' deduct':''}"><span class="lbl">調整額合計</span><span class="val">${res.totalAdjustment>0?'+':''}${fmt(Math.abs(res.totalAdjustment))}</span></div>`:''}
         <div class="det-total"><span class="lbl">💰 手取り</span><span class="val">${fmt(res.netPay)}</span></div>
         <div class="det-payday">給料日: ${payMLabel}</div>
-        <div class="shift-list-toggle" id="slt-${wp.id}">
+        <div class="shift-list-toggle" id="slt-${cardId}">
           <span>シフト一覧（${res.workDays}件）</span><span class="slt-icon">▶</span>
         </div>
-        <div class="shift-list-body hidden" id="slb-${wp.id}">
+        <div class="shift-list-body hidden" id="slb-${cardId}">
           ${periodShifts.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
             const [,sm,sd]=s.date.split('-').map(Number);
             const dow=['日','月','火','水','木','金','土'][new Date(s.date+'T00:00:00').getDay()];
             const end=toMin(s.endTime), start=toMin(s.startTime);
-            const h=((end<=start?end+1440-start:end-start)-(s.breakMinutes||0))/60;
-            const pay=shiftPay(s);
-            return `<div class="sli">
+            let tMin = (end<=start?end+1440-start:end-start)-(s.breakMinutes||0);
+            const rUnit = parseInt(wp.roundUnit) || 1;
+            if (rUnit > 1) tMin = roundMinutes(tMin, rUnit);
+            const h = tMin / 60;
+            const pay = shiftPay(s);
+            const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
+            const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${s.memo}</span>` : '';
+            return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto">
               <span class="sli-date">${sm}/${sd}<span class="sli-dow">${dow}</span></span>
-              <span class="sli-time">${s.startTime}〜${s.endTime}</span>
+              <span class="sli-time">${s.startTime}〜${s.endTime}${memoStr}</span>
               <span class="sli-h">${h.toFixed(1)}h</span>
+              ${adjStr}
               <span class="sli-pay">${fmt(pay.total)}</span>
             </div>`;
           }).join('')}
@@ -1281,10 +1365,10 @@ function renderDetailCards() {
       localStorage.setItem(colKey, nowCollapsed ? '1' : '0');
     };
 
-    const sltKey = `slt_${wp.id}`;
+    const sltKey = `slt_${cardId}`;
     const sltOpen = localStorage.getItem(sltKey) === '1';
-    const sltBtn = card.querySelector(`#slt-${wp.id}`);
-    const slBody = card.querySelector(`#slb-${wp.id}`);
+    const sltBtn = card.querySelector(`#slt-${cardId}`);
+    const slBody = card.querySelector(`#slb-${cardId}`);
     if (sltOpen) { slBody.classList.remove('hidden'); sltBtn.querySelector('.slt-icon').textContent='▼'; }
     sltBtn.onclick = e => {
       e.stopPropagation();
@@ -1294,7 +1378,8 @@ function renderDetailCards() {
     };
 
     el.appendChild(card);
-  });
+  }); // cdList forEach
+  }); // workplaces forEach
 }
 
 // ===== SETTINGS TAB =====
@@ -1303,10 +1388,12 @@ function renderSettings() {
   if (!D.workplaces.length) wl.innerHTML='<div class="set-empty">まだ登録がありません</div>';
   D.workplaces.forEach(wp=>{
     const item=document.createElement('div'); item.className='set-item';
-    const c=wp.cutoffDay===0?'月末締め':`${wp.cutoffDay}日締め`;
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    const cLabel = cdList.map(cd => cd.cutoffDay===0?'月末締め':`${cd.cutoffDay}日締め`).join(' / ');
+    const rLabel = !wp.roundUnit || wp.roundUnit == 1 ? '丸めなし' : `${wp.roundUnit}分単位`;
     item.innerHTML=`<span class="set-dot" style="background:${wp.color||'#ec4899'}"></span>
       <div class="set-info"><div class="set-name">${wp.name}</div>
-      <div class="set-sub">${c} / 給料日${wp.payDay===0?'月末':`${wp.payDay}日`}</div></div>
+      <div class="set-sub">${cLabel} / ${rLabel}</div></div>
       <span class="set-arr">›</span>`;
     item.onclick=()=>openWpModal(wp.id);
     wl.appendChild(item);
@@ -1392,6 +1479,7 @@ function openWpModal(wpId){
   const selColor=wp?.color||COLORS[0];
   const wages=wp?.wageHistory?.length?wp.wageHistory:[{startDate:todayStr(),wage:''}];
   const nw=wp?.nightWage||{enabled:false,startTime:'22:00',endTime:'05:00',wage:''};
+  const curRoundUnit = wp?.roundUnit || '1';
   
   const wageRowsHTML=wages.map((w,i)=>`
     <div class="wh-item" data-wi="${i}">
@@ -1401,16 +1489,35 @@ function openWpModal(wpId){
       ${wages.length>1?`<button class="btn-rwage" data-i="${i}">✕</button>`:''}
     </div>`).join('');
     
-  const cutoffOpts=Array.from({length:28},(_,i)=>`<option value="${i+1}"${(wp?.cutoffDay||20)===i+1?' selected':''} >${i+1}日</option>`).join('')+`<option value="0"${wp?.cutoffDay===0?' selected':''}>月末</option>`;
-  const payOpts=Array.from({length:28},(_,i)=>`<option value="${i+1}"${(wp?.payDay||25)===i+1?' selected':''} >${i+1}日</option>`).join('')+`<option value="0"${wp?.payDay===0?' selected':''}>月末</option>`;
+  // 複数締め日設定
+  const existingCutoffs = wp?.cutoffDays?.length ? wp.cutoffDays : [{ cutoffDay: wp?.cutoffDay ?? 20, payDay: wp?.payDay ?? 25 }];
+  function makeCutoffRowHTML(cd, showDel) {
+    const co = Array.from({length:28},(_,j)=>`<option value="${j+1}"${(cd.cutoffDay||20)===j+1?' selected':''}>${j+1}日</option>`).join('')+`<option value="0"${cd.cutoffDay===0?' selected':''}>月末</option>`;
+    const po = Array.from({length:28},(_,j)=>`<option value="${j+1}"${(cd.payDay||25)===j+1?' selected':''}>${j+1}日</option>`).join('')+`<option value="0"${cd.payDay===0?' selected':''}>月末</option>`;
+    return `<div class="cutoff-item"><div class="cutoff-row-inner"><div class="fg" style="margin:0;flex:1"><label style="font-size:.7rem">締め日</label><select class="fi cd-cut" style="padding:6px 8px">${co}</select></div><div class="fg" style="margin:0;flex:1"><label style="font-size:.7rem">給料日</label><select class="fi cd-pay" style="padding:6px 8px">${po}</select></div>${showDel?`<button class="btn-rdyn btn-rco" style="margin-top:16px">✕</button>`:''}</div></div>`;
+  }
+  const cutoffRowsHTML = existingCutoffs.map((cd,i) => makeCutoffRowHTML(cd, existingCutoffs.length > 1)).join('');
+
+  const roundUnitOpts = [
+    {v:'1', l:'1分単位（切り捨てなし）'},
+    {v:'5', l:'5分単位切り捨て'},
+    {v:'10', l:'10分単位切り捨て'},
+    {v:'15', l:'15分単位切り捨て'},
+    {v:'30', l:'30分単位切り捨て'}
+  ].map(o => `<option value="${o.v}" ${curRoundUnit===o.v?'selected':''}>${o.l}</option>`).join('');
 
   const body=`
     <div class="fg"><label>勤務先名</label><input class="fi" id="wm-name" value="${wp?.name||''}" placeholder="例: カフェ"></div>
     <div class="fg"><label>カラー</label>${swatchHTML(selColor)}</div>
-    <div class="f2">
-      <div class="fg"><label>締め日</label><select class="fi" id="wm-cut">${cutoffOpts}</select></div>
-      <div class="fg"><label>給料日</label><select class="fi" id="wm-pay">${payOpts}</select></div>
+    
+    <div class="fsec" style="margin-top:12px">締め日・給料日設定</div>
+    <div id="wm-cutoffs">${cutoffRowsHTML}</div>
+    <button class="btn-awage" id="btn-add-cutoff" style="margin-bottom:10px">＋ 締め日を追加</button>
+    
+    <div class="fg" style="margin-top:10px;"><label>労働時間の単位（分単位）</label>
+      <select class="fi" id="wm-round">${roundUnitOpts}</select>
     </div>
+
     <div class="fsec">時給設定（昇給履歴）</div>
     <div id="wm-wages">${wageRowsHTML}</div>
     <button class="btn-awage" id="btn-awage">＋ 昇給を追加</button>
@@ -1463,6 +1570,26 @@ function openWpModal(wpId){
     document.getElementById('btn-add-allow').onclick = () => allowsContainer.appendChild(createDynamicItemRow('allow'));
     document.getElementById('btn-add-deduct').onclick = () => deductsContainer.appendChild(createDynamicItemRow('deduct'));
 
+    // 複数締め日 - 削除・追加
+    const cutoffsContainer = document.getElementById('wm-cutoffs');
+    function updateCutoffDelBtns() {
+      const items = cutoffsContainer.querySelectorAll('.cutoff-item');
+      items.forEach(item => {
+        const btn = item.querySelector('.btn-rco');
+        if (btn) btn.style.display = items.length > 1 ? '' : 'none';
+      });
+    }
+    cutoffsContainer.querySelectorAll('.btn-rco').forEach(b => b.onclick = () => { b.closest('.cutoff-item').remove(); updateCutoffDelBtns(); });
+    document.getElementById('btn-add-cutoff').onclick = () => {
+      const div = document.createElement('div');
+      div.innerHTML = makeCutoffRowHTML({cutoffDay:20, payDay:25}, true);
+      const newItem = div.firstElementChild;
+      newItem.querySelector('.btn-rco').onclick = () => { newItem.remove(); updateCutoffDelBtns(); };
+      cutoffsContainer.appendChild(newItem);
+      updateCutoffDelBtns();
+    };
+    updateCutoffDelBtns();
+
     document.getElementById('wm-ne').onchange=e=>{document.getElementById('wm-nf').style.display=e.target.checked?'':'none';};
     document.getElementById('btn-awage').onclick=()=>{
       const wagesEl=document.getElementById('wm-wages');
@@ -1495,9 +1622,17 @@ function openWpModal(wpId){
       });
       wh.sort((a,b)=>a.startDate.localeCompare(b.startDate));
 
+      // 複数締め日を収集
+      const cutoffDays = [];
+      cutoffsContainer.querySelectorAll('.cutoff-item').forEach(el => {
+        const c = parseInt(el.querySelector('.cd-cut').value);
+        const p = parseInt(el.querySelector('.cd-pay').value);
+        cutoffDays.push({ cutoffDay: c, payDay: p });
+      });
+
       const allowances = [];
       allowsContainer.querySelectorAll('.dyn-item').forEach(el => {
-        const n = el.querySelector('.dyn-name').value.trim() || '手手当';
+        const n = el.querySelector('.dyn-name').value.trim() || '手当';
         const t = el.querySelector('.dyn-timing').value;
         const m = el.querySelector('.dyn-mode').value;
         const v = parseFloat(el.querySelector('.dyn-value').value) || 0;
@@ -1514,8 +1649,10 @@ function openWpModal(wpId){
       });
 
       const obj={id:wpId||uid(),name,color,
-        cutoffDay:parseInt(document.getElementById('wm-cut').value),
-        payDay:parseInt(document.getElementById('wm-pay').value),
+        cutoffDay: cutoffDays[0]?.cutoffDay ?? 20,
+        payDay: cutoffDays[0]?.payDay ?? 25,
+        cutoffDays,
+        roundUnit:document.getElementById('wm-round').value,
         wageHistory:wh,
         nightWage:{enabled:document.getElementById('wm-ne').checked,
           startTime:document.getElementById('wm-ns').value,
@@ -1575,10 +1712,12 @@ function openTemplateModal(tmplId){
 }
 
 // ===== DAY DETAIL SHEET =====
-const ddMask = document.getElementById('dd-mask');
 const ddSheet = document.getElementById('dd-sheet');
 
-function openDayDetail(dstr) {
+// 閉じアニメーション中のタイマーID。openDayDetail 呼び出し時にキャンセルする
+let ddCloseTimer = null;
+
+function fillDayDetail(dstr) {
   const [y, m, d] = dstr.split('-').map(Number);
   const dow = ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()];
   const dayTotal = D.shifts.filter(s=>s.date===dstr).reduce((sum,s)=>sum+shiftPay(s).total,0);
@@ -1599,7 +1738,8 @@ function openDayDetail(dstr) {
       <div class="dd-bar" style="background:${sh.color||'#ec4899'}"></div>
       <div class="dd-info">
         <div class="dd-title">${sh.title||'シフト'}</div>
-        <div class="dd-wp">[${wp ? wp.name : '未設定'}]</div>
+        <div class="dd-wp">[${wp ? wp.name : '未設定'}]${sh.memo ? ` <span style="color:#aaa">${sh.memo}</span>` : ''}</div>
+        ${sh.adjustment ? `<div style="font-size:.7rem;color:${sh.adjustment>0?'#16a34a':'#e11d48'};margin-top:2px;">${sh.adjustment>0?'▲':'▼'} 調整 ${sh.adjustment>0?'+':''}${Math.round(sh.adjustment).toLocaleString('ja-JP')}円</div>` : ''}
       </div>
       <div class="dd-pay">${fmt(pay.total)}</div>
       <button class="dd-pencil" title="編集">✏️</button>`;
@@ -1615,6 +1755,8 @@ function openDayDetail(dstr) {
       <div class="dd-ef-row"><label>開始</label><input type="time" class="dd-ef-in" id="ef-start-${sh.id}" value="${sh.startTime}"></div>
       <div class="dd-ef-row"><label>終了</label><input type="time" class="dd-ef-in" id="ef-end-${sh.id}" value="${sh.endTime}"></div>
       <div class="dd-ef-row"><label>休憩</label><input type="number" class="dd-ef-in" id="ef-break-${sh.id}" value="${sh.breakMinutes||0}" min="0" step="15"><span class="dd-ef-unit">分</span></div>
+      <div class="dd-ef-row"><label>調整額</label><input type="number" class="dd-ef-in" id="ef-adj-${sh.id}" value="${sh.adjustment||0}" step="1"><span class="dd-ef-unit">円</span></div>
+      <div class="dd-ef-row"><label>メモ</label><input type="text" class="dd-ef-in" id="ef-memo-${sh.id}" value="${sh.memo||''}" placeholder="任意メモ"></div>
       <div class="dd-ef-btns">
         <button class="dd-ef-del">🗑 削除</button>
         <button class="dd-ef-cancel">キャンセル</button>
@@ -1649,6 +1791,8 @@ function openDayDetail(dstr) {
       sh.startTime  = document.getElementById(`ef-start-${sh.id}`).value;
       sh.endTime    = document.getElementById(`ef-end-${sh.id}`).value;
       sh.breakMinutes = parseInt(document.getElementById(`ef-break-${sh.id}`).value)||0;
+      sh.adjustment = parseFloat(document.getElementById(`ef-adj-${sh.id}`).value)||0;
+      sh.memo       = document.getElementById(`ef-memo-${sh.id}`).value||'';
       save();
       openDayDetail(dstr);
       renderCal(); renderSummary();
@@ -1658,17 +1802,46 @@ function openDayDetail(dstr) {
     wrapper.appendChild(form);
     list.appendChild(wrapper);
   });
+}
 
-  ddMask.classList.remove('hidden');
-  requestAnimationFrame(() => ddMask.classList.add('show'));
+function openDayDetail(dstr) {
+  // 閉じアニメーション中のタイマーが走っていればキャンセル（hidden付与を防ぐ）
+  if (ddCloseTimer !== null) {
+    clearTimeout(ddCloseTimer);
+    ddCloseTimer = null;
+  }
+
+  // 中身を書き換える
+  fillDayDetail(dstr);
+
+  // 閉じかけ or 完全に閉じている場合も .show を付与して開く
+  if (ddCloseTimer !== null || !ddSheet.classList.contains('show')) {
+    // 1フレーム待ってから .show を付与してトランジションを発火
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ddSheet.classList.add('show');
+      });
+    });
+  } else {
+    ddSheet.classList.add('show');
+  }
 }
 
 function closeDayDetail() {
-  ddMask.classList.remove('show');
-  setTimeout(() => ddMask.classList.add('hidden'), 300);
+  ddSheet.classList.remove('show');
+  ddCloseTimer = setTimeout(() => {
+    ddCloseTimer = null;
+  }, 300);
 }
 
-ddMask.addEventListener('click', e => { if (e.target === ddMask) closeDayDetail(); });
+// dd-mask を廃止したため、マスクのクリック閉じは不要
+
+// 【3の修正】ピンクのつまみ(ハンドル)をタップしたときに完全に連動して閉じる
+document.getElementById('dd-handle').onclick = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  closeDayDetail();
+};
 
 let ddTouchY = 0;
 ddSheet.addEventListener('touchstart', e => { ddTouchY = e.touches[0].clientY; }, { passive: true });
@@ -1720,6 +1893,8 @@ function applyTheme(t) {
     .bs-bar { background: ${border} !important; }
     .bs-head { border-bottom-color: ${border} !important; }
     .bs-head-hint { color: ${mutedTx} !important; }
+    .bs-head-date { color: ${t.tx} !important; }
+    .bs-nav-btn { background: ${lightBg} !important; color: ${t.tx} !important; }
     .bs-sec-lbl { color: ${mutedTx} !important; }
     .bs-reg-row { border-bottom-color: ${subtleBg} !important; }
     .bs-reg-time { color: ${t.tx} !important; }
@@ -1762,7 +1937,8 @@ function applyTheme(t) {
     .backup-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .backup-divider { background: ${border} !important; }
     .backup-sub { color: ${mutedTx} !important; }
-    .dd-sheet { box-shadow: 0 -4px 24px ${t.g2}40 !important; }
+    .dd-sheet { box-shadow: 0 -4px 24px ${t.g2}40 !important; pointer-events: none; }
+    .dd-sheet.show { pointer-events: all; }
     .dd-handle { background: ${border} !important; }
     .dd-head { border-bottom-color: ${border} !important; }
     .dd-item { border-bottom-color: ${subtleBg} !important; }
@@ -1778,6 +1954,7 @@ function applyTheme(t) {
     .theme-hex:focus { border-color: ${t.ac} !important; }
     .theme-reset { color: ${t.tx} !important; background: ${lightBg} !important; }
     .dyn-item { background: ${subtleBg} !important; border-color: ${border} !important; }
+    .cutoff-item { background: ${subtleBg} !important; border-color: ${border} !important; }
   `;
 }
 
@@ -1818,94 +1995,6 @@ function initThemeUI() {
     initThemeUI();
   };
 }
-
-// ===== BACKUP / RESTORE =====
-document.getElementById('btn-export').onclick = () => {
-  const now = new Date();
-  const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  const json = JSON.stringify(D, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `baito_backup_${stamp}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-document.getElementById('btn-import').onchange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const msg = document.getElementById('restore-msg');
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const parsed = JSON.parse(ev.target.result);
-      if (!parsed.workplaces || !parsed.templates || !parsed.shifts) throw new Error('形式が違います');
-      if (!confirm(`このファイルでデータを上書きしますか？\n・勤務先: ${parsed.workplaces.length}件\n・テンプレート: ${parsed.templates.length}件\n・シフト: ${parsed.shifts.length}件`)) return;
-      D = parsed;
-      save();
-      renderSettings();
-      renderCal();
-      renderSummary();
-      msg.className = 'restore-msg ok';
-      msg.textContent = `✓ リストア完了！（シフト ${D.shifts.length}件・勤務先 ${D.workplaces.length}件）`;
-    } catch(err) {
-      msg.className = 'restore-msg err';
-      msg.textContent = `✗ 読み込み失敗: ${err.message}`;
-    }
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 4000);
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-};
-
-// ===== MONTHLY TEXT EXPORT =====
-document.getElementById('btn-share').onclick = () => {
-  const dow = ['日','月','火','水','木','金','土'];
-  let text = `📅 ${S.y}年${S.m}月 給料まとめ\n`;
-  text += '━'.repeat(24) + '\n';
-
-  D.workplaces.forEach(wp => {
-    const p = payPeriod(wp, S.y, S.m);
-    const res = calcPeriodSummary(wp, p.start, p.end);
-    const shifts = D.shifts
-      .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
-      .sort((a,b) => a.date.localeCompare(b.date));
-
-    const [,ps,pd] = p.start.split('-').map(Number);
-    const [,pe,ped] = p.end.split('-').map(Number);
-
-    text += `\n【${wp.name}】${ps}/${pd}〜${pe}/${ped}\n`;
-    shifts.forEach(s => {
-      const [,sm,sd] = s.date.split('-').map(Number);
-      const d = dow[new Date(s.date+'T00:00:00').getDay()];
-      const end=toMin(s.endTime), start=toMin(s.startTime);
-      const h = ((end<=start?end+1440-start:end-start)-(s.breakMinutes||0))/60;
-      const pay = shiftPay(s);
-      text += `  ${sm}/${sd}(${d}) ${s.startTime}〜${s.endTime} ${h.toFixed(1)}h ${fmt(pay.total)}\n`;
-    });
-    
-    res.allowanceDetails.forEach(a => { text += `  [手当] ${a.name}: +${fmt(a.value)}\n`; });
-    text += `  総支給額: ${fmt(res.gross)}\n`;
-    res.deductionDetails.forEach(d => { text += `  [控除] ${d.name}: -${fmt(d.value)}\n`; });
-    text += `  💰 手取り ${fmt(res.netPay)}\n`;
-  });
-
-  text += '\n' + '━'.repeat(24) + '\n';
-  const allNet = D.workplaces.reduce((sum,wp) => {
-    const p=payPeriod(wp,S.y,S.m);
-    return sum + periodNetPay(wp.id,p.start,p.end);
-  }, 0);
-  text += `合計手取り ${fmt(allNet)}\n`;
-
-  if (navigator.share) {
-    navigator.share({ title: `${S.y}年${S.m}月 給料まとめ`, text });
-  } else {
-    navigator.clipboard.writeText(text).then(() => alert('クリップボードにコピーしました！'));
-  }
-};
 
 // ===== CALENDAR SWIPE =====
 (() => {
