@@ -1613,6 +1613,30 @@ document.getElementById('btn-import').onchange = (e) => {
   e.target.value = '';
 };
 
+// ===== CALENDAR SWIPE =====
+(()=>{
+  const pane = document.getElementById('pane-calendar');
+  let tx = 0, ty = 0, moved = false;
+  pane.addEventListener('touchstart', e=>{
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+    moved = false;
+  }, { passive: true });
+  pane.addEventListener('touchmove', e=>{
+    moved = true;
+  }, { passive: true });
+  pane.addEventListener('touchend', e=>{
+    if (!moved) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    // 水平スワイプのみ（縦スクロールと区別）
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0) { S.m++; if(S.m>12){S.m=1;S.y++;} }
+    else        { S.m--; if(S.m<1) {S.m=12;S.y--;} }
+    onMonthChange();
+  }, { passive: true });
+})();
+
 // ===== INIT =====
 initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
 </script>
