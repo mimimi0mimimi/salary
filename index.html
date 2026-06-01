@@ -675,7 +675,10 @@
         <span class="app-title-main">バイト給料計算</span>
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
-      <button class="share-btn" id="btn-share" title="この月をエクスポート">↑</button>
+      <div style="display:flex;gap:4px;margin-left:auto">
+        <button class="share-btn" style="margin-left:0" id="btn-shift-import" title="シフトを一括インポート">↓</button>
+        <button class="share-btn" style="margin-left:0" id="btn-share" title="この月をエクスポート">↑</button>
+      </div>
     </div>
     <div class="header-top">
       <button class="nav-btn" id="prev-month">‹</button>
@@ -784,6 +787,50 @@
   <div class="dd-head" id="dd-head"></div>
   <div class="dd-list" id="dd-list"></div>
   <div class="dd-foot"></div>
+</div>
+
+<!-- ===== シフト一括インポート ボトムシート ===== -->
+<div class="bs-mask hidden" id="import-mask">
+  <div class="bs-sheet" id="import-sheet">
+    <div class="bs-bar"></div>
+    <div class="bs-head">
+      <div style="font-size:1rem;font-weight:700;color:#3d1a2e;text-align:center;padding:4px 0 2px">シフトを一括インポート</div>
+      <div style="font-size:.72rem;color:#f9a8d4;text-align:center;margin-top:4px">日付,タイトル,開始,終了,休憩(分) の形式で貼り付け</div>
+    </div>
+    <div style="padding:10px 16px 6px">
+      <textarea id="import-textarea"
+        placeholder="例：&#10;2026-06-01,早番,09:00,17:00,60&#10;2026-06-03,遅番,10:00,18:00,45"
+        style="width:100%;height:130px;padding:10px;border:1.5px solid #fce7f3;border-radius:12px;
+               font-size:.82rem;font-family:monospace;outline:none;resize:none;color:#3d1a2e;
+               background:#fff8fb;line-height:1.7"
+      ></textarea>
+    </div>
+    <!-- プレビューエリア -->
+    <div id="import-preview" style="margin:0 16px 8px;padding:10px 12px;background:#fff0f7;
+         border-radius:10px;font-size:.8rem;display:none">
+    </div>
+    <!-- エラーエリア -->
+    <div id="import-error" style="margin:0 16px 8px;padding:10px 12px;background:#fff5f5;
+         border:1px solid #fecaca;border-radius:10px;font-size:.78rem;color:#e11d48;display:none">
+    </div>
+    <!-- 職場選択エリア -->
+    <div id="import-wp-section" style="display:none;padding:0 16px 6px">
+      <div class="bs-sec-lbl">どの職場のシフトですか？</div>
+      <div id="import-wp-btns" style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 8px"></div>
+    </div>
+    <div style="display:flex;gap:8px;padding:8px 16px 12px">
+      <button id="import-cancel-btn" style="flex:1;padding:12px;background:#fff0f7;border:none;
+              border-radius:12px;font-size:.9rem;font-weight:600;color:#be185d;cursor:pointer">
+        キャンセル
+      </button>
+      <button id="import-exec-btn" style="flex:2;padding:12px;
+              background:linear-gradient(135deg,#f9a8d4,#ec4899);border:none;
+              border-radius:12px;font-size:.95rem;font-weight:700;color:white;cursor:pointer;
+              opacity:.4;pointer-events:none">
+        追加する
+      </button>
+    </div>
+  </div>
 </div>
 
 <div class="bs-mask hidden" id="bs-mask">
@@ -3079,6 +3126,197 @@ document.getElementById('btn-import').onchange = e => {
     else        { S.m--; if(S.m<1) {S.m=12;S.y--;} }
     onMonthChange();
   }, { passive: true });
+})();
+
+// ===== シフト一括インポート =====
+(function() {
+  let parsedRows = [];
+  let selectedWpId = null;
+
+  function openImport() {
+    document.getElementById('import-mask').classList.remove('hidden');
+    document.getElementById('import-textarea').value = '';
+    resetImportUI();
+  }
+
+  function closeImport() {
+    document.getElementById('import-mask').classList.add('hidden');
+    parsedRows = [];
+    selectedWpId = null;
+  }
+
+  function resetImportUI() {
+    parsedRows = [];
+    selectedWpId = null;
+    document.getElementById('import-preview').style.display = 'none';
+    document.getElementById('import-error').style.display = 'none';
+    document.getElementById('import-wp-section').style.display = 'none';
+    setExecBtn(false);
+  }
+
+  function setExecBtn(enabled) {
+    const btn = document.getElementById('import-exec-btn');
+    btn.style.opacity = enabled ? '1' : '.4';
+    btn.style.pointerEvents = enabled ? 'auto' : 'none';
+  }
+
+  function parseImportText(text) {
+    const rows = [];
+    const errors = [];
+    const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    lines.forEach((line, i) => {
+      const cols = line.split(',').map(s => s.trim());
+      if (cols.length < 4) {
+        errors.push(`${i + 1}行目: 列が足りません（${line}）`);
+        return;
+      }
+      const [date, title, start, end, breakStr] = cols;
+
+      // 日付チェック
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        errors.push(`${i + 1}行目: 日付の形式が違います（${date}）`);
+        return;
+      }
+      // 時刻チェック
+      if (!/^\d{1,2}:\d{2}$/.test(start) || !/^\d{1,2}:\d{2}$/.test(end)) {
+        errors.push(`${i + 1}行目: 時刻の形式が違います`);
+        return;
+      }
+      const breakMin = breakStr ? parseInt(breakStr) || 0 : 0;
+      rows.push({ date, title: title || '無題', startTime: start.padStart(5,'0'), endTime: end.padStart(5,'0'), breakMinutes: breakMin });
+    });
+
+    return { rows, errors };
+  }
+
+  function updatePreview() {
+    const text = document.getElementById('import-textarea').value;
+    const previewEl = document.getElementById('import-preview');
+    const errorEl = document.getElementById('import-error');
+    const wpSection = document.getElementById('import-wp-section');
+
+    if (!text.trim()) {
+      resetImportUI();
+      return;
+    }
+
+    const { rows, errors } = parseImportText(text);
+    parsedRows = rows;
+
+    if (errors.length > 0) {
+      errorEl.style.display = 'block';
+      errorEl.innerHTML = '⚠️ ' + errors.join('<br>⚠️ ');
+      previewEl.style.display = 'none';
+      wpSection.style.display = 'none';
+      setExecBtn(false);
+      return;
+    }
+
+    errorEl.style.display = 'none';
+
+    if (rows.length === 0) {
+      previewEl.style.display = 'none';
+      wpSection.style.display = 'none';
+      setExecBtn(false);
+      return;
+    }
+
+    // 期間を計算
+    const dates = rows.map(r => r.date).sort();
+    const minDate = dates[0];
+    const maxDate = dates[dates.length - 1];
+    const [,ms,ds2] = minDate.split('-').map(Number);
+    const [,me,de] = maxDate.split('-').map(Number);
+    const rangeStr = ms === me ? `${ms}/${ds2} 〜 ${ms}/${de}` : `${ms}/${ds2} 〜 ${me}/${de}`;
+
+    previewEl.style.display = 'block';
+    previewEl.innerHTML = `<span style="font-size:1rem;font-weight:800;color:#ec4899">${rows.length}件</span><span style="color:#be185d;font-weight:600"> のシフト　</span><span style="color:#be185d;font-size:.78rem">${rangeStr}</span>`;
+
+    // 職場選択ボタンを生成
+    wpSection.style.display = 'block';
+    const wpBtns = document.getElementById('import-wp-btns');
+    wpBtns.innerHTML = '';
+    selectedWpId = null;
+    setExecBtn(false);
+
+    if (D.workplaces.length === 0) {
+      wpBtns.innerHTML = '<span style="font-size:.8rem;color:#f9a8d4">先に職場を登録してください</span>';
+      return;
+    }
+
+    D.workplaces.forEach(wp => {
+      const btn = document.createElement('button');
+      btn.dataset.wpid = wp.id;
+      btn.style.cssText = `padding:9px 14px;border-radius:10px;border:2px solid ${wp.color||'#ec4899'};
+        background:white;cursor:pointer;font-size:.85rem;font-weight:700;
+        color:${wp.color||'#ec4899'};transition:all .15s`;
+      btn.textContent = wp.name;
+      btn.onclick = () => {
+        // 全ボタンのリセット
+        wpBtns.querySelectorAll('button').forEach(b => {
+          const bwp = D.workplaces.find(w => w.id === b.dataset.wpid);
+          b.style.background = 'white';
+          b.style.color = bwp?.color || '#ec4899';
+        });
+        // 選択済みスタイル
+        btn.style.background = wp.color || '#ec4899';
+        btn.style.color = 'white';
+        selectedWpId = wp.id;
+        setExecBtn(true);
+      };
+      wpBtns.appendChild(btn);
+    });
+
+    // 職場が1つだけなら自動選択
+    if (D.workplaces.length === 1) {
+      wpBtns.querySelector('button').click();
+    }
+  }
+
+  function execImport() {
+    if (!selectedWpId || parsedRows.length === 0) return;
+    const wp = D.workplaces.find(w => w.id === selectedWpId);
+    if (!wp) return;
+
+    parsedRows.forEach(row => {
+      D.shifts.push({
+        id: uid(),
+        workplaceId: selectedWpId,
+        color: wp.color || '#ec4899',
+        date: row.date,
+        title: row.title,
+        startTime: row.startTime,
+        endTime: row.endTime,
+        breakMinutes: row.breakMinutes,
+        adjustment: 0,
+        memo: ''
+      });
+    });
+
+    save();
+    renderCal();
+    renderSummary();
+    closeImport();
+
+    // 完了トースト
+    const toast = document.createElement('div');
+    toast.textContent = `✓ ${parsedRows.length}件のシフトを追加しました`;
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d1a2e;color:white;padding:10px 20px;border-radius:99px;font-size:.85rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  document.getElementById('btn-shift-import').onclick = openImport;
+  document.getElementById('import-cancel-btn').onclick = closeImport;
+  document.getElementById('import-mask').onclick = e => { if (e.target === document.getElementById('import-mask')) closeImport(); };
+  document.getElementById('import-exec-btn').onclick = execImport;
+
+  let inputTimer;
+  document.getElementById('import-textarea').addEventListener('input', () => {
+    clearTimeout(inputTimer);
+    inputTimer = setTimeout(updatePreview, 300);
+  });
 })();
 
 // ===== SHARE =====
