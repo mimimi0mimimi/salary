@@ -45,6 +45,13 @@
       font-size: .68rem; color: #ec4899;
       margin-top: 1px; letter-spacing: .05em;
     }
+    .share-btn {
+      background: rgba(255,255,255,.35); border: none; color: #be185d;
+      width: 34px; height: 34px; border-radius: 50%; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-left: auto;
+    }
+    .share-btn:active { background: rgba(255,255,255,.55); }
     .nav-btn {
       background: rgba(255,255,255,.5); border: none; color: #be185d;
       width: 34px; height: 34px; border-radius: 50%; font-size: 1.2rem;
@@ -70,7 +77,7 @@
     .cal-dow div:nth-child(1) { color: #e11d48; }
     .cal-dow div:nth-child(7) { color: #db2777; }
     .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: #fce7f3; flex: 1; }
-    .cal-cell { background: white; min-height: 68px; padding: 4px 3px; cursor: pointer; transition: background .1s; }
+    .cal-cell { background: white; min-height: 68px; padding: 4px 3px; cursor: pointer; transition: background .1s; min-width: 0; }
     .cal-cell:active { background: #fdf2f8; }
     .cal-cell.other { background: #fff5f9; }
     .cal-cell.sel { background: #fdf2f8; outline: 2px solid #f9a8d4; outline-offset: -2px; }
@@ -82,8 +89,12 @@
     .cal-cell.sat .cal-day { color: #db2777; }
     .cal-cell.tod .cal-day { background: #ec4899; color: white !important; }
     .cal-badges { display: flex; flex-direction: column; gap: 2px; }
-    .cal-badge { font-size: .6rem; font-weight: 600; padding: 1px 3px; border-radius: 3px;
-      color: white; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.5; }
+    .cal-badge { font-size: .6rem; font-weight: 700; padding: 1px 3px; border-radius: 3px;
+      color: white; line-height: 1.5; width: 100%; box-sizing: border-box;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      display: flex; align-items: center; gap: 2px; }
+    .badge-t { font-weight: 700; flex-shrink: 0; }
+    .badge-time { font-size: .52rem; opacity: .92; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
     /* ===== Summary bar ===== */
     .summary-bar { background: white; border-top: 1px solid #fce7f3; padding: 10px 12px; flex-shrink: 0; }
@@ -392,6 +403,24 @@
       border-radius: 12px; color: white; font-size: .9rem; font-weight: 700; cursor: pointer;
     }
 
+    /* ===== Timeline ===== */
+    .tl-wrap { padding: 2px 0 4px; }
+    .tl-empty { text-align:center; padding:16px; font-size:.8rem; color:#f9a8d4; }
+    .tl-ax { display:flex; align-items:center; margin-bottom:3px; }
+    .tl-axl { width:44px; flex-shrink:0; }
+    .tl-ticks { flex:1; position:relative; height:14px; }
+    .tl-tick { position:absolute; font-size:.62rem; color:#f9a8d4; transform:translateX(-50%); line-height:1; }
+    .tl-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; }
+    .tl-dc { width:44px; flex-shrink:0; font-size:.72rem; font-weight:700; color:#3d1a2e; white-space:nowrap; }
+    .tl-dow { font-size:.62rem; color:#f9a8d4; margin-left:1px; }
+    .tl-sun { color:#e11d48 !important; }
+    .tl-sat { color:#3b82f6 !important; }
+    .tl-sun .tl-dow, .tl-sat .tl-dow { color:inherit; }
+    .tl-ba { flex:1; height:20px; background:#fff0f7; border-radius:4px; position:relative; overflow:hidden; }
+    .tl-grid { position:absolute; top:0; bottom:0; width:1px; background:rgba(249,168,212,.35); }
+    .tl-bar { position:absolute; top:2px; bottom:2px; border-radius:3px; opacity:.85; min-width:3px; }
+    .tl-bar-ov { position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:.6rem; color:white; }
+
     /* ===== Theme settings ===== */
     .theme-card { background: white; border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); padding: 4px 0; }
@@ -479,6 +508,7 @@
         <span class="app-title-main">バイト給料計算</span>
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
+      <button class="share-btn" id="btn-share" title="この月をエクスポート">↑</button>
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
@@ -769,8 +799,11 @@ function renderCal() {
     if (dayShifts.length) {
       const wrap=document.createElement('div'); wrap.className='cal-badges';
       dayShifts.forEach(sh=>{
+        const fh=t=>{const[h,m]=t.split(':').map(Number);return m===0?String(h):`${h}${String(m).padStart(2,'0')}`;}
         const b=document.createElement('div'); b.className='cal-badge';
-        b.style.background=sh.color||'#ec4899'; b.textContent=sh.title||'シフト';
+        b.style.background=sh.color||'#ec4899';
+        const titleChar=(sh.title||'?')[0];
+        b.innerHTML=`<span class="badge-t">${titleChar}</span><span class="badge-time">${fh(sh.startTime)}-${fh(sh.endTime)}</span>`;
         wrap.appendChild(b);
       });
       cell.appendChild(wrap);
@@ -972,7 +1005,10 @@ function renderDetailCharts() {
     return card;
   }
 
-  // ① 収入割合（ドーナツ）
+  // ① タイムライン（最上部）
+  el.appendChild(makeChartCard('timeline', `${S.m}月のシフトタイムライン`, `<div id="det-timeline"></div>`));
+
+  // ② 収入割合（ドーナツ）
   if (wpAmounts.length) {
     const legendRows = wpAmounts.map(x=>`
       <div class="donut-legend-row">
@@ -986,10 +1022,10 @@ function renderDetailCharts() {
       `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`));
   }
 
-  // ② 日別勤務時間
+  // ③ 日別勤務時間
   el.appendChild(makeChartCard('daily', `${S.m}月の日別勤務時間`, `<canvas id="det-daily"></canvas>`));
 
-  // ③ 過去6ヶ月の推移
+  // ④ 過去6ヶ月の推移
   el.appendChild(makeChartCard('bar', '過去6ヶ月の推移', `<canvas id="det-bar"></canvas>`));
 
   el.style.paddingBottom='10px';
@@ -1053,6 +1089,64 @@ function renderDetailCharts() {
         ticks:{callback:v=>`${v}h`,font:{size:9}}}},
       maintainAspectRatio:true}
   });
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const el = document.getElementById('det-timeline');
+  if (!el) return;
+  const DOW = ['日','月','火','水','木','金','土'];
+  const monthPrefix = `${S.y}-${String(S.m).padStart(2,'0')}`;
+  const RRANGE = 1440;
+  const gridHTML = [6,12,18].map(h =>
+    `<div class="tl-grid" style="left:${h/24*100}%"></div>`).join('');
+
+  // 全日分のバー生成
+  const dim = daysInMonth(S.y, S.m);
+  const rowsHTML = Array.from({length: dim}, (_,i) => {
+    const date = ds(S.y, S.m, i+1);
+    const d = new Date(date+'T00:00:00');
+    const dow = DOW[d.getDay()];
+    const isRed = d.getDay()===0, isSat = d.getDay()===6;
+    // この日に始まるシフト
+    const dayShifts = D.shifts.filter(s=>s.date===date);
+    // 前日から持ち越すシフト（前日のシフトが深夜をまたぐ場合）
+    const prevDate = addDay(date, -1);
+    const overShifts = D.shifts.filter(s => {
+      if (s.date !== prevDate) return false;
+      const st = toMin(s.startTime), en = toMin(s.endTime);
+      return en <= st; // 深夜またぎ
+    });
+
+    const barsHTML = [
+      // 前日からの持ち越し（0時〜終了時刻）
+      ...overShifts.map(s => {
+        const end = toMin(s.endTime);
+        const barWidth = end / RRANGE * 100;
+        return `<div class="tl-bar tl-bar-cont-left" style="left:0%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||'#ec4899'}" title="${s.title||''} 〜${s.endTime}"><span class="tl-bar-ov" style="left:2px;right:auto">‹</span></div>`;
+      }),
+      // この日のシフト
+      ...dayShifts.map(s => {
+        const start = toMin(s.startTime);
+        let end = toMin(s.endTime);
+        if (end <= start) end += 1440;
+        const barLeft = start / RRANGE * 100;
+        const barWidth = Math.min(100-barLeft, (Math.min(end,1440)-start)/RRANGE*100);
+        const over = end > 1440;
+        return `<div class="tl-bar" style="left:${barLeft.toFixed(1)}%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||'#ec4899'}">${over?'<span class="tl-bar-ov">›</span>':''}</div>`;
+      }),
+    ].join('');
+    return `<div class="tl-row">
+      <div class="tl-dc${isRed?' tl-sun':isSat?' tl-sat':''}">${S.m}/${i+1}<span class="tl-dow">${dow}</span></div>
+      <div class="tl-ba">${gridHTML}${barsHTML}</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="tl-wrap">
+      <div class="tl-ax"><div class="tl-axl"></div><div class="tl-ticks">${[0,6,12,18,24].map(h=>`<span class="tl-tick" style="left:${h/24*100}%">${h}</span>`).join('')}</div></div>
+      ${rowsHTML}
+    </div>`;
 }
 
 function renderDetailCards() {
@@ -1664,6 +1758,58 @@ document.getElementById('btn-import').onchange = (e) => {
   };
   reader.readAsText(file);
   e.target.value = '';
+};
+
+// ===== MONTHLY TEXT EXPORT =====
+document.getElementById('btn-share').onclick = () => {
+  const dow = ['日','月','火','水','木','金','土'];
+  let text = `📅 ${S.y}年${S.m}月 給料まとめ\n`;
+  text += '━'.repeat(24) + '\n';
+
+  D.workplaces.forEach(wp => {
+    const p = payPeriod(wp, S.y, S.m);
+    const shifts = D.shifts
+      .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
+      .sort((a,b) => a.date.localeCompare(b.date));
+
+    let wDays=0, wGross=0, wDD=0;
+    shifts.forEach(s=>{ const x=shiftPay(s); wDays++; wGross+=x.gross; wDD+=x.dd; });
+    const afterDD = wGross - wDD;
+    const si = afterDD * (wp.socialInsuranceRate||0) / 100;
+    const it = (afterDD - si) * (wp.incomeTaxRate||0) / 100;
+    const net = afterDD - si - it;
+
+    const [,ps,pd] = p.start.split('-').map(Number);
+    const [,pe,ped] = p.end.split('-').map(Number);
+
+    text += `\n【${wp.name}】${ps}/${pd}〜${pe}/${ped}\n`;
+    shifts.forEach(s => {
+      const [,sm,sd] = s.date.split('-').map(Number);
+      const d = dow[new Date(s.date+'T00:00:00').getDay()];
+      const end=toMin(s.endTime), start=toMin(s.startTime);
+      const h = ((end<=start?end+1440-start:end-start)-(s.breakMinutes||0))/60;
+      const pay = shiftPay(s);
+      text += `  ${sm}/${sd}(${d}) ${s.startTime}〜${s.endTime} ${h.toFixed(1)}h ${fmt(pay.total)}\n`;
+    });
+    text += `  出勤${wDays}日 総支給${fmt(wGross)}`;
+    if (wDD>0) text += ` 控除-${fmt(wDD)}`;
+    if (si>0)  text += ` 社保-${fmt(si)}`;
+    if (it>0)  text += ` 所得税-${fmt(it)}`;
+    text += `\n  💰 手取り ${fmt(net)}\n`;
+  });
+
+  text += '\n' + '━'.repeat(24) + '\n';
+  const allNet = D.workplaces.reduce((sum,wp) => {
+    const p=payPeriod(wp,S.y,S.m);
+    return sum + periodNetPay(wp.id,p.start,p.end);
+  }, 0);
+  text += `合計手取り ${fmt(allNet)}\n`;
+
+  if (navigator.share) {
+    navigator.share({ title: `${S.y}年${S.m}月 給料まとめ`, text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('クリップボードにコピーしました！'));
+  }
 };
 
 // ===== CALENDAR SWIPE =====
