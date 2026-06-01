@@ -27,22 +27,22 @@
     /* ===== Header ===== */
     header { background: linear-gradient(135deg,#fdd5e8,#f9a8d4); color: #be185d; flex-shrink: 0;
       box-shadow: 0 2px 12px rgba(236,72,153,.15); }
-    .header-top { display: flex; align-items: center; padding: 14px 16px 6px; gap: 8px; }
+    .header-top { display: flex; align-items: center; padding: 4px 16px 6px; gap: 8px; }
     .header-usagi {
       display: flex; align-items: center; gap: 10px;
-      padding: 6px 16px 12px;
+      padding: 8px 16px 4px;
     }
     .usagi-svg {
-      width: 52px; height: 52px; flex-shrink: 0;
+      width: 38px; height: 38px; flex-shrink: 0;
       filter: drop-shadow(0 2px 6px rgba(236,72,153,.4));
     }
     .header-usagi-text { display: flex; flex-direction: column; }
     .app-title-main {
-      font-size: 1.05rem; font-weight: 800; color: #be185d;
+      font-size: .95rem; font-weight: 800; color: #be185d;
       letter-spacing: .02em;
     }
     .app-title-sub {
-      font-size: .68rem; color: #ec4899;
+      font-size: .62rem; color: #ec4899;
       margin-top: 1px; letter-spacing: .05em;
     }
     .share-btn {
@@ -524,11 +524,6 @@
 <body>
 <div id="app">
   <header>
-    <div class="header-top">
-      <button class="nav-btn" id="prev-month">‹</button>
-      <div id="month-title"></div>
-      <button class="nav-btn" id="next-month">›</button>
-    </div>
     <div class="header-usagi">
       <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="usagi-svg">
         <defs>
@@ -562,6 +557,11 @@
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
       <button class="share-btn" id="btn-share" title="この月をエクスポート">↑</button>
+    </div>
+    <div class="header-top">
+      <button class="nav-btn" id="prev-month">‹</button>
+      <div id="month-title"></div>
+      <button class="nav-btn" id="next-month">›</button>
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
