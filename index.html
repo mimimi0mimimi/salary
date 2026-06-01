@@ -181,9 +181,10 @@
     .donut-legend { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
     .donut-legend-row { display: flex; align-items: center; gap: 8px; }
     .donut-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; align-self: flex-start; margin-top: 3px; }
-    .donut-legend-info { display: flex; flex-direction: column; gap: 2px; }
+.donut-legend-info { display: flex; flex-direction: column; gap: 2px; width: 100%; }
     .donut-legend-name { font-size: .8rem; color: #3d1a2e; }
-    .donut-legend-amt { font-size: .92rem; font-weight: 800; color: #ec4899; }
+    /* 金額のフォントは元のまま、赤線の幅（ブロック内）で右詰めにします */
+    .donut-legend-amt { font-size: .92rem; font-weight: 800; color: #ec4899; text-align: right; width: 100%; display: block; }
     .det-card { background: white; border-radius: 14px; margin: 0 12px 10px;
       overflow: hidden; box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .det-card:first-of-type { margin-top: 0; }
@@ -318,6 +319,13 @@
     .empty { text-align: center; padding: 48px 20px; color: #f9a8d4; }
     .empty-ico { font-size: 2.5rem; margin-bottom: 10px; }
     .empty-txt { font-size: .9rem; }
+
+    /* ===== 手当・控除 独自レイアウト ===== */
+    .dyn-item { display: flex; flex-direction: column; background: #fff5f9; border-radius: 12px; padding: 10px; margin-bottom: 8px; border: 1px solid #fce7f3; gap: 8px; }
+    .dyn-row-top { display: flex; align-items: center; gap: 6px; }
+    .dyn-row-bottom { display: flex; align-items: center; gap: 6px; }
+    .btn-rdyn { background: none; border: none; cursor: pointer; color: #f9a8d4; font-size: .95rem; padding: 2px 6px; }
+    .btn-rdyn:active { color: #e11d48; }
 
     /* ===== Day Detail Sheet ===== */
     .dd-mask {
@@ -501,8 +509,8 @@
         <path d="M56.5 43 Q60 46.5 63.5 43" stroke="#ffb3d1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
         <ellipse cx="46" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
         <ellipse cx="74" cy="40" rx="5" ry="3" fill="#ffb3d1" opacity=".5"/>
-        <path d="M96 32 C96 32 93 29 91 31 C89 33 91 36 96 39 C101 36 103 33 101 31 C99 29 96 32 96 32Z" fill="#ec4899" opacity=".7"/>
-        <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 C27 29 24 32 24 32Z" fill="#ec4899" opacity=".7"/>
+        <path d="M96 32 C96 32 93 29 91 31 C89 33 91 36 96 39 C101 36 103 33 101 31 Q99 29 96 32 Z" fill="#ec4899" opacity=".7"/>
+        <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 Q27 29 24 32 Z" fill="#ec4899" opacity=".7"/>
       </svg>
       <div class="header-usagi-text">
         <span class="app-title-main">バイト給料計算</span>
@@ -518,7 +526,6 @@
     </nav>
   </header>
 
-  <!-- Calendar -->
   <div class="pane active" id="pane-calendar">
     <div class="cal-dow">
       <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
@@ -546,17 +553,14 @@
     </div>
   </div>
 
-  <!-- Charts -->
   <div class="pane" id="pane-charts">
     <div class="det-charts" id="det-charts"></div>
   </div>
 
-  <!-- Detail -->
   <div class="pane" id="pane-detail">
     <div id="det-content" style="padding: 0 0 16px"></div>
   </div>
 
-  <!-- Settings -->
   <div class="pane" id="pane-settings">
     <div class="set-sec">
       <div class="set-sec-title">バックアップ / リストア</div>
@@ -605,7 +609,6 @@
   </div>
 </div>
 
-<!-- Day Detail Sheet -->
 <div class="dd-mask hidden" id="dd-mask">
   <div class="dd-sheet" id="dd-sheet">
     <div class="dd-handle"></div>
@@ -615,7 +618,6 @@
   </div>
 </div>
 
-<!-- Bottom Sheet -->
 <div class="bs-mask hidden" id="bs-mask">
   <div class="bs-sheet">
     <div class="bs-bar"></div>
@@ -629,7 +631,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal-mask hidden" id="modal-mask">
   <div class="modal-box">
     <div class="modal-head">
@@ -653,7 +654,6 @@ let D = { workplaces: [], templates: [], shifts: [] };
 let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
 let calTabLastTap = 0;
-// グラフ用変数を一括管理（二重描画バグ防止）
 let charts = { pie: null, bar: null, daily: null };
 
 // ===== PERSIST =====
@@ -697,7 +697,7 @@ function nightOverlapMin(ss,se,ns,ne) {
 
 function shiftPay(sh) {
   const wp=D.workplaces.find(w=>w.id===sh.workplaceId);
-  if (!wp) return {nh:0,dh:0,np:0,dp:0,tr:0,dd:0,gross:0,total:0};
+  if (!wp) return {nh:0,dh:0,np:0,dp:0,gross:0,total:0,allowances:0,deductions:0};
   const wage=getWage(wp,sh.date);
   const end=toMin(sh.endTime), start=toMin(sh.startTime);
   const durMin=(end<=start?end+1440-start:end-start)-(sh.breakMinutes||0);
@@ -708,10 +708,25 @@ function shiftPay(sh) {
   const normalMin=Math.max(0,durMin-nightMin);
   const np=(normalMin/60)*wage;
   const dp=(nightMin/60)*(+wp.nightWage?.wage||0);
-  const tr=wp.transportFee||0;
-  const dd=wp.dailyDeduction||0;
-  const gross=np+dp+tr;
-  return {nh:normalMin/60,dh:nightMin/60,np,dp,tr,dd,gross,total:gross-dd};
+  
+  const baseSal = np + dp;
+
+  let dayAllowances = 0;
+  if (wp.allowances?.length) {
+    wp.allowances.forEach(a => {
+      if (a.timing === 'day' && a.mode === 'fix') dayAllowances += (+a.value||0);
+    });
+  }
+
+  let dayDeductions = 0;
+  if (wp.deductions?.length) {
+    wp.deductions.forEach(d => {
+      if (d.timing === 'day' && d.mode === 'fix') dayDeductions += (+d.value||0);
+    });
+  }
+
+  const gross = baseSal + dayAllowances;
+  return {nh:normalMin/60,dh:nightMin/60,np,dp,gross,total:gross-dayDeductions,allowances:dayAllowances,deductions:dayDeductions};
 }
 
 function payPeriod(wp,refY,refM) {
@@ -722,24 +737,74 @@ function payPeriod(wp,refY,refM) {
   return {start:ds(py,pm,c+1),end:ds(refY,refM,c)};
 }
 
-function periodTotal(wpId,start,end) {
-  return D.shifts
-    .filter(s=>(!wpId||s.workplaceId===wpId)&&s.date>=start&&s.date<=end)
-    .reduce((sum,s)=>sum+shiftPay(s).total,0);
-}
+function calcPeriodSummary(wp, start, end) {
+  const periodShifts = D.shifts.filter(s => s.workplaceId === wp.id && s.date >= start && s.date <= end);
+  let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0;
+  
+  periodShifts.forEach(s => {
+    const x = shiftPay(s);
+    workDays++; nh += x.nh; dh += x.dh; np += x.np; dp += x.dp;
+  });
 
-// 手取り計算を一元化（重複コード解消）
-function calcNetPayFromGross(grossAmount, wp) {
-  if (!wp) return grossAmount;
-  const si=grossAmount*(wp.socialInsuranceRate||0)/100;
-  const it=(grossAmount-si)*(wp.incomeTaxRate||0)/100;
-  return grossAmount-si-it;
+  const timeSalaryTotal = np + dp;
+
+  let totalAllowances = 0;
+  let allowanceDetails = [];
+  if (wp.allowances?.length) {
+    wp.allowances.forEach(a => {
+      let amt = 0;
+      if (a.timing === 'day') {
+        if (a.mode === 'fix') amt = (+a.value || 0) * workDays;
+      } else {
+        if (a.mode === 'fix') amt = (+a.value || 0);
+        else if (a.mode === 'pct') amt = timeSalaryTotal * ((+a.value || 0) / 100);
+      }
+      if (amt > 0) {
+        totalAllowances += amt;
+        allowanceDetails.push({ name: a.name, value: amt });
+      }
+    });
+  }
+
+  const gross = timeSalaryTotal + totalAllowances;
+
+  let totalDeductions = 0;
+  let deductionDetails = [];
+  if (wp.deductions?.length) {
+    wp.deductions.forEach(d => {
+      let amt = 0;
+      if (d.timing === 'day') {
+        if (d.mode === 'fix') amt = (+d.value || 0) * workDays;
+      } else {
+        if (d.mode === 'fix') amt = (+d.value || 0);
+        else if (d.mode === 'pct') amt = gross * ((+d.value || 0) / 100);
+      }
+      if (amt > 0) {
+        totalDeductions += amt;
+        deductionDetails.push({ name: d.name, value: amt });
+      }
+    });
+  }
+
+  const netPay = Math.max(0, gross - totalDeductions);
+
+  return {
+    workDays, nh, dh, np, dp, gross, netPay,
+    allowances: totalAllowances, deductions: totalDeductions,
+    allowanceDetails, deductionDetails
+  };
 }
 
 function periodNetPay(wpId,start,end) {
   const wp=D.workplaces.find(w=>w.id===wpId);
-  const afterDD=periodTotal(wpId,start,end);
-  return calcNetPayFromGross(afterDD, wp);
+  if (!wp) return 0;
+  return calcPeriodSummary(wp, start, end).netPay;
+}
+
+function periodTotal(wpId,start,end) {
+  const wp=D.workplaces.find(w=>w.id===wpId);
+  if (!wp) return 0;
+  return calcPeriodSummary(wp, start, end).gross;
 }
 
 // ===== MONTH NAV =====
@@ -834,10 +899,11 @@ function renderCal() {
 function renderSummary() {
   const sel=S.sel, todS=todayStr();
   const dayShifts=D.shifts.filter(s=>s.date===sel);
-  const dayNet=dayShifts.reduce((sum,s)=>{
-    const wp=D.workplaces.find(w=>w.id===s.workplaceId);
-    return sum + calcNetPayFromGross(shiftPay(s).total, wp);
-  },0);
+  
+  let dayNet = 0;
+  dayShifts.forEach(s => {
+    dayNet += shiftPay(s).total;
+  });
 
   let toDate=0, forecast=0;
   D.workplaces.forEach(wp=>{
@@ -847,7 +913,7 @@ function renderSummary() {
     forecast+=periodNetPay(wp.id,p.start,p.end);
   });
   const [,mm,dd]=sel?sel.split('-').map(Number):[0,0,0];
-  document.getElementById('sum-label').textContent=sel?`${mm}月${dd}日の給料`:'日付を選択';
+  document.getElementById('sum-label').textContent=sel?`${mm}月${dd}日の目安給料`:'日付を選択';
   document.getElementById('sum-day').textContent=fmt(dayNet);
   document.getElementById('sum-todate').textContent=fmt(toDate);
   document.getElementById('sum-forecast').textContent=fmt(forecast);
@@ -962,10 +1028,11 @@ function renderDetailCharts() {
   const el=document.getElementById('det-charts'); el.innerHTML='';
   if (!D.workplaces.length) return;
 
+  // 【手取り基準へ修正】グラフ用のデータ集計（amountをnetPayに変更）
   const wpAmounts=D.workplaces.map(wp=>{
-    const start=ds(S.y,S.m,1), end=ds(S.y,S.m,daysInMonth(S.y,S.m));
+    const p=payPeriod(wp,S.y,S.m);
     return {name:wp.name,color:wp.color||'#ec4899',
-      amount:periodTotal(wp.id,start,end)};
+      amount:periodNetPay(wp.id,p.start,p.end)};
   }).filter(x=>x.amount>0);
 
   const months=[];
@@ -1008,15 +1075,14 @@ function renderDetailCharts() {
           <span class="donut-legend-amt">${fmt(x.amount)}</span>
         </div>
       </div>`).join('');
-    el.appendChild(makeChartCard('donut', `${S.m}月の収入割合`,
+    el.appendChild(makeChartCard('donut', `${S.m}月の手取り推移・割合`,
       `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`));
   }
 
   el.appendChild(makeChartCard('daily', `${S.m}月の日別勤務時間`, `<canvas id="det-daily"></canvas>`));
-  el.appendChild(makeChartCard('bar', '過去6ヶ月の推移', `<canvas id="det-bar"></canvas>`));
+  el.appendChild(makeChartCard('bar', '過去6ヶ月の手取り推移', `<canvas id="det-bar"></canvas>`));
   el.style.paddingBottom='10px';
 
-  // 全グラフ破棄・クリーンアップ（二重描画対策）
   if (charts.pie) charts.pie.destroy();
   if (charts.bar) charts.bar.destroy();
   if (charts.daily) charts.daily.destroy();
@@ -1034,11 +1100,12 @@ function renderDetailCharts() {
     });
   }
 
+  // 【手取り基準へ修正】過去6ヶ月グラフの縦棒の集計を手取り額（periodNetPay）に統一
   const datasets=D.workplaces.map(wp=>({
     label:wp.name,
     data:months.map(({y,m})=>{
-      const start=ds(y,m,1), end=ds(y,m,daysInMonth(y,m));
-      return periodTotal(wp.id,start,end);
+      const p=payPeriod(wp,y,m);
+      return periodNetPay(wp.id,p.start,p.end);
     }),
     backgroundColor:wp.color||'#ec4899',borderRadius:4,
   }));
@@ -1134,14 +1201,9 @@ function renderDetailCards() {
   }
   D.workplaces.forEach(wp=>{
     const p=payPeriod(wp,S.y,S.m);
+    const res = calcPeriodSummary(wp, p.start, p.end);
+    
     const periodShifts=D.shifts.filter(s=>s.workplaceId===wp.id&&s.date>=p.start&&s.date<=p.end);
-    let workDays=0,nh=0,dh=0,np=0,dp=0,tr=0,ddTotal=0,gross=0;
-    periodShifts.forEach(s=>{const x=shiftPay(s);workDays++;nh+=x.nh;dh+=x.dh;np+=x.np;dp+=x.dp;tr+=x.tr;ddTotal+=x.dd;gross+=x.gross;});
-    const afterDD=gross-ddTotal;
-    const siRate=wp.socialInsuranceRate||0, itRate=wp.incomeTaxRate||0;
-    const siAmt=afterDD*siRate/100;
-    const itAmt=(afterDD-siAmt)*itRate/100;
-    const netPay=afterDD-siAmt-itAmt;
     const [,ps,pd]=p.start.split('-').map(Number);
     const [,pe,ped]=p.end.split('-').map(Number);
     const payD=wp.payDay===0?'月末':`${wp.payDay}日`;
@@ -1149,6 +1211,16 @@ function renderDetailCards() {
 
     const colKey = `wp_collapsed_${wp.id}`;
     const isCollapsed = localStorage.getItem(colKey) === '1';
+
+    let dynamicAllowHTML = '';
+    res.allowanceDetails.forEach(a => {
+      dynamicAllowHTML += `<div class="det-row"><span class="lbl">${a.name}</span><span class="val">${fmt(a.value)}</span></div>`;
+    });
+
+    let dynamicDeductHTML = '';
+    res.deductionDetails.forEach(d => {
+      dynamicDeductHTML += `<div class="det-row deduct"><span class="lbl">${d.name}</span><span class="val">-${fmt(d.value)}</span></div>`;
+    });
 
     const card=document.createElement('div'); card.className='det-card';
     card.innerHTML=`
@@ -1161,26 +1233,24 @@ function renderDetailCards() {
           </div>
           <div class="det-head-sub${isCollapsed?'':' hidden'}">
             <span class="det-period">${ps}/${pd}〜${pe}/${ped}</span>
-            <span class="det-net-inline">手取り ${fmt(netPay)}</span>
+            <span class="det-net-inline">手取り ${fmt(res.netPay)}</span>
           </div>
           <span class="det-period det-period-open${isCollapsed?' hidden':''}">${ps}/${pd}〜${pe}/${ped}</span>
         </div>
       </div>
       <div class="det-card-body${isCollapsed?' hidden':''}">
-        <div class="det-row"><span class="lbl">出勤日数</span><span class="val">${workDays}日</span></div>
-        <div class="det-row"><span class="lbl">通常時間</span><span class="val">${nh.toFixed(1)}h</span></div>
-        ${dh>0?`<div class="det-row"><span class="lbl">深夜時間</span><span class="val">${dh.toFixed(1)}h</span></div>`:''}
-        <div class="det-row"><span class="lbl">通常給料</span><span class="val">${fmt(np)}</span></div>
-        ${dp>0?`<div class="det-row"><span class="lbl">深夜給料</span><span class="val">${fmt(dp)}</span></div>`:''}
-        ${tr>0?`<div class="det-row"><span class="lbl">交通費</span><span class="val">${fmt(tr)}</span></div>`:''}
-        <div class="det-row gross-row"><span class="lbl">総支給額</span><span class="val">${fmt(gross)}</span></div>
-        ${ddTotal>0?`<div class="det-row deduct"><span class="lbl">日々控除（計）</span><span class="val">-${fmt(ddTotal)}</span></div>`:''}
-        ${siRate>0?`<div class="det-row deduct"><span class="lbl">社会保険料 (${siRate}%)</span><span class="val">-${fmt(siAmt)}</span></div>`:''}
-        ${itRate>0?`<div class="det-row deduct"><span class="lbl">所得税 (${itRate}%)</span><span class="val">-${fmt(itAmt)}</span></div>`:''}
-        <div class="det-total"><span class="lbl">💰 手取り</span><span class="val">${fmt(netPay)}</span></div>
+        <div class="det-row"><span class="lbl">出勤日数</span><span class="val">${res.workDays}日</span></div>
+        <div class="det-row"><span class="lbl">通常時間</span><span class="val">${res.nh.toFixed(1)}h</span></div>
+        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜時間</span><span class="val">${res.dh.toFixed(1)}h</span></div>`:''}
+        <div class="det-row"><span class="lbl">通常給料</span><span class="val">${fmt(res.np)}</span></div>
+        ${res.dh>0?`<div class="det-row"><span class="lbl">深夜割増</span><span class="val">${fmt(res.dp)}</span></div>`:''}
+        ${dynamicAllowHTML}
+        <div class="det-row gross-row"><span class="lbl">総支給額</span><span class="val">${fmt(res.gross)}</span></div>
+        ${dynamicDeductHTML}
+        <div class="det-total"><span class="lbl">💰 手取り</span><span class="val">${fmt(res.netPay)}</span></div>
         <div class="det-payday">給料日: ${payMLabel}</div>
         <div class="shift-list-toggle" id="slt-${wp.id}">
-          <span>シフト一覧（${workDays}件）</span><span class="slt-icon">▶</span>
+          <span>シフト一覧（${res.workDays}件）</span><span class="slt-icon">▶</span>
         </div>
         <div class="shift-list-body hidden" id="slb-${wp.id}">
           ${periodShifts.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
@@ -1278,6 +1348,43 @@ function bindSwatches(container,cb){
   });
 }
 
+function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', value:''}) {
+  const div = document.createElement('div');
+  div.className = 'dyn-item';
+  div.innerHTML = `
+    <div class="dyn-row-top">
+      <input type="text" class="fi dyn-name" style="flex:1.5; padding:6px 8px; font-size:0.82rem;" value="${item.name}" placeholder="項目名（例: ${type==='allow'?'交通費':'所得税'}）">
+      <select class="fi dyn-timing" style="flex:1; padding:6px 4px; font-size:0.82rem;">
+        <option value="day" ${item.timing==='day'?'selected':''}>日毎</option>
+        <option value="month" ${item.timing==='month'?'selected':''}>月毎</option>
+      </select>
+      <button class="btn-rdyn">✕</button>
+    </div>
+    <div class="dyn-row-bottom">
+      <select class="fi dyn-mode" style="flex:1; padding:6px 4px; font-size:0.82rem;">
+        <option value="fix" ${item.mode==='fix'?'selected':''}>固定額(円)</option>
+        <option value="pct" ${item.mode==='pct'?'selected':''}>割合(%)</option>
+      </select>
+      <input type="number" class="fi dyn-value" style="flex:1.2; padding:6px 8px; font-size:0.82rem;" value="${item.value}" placeholder="金額 / ％">
+    </div>
+  `;
+  
+  const timingSel = div.querySelector('.dyn-timing');
+  const modeSel = div.querySelector('.dyn-mode');
+  modeSel.onchange = () => {
+    if (modeSel.value === 'pct') {
+      timingSel.value = 'month';
+      timingSel.disabled = true;
+    } else {
+      timingSel.disabled = false;
+    }
+  };
+  if (item.mode === 'pct') timingSel.disabled = true;
+
+  div.querySelector('.btn-rdyn').onclick = () => div.remove();
+  return div;
+}
+
 // ===== WORKPLACE MODAL =====
 function openWpModal(wpId){
   const wp=wpId?D.workplaces.find(w=>w.id===wpId):null;
@@ -1285,6 +1392,7 @@ function openWpModal(wpId){
   const selColor=wp?.color||COLORS[0];
   const wages=wp?.wageHistory?.length?wp.wageHistory:[{startDate:todayStr(),wage:''}];
   const nw=wp?.nightWage||{enabled:false,startTime:'22:00',endTime:'05:00',wage:''};
+  
   const wageRowsHTML=wages.map((w,i)=>`
     <div class="wh-item" data-wi="${i}">
       <input type="date" class="fi wh-d" style="flex:1.4" value="${w.startDate}">
@@ -1292,6 +1400,7 @@ function openWpModal(wpId){
       <span style="font-size:.75rem;color:#be185d">円〜</span>
       ${wages.length>1?`<button class="btn-rwage" data-i="${i}">✕</button>`:''}
     </div>`).join('');
+    
   const cutoffOpts=Array.from({length:28},(_,i)=>`<option value="${i+1}"${(wp?.cutoffDay||20)===i+1?' selected':''} >${i+1}日</option>`).join('')+`<option value="0"${wp?.cutoffDay===0?' selected':''}>月末</option>`;
   const payOpts=Array.from({length:28},(_,i)=>`<option value="${i+1}"${(wp?.payDay||25)===i+1?' selected':''} >${i+1}日</option>`).join('')+`<option value="0"${wp?.payDay===0?' selected':''}>月末</option>`;
 
@@ -1305,6 +1414,7 @@ function openWpModal(wpId){
     <div class="fsec">時給設定（昇給履歴）</div>
     <div id="wm-wages">${wageRowsHTML}</div>
     <button class="btn-awage" id="btn-awage">＋ 昇給を追加</button>
+    
     <div class="fsec">深夜時給</div>
     <div class="tog-row">
       <span class="tog-lbl">深夜割増を設定する</span>
@@ -1317,20 +1427,42 @@ function openWpModal(wpId){
       </div>
       <div class="fg"><label>深夜時給（円）</label><input type="number" class="fi" id="wm-nw" value="${nw.wage||''}" placeholder="例: 1375"></div>
     </div>
-    <div class="fsec">交通費 / 日々控除</div>
-    <div class="f2">
-      <div class="fg"><label>交通費（円/日）</label><input type="number" class="fi" id="wm-tr" value="${wp?.transportFee||0}" placeholder="0"></div>
-      <div class="fg"><label>日々控除（円/日）</label><input type="number" class="fi" id="wm-dd" value="${wp?.dailyDeduction||0}" placeholder="0"></div>
-    </div>
-    <div class="fsec">税金・社会保険料</div>
-    <div class="f2">
-      <div class="fg"><label>社会保険料率（%）</label><input type="number" class="fi" id="wm-si" value="${wp?.socialInsuranceRate||0}" min="0" max="100" step="0.1" placeholder="0"></div>
-      <div class="fg"><label>所得税率（%）</label><input type="number" class="fi" id="wm-it" value="${wp?.incomeTaxRate||0}" min="0" max="100" step="0.1" placeholder="0"></div>
-    </div>`;
+    
+    <div class="fsec">手当設定</div>
+    <div id="wm-allows"></div>
+    <button class="btn-add" id="btn-add-allow" style="margin-bottom:12px; padding:8px;">＋ 手当を追加</button>
+    
+    <div class="fsec">控除設定</div>
+    <div id="wm-deducts"></div>
+    <button class="btn-add" id="btn-add-deduct" style="padding:8px;">＋ 控除を追加</button>
+  `;
 
   openModal(isNew?'勤務先を追加':'勤務先を編集',body,foot=>{
     let color=selColor;
     bindSwatches(document.getElementById('modal-body'),c=>color=c);
+    
+    const allowsContainer = document.getElementById('wm-allows');
+    const deductsContainer = document.getElementById('wm-deducts');
+
+    if (wp) {
+      if (wp.allowances?.length) {
+        wp.allowances.forEach(a => allowsContainer.appendChild(createDynamicItemRow('allow', a)));
+      } else if (wp.transportFee) {
+        allowsContainer.appendChild(createDynamicItemRow('allow', {name:'交通費', timing:'day', mode:'fix', value:wp.transportFee}));
+      }
+
+      if (wp.deductions?.length) {
+        wp.deductions.forEach(d => deductsContainer.appendChild(createDynamicItemRow('deduct', d)));
+      } else {
+        if (wp.dailyDeduction) deductsContainer.appendChild(createDynamicItemRow('deduct', {name:'日々控除', timing:'day', mode:'fix', value:wp.dailyDeduction}));
+        if (wp.socialInsuranceRate) deductsContainer.appendChild(createDynamicItemRow('deduct', {name:'社会保険料', timing:'month', mode:'pct', value:wp.socialInsuranceRate}));
+        if (wp.incomeTaxRate) deductsContainer.appendChild(createDynamicItemRow('deduct', {name:'所得税', timing:'month', mode:'pct', value:wp.incomeTaxRate}));
+      }
+    }
+
+    document.getElementById('btn-add-allow').onclick = () => allowsContainer.appendChild(createDynamicItemRow('allow'));
+    document.getElementById('btn-add-deduct').onclick = () => deductsContainer.appendChild(createDynamicItemRow('deduct'));
+
     document.getElementById('wm-ne').onchange=e=>{document.getElementById('wm-nf').style.display=e.target.checked?'':'none';};
     document.getElementById('btn-awage').onclick=()=>{
       const wagesEl=document.getElementById('wm-wages');
@@ -1343,15 +1475,18 @@ function openWpModal(wpId){
       wagesEl.appendChild(div);
     };
     document.getElementById('wm-wages').querySelectorAll('.btn-rwage').forEach(b=>b.onclick=()=>b.closest('.wh-item').remove());
+    
     if (!isNew){
       const db=document.createElement('button'); db.className='btn-del'; db.textContent='削除';
       db.onclick=()=>{if(!confirm('この勤務先を削除しますか？'))return;D.workplaces=D.workplaces.filter(w=>w.id!==wpId);save();closeModal();renderSettings();};
       foot.appendChild(db);
     }
+    
     const sb=document.createElement('button'); sb.className='btn-save'; sb.textContent='保存';
     sb.onclick=()=>{
       const name=document.getElementById('wm-name').value.trim();
       if(!name){alert('勤務先名を入力してください');return;}
+      
       const wh=[];
       document.querySelectorAll('#wm-wages .wh-item').forEach(item=>{
         const d=item.querySelector('.wh-d').value;
@@ -1359,6 +1494,25 @@ function openWpModal(wpId){
         if(d&&!isNaN(w)) wh.push({startDate:d,wage:w});
       });
       wh.sort((a,b)=>a.startDate.localeCompare(b.startDate));
+
+      const allowances = [];
+      allowsContainer.querySelectorAll('.dyn-item').forEach(el => {
+        const n = el.querySelector('.dyn-name').value.trim() || '手手当';
+        const t = el.querySelector('.dyn-timing').value;
+        const m = el.querySelector('.dyn-mode').value;
+        const v = parseFloat(el.querySelector('.dyn-value').value) || 0;
+        allowances.push({ name: n, timing: t, mode: m, value: v });
+      });
+
+      const deductions = [];
+      deductsContainer.querySelectorAll('.dyn-item').forEach(el => {
+        const n = el.querySelector('.dyn-name').value.trim() || '控除';
+        const t = el.querySelector('.dyn-timing').value;
+        const m = el.querySelector('.dyn-mode').value;
+        const v = parseFloat(el.querySelector('.dyn-value').value) || 0;
+        deductions.push({ name: n, timing: t, mode: m, value: v });
+      });
+
       const obj={id:wpId||uid(),name,color,
         cutoffDay:parseInt(document.getElementById('wm-cut').value),
         payDay:parseInt(document.getElementById('wm-pay').value),
@@ -1367,11 +1521,10 @@ function openWpModal(wpId){
           startTime:document.getElementById('wm-ns').value,
           endTime:document.getElementById('wm-ne2').value,
           wage:parseFloat(document.getElementById('wm-nw').value)||0},
-        transportFee:parseFloat(document.getElementById('wm-tr').value)||0,
-        dailyDeduction:parseFloat(document.getElementById('wm-dd').value)||0,
-        socialInsuranceRate:parseFloat(document.getElementById('wm-si').value)||0,
-        incomeTaxRate:parseFloat(document.getElementById('wm-it').value)||0,
+        allowances,
+        deductions
       };
+      
       if(isNew) D.workplaces.push(obj);
       else {const i=D.workplaces.findIndex(w=>w.id===wpId);D.workplaces[i]=obj;}
       save();closeModal();renderSettings();
@@ -1624,6 +1777,7 @@ function applyTheme(t) {
     .theme-hex { border-color: ${border} !important; }
     .theme-hex:focus { border-color: ${t.ac} !important; }
     .theme-reset { color: ${t.tx} !important; background: ${lightBg} !important; }
+    .dyn-item { background: ${subtleBg} !important; border-color: ${border} !important; }
   `;
 }
 
@@ -1715,16 +1869,10 @@ document.getElementById('btn-share').onclick = () => {
 
   D.workplaces.forEach(wp => {
     const p = payPeriod(wp, S.y, S.m);
+    const res = calcPeriodSummary(wp, p.start, p.end);
     const shifts = D.shifts
       .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
       .sort((a,b) => a.date.localeCompare(b.date));
-
-    let wDays=0, wGross=0, wDD=0;
-    shifts.forEach(s => { const x=shiftPay(s); wDays++; wGross+=x.gross; wDD+=x.dd; });
-    const afterDD = wGross - wDD;
-    const si = afterDD * (wp.socialInsuranceRate||0) / 100;
-    const it = (afterDD - si) * (wp.incomeTaxRate||0) / 100;
-    const net = afterDD - si - it;
 
     const [,ps,pd] = p.start.split('-').map(Number);
     const [,pe,ped] = p.end.split('-').map(Number);
@@ -1738,11 +1886,11 @@ document.getElementById('btn-share').onclick = () => {
       const pay = shiftPay(s);
       text += `  ${sm}/${sd}(${d}) ${s.startTime}〜${s.endTime} ${h.toFixed(1)}h ${fmt(pay.total)}\n`;
     });
-    text += `  出勤${wDays}日 総支給${fmt(wGross)}`;
-    if (wDD>0) text += ` 控除-${fmt(wDD)}`;
-    if (si>0)  text += ` 社保-${fmt(si)}`;
-    if (it>0)  text += ` 所得税-${fmt(it)}`;
-    text += `\n  💰 手取り ${fmt(net)}\n`;
+    
+    res.allowanceDetails.forEach(a => { text += `  [手当] ${a.name}: +${fmt(a.value)}\n`; });
+    text += `  総支給額: ${fmt(res.gross)}\n`;
+    res.deductionDetails.forEach(d => { text += `  [控除] ${d.name}: -${fmt(d.value)}\n`; });
+    text += `  💰 手取り ${fmt(res.netPay)}\n`;
   });
 
   text += '\n' + '━'.repeat(24) + '\n';
