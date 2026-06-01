@@ -643,7 +643,6 @@
 
 <script>
 // ===== CONSTANTS =====
-// パステルカラー
 const COLORS = [
   '#ffb3c6','#ffc8a2','#fff0a0','#b5ead7','#bde0fe','#e2c4f0',
   '#ffc0e0','#a8d8ea','#d4f1c0','#ffd6ba'
@@ -654,17 +653,14 @@ let D = { workplaces: [], templates: [], shifts: [] };
 let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
 let calTabLastTap = 0;
-let chartPie = null, chartBar = null;
+// グラフ用変数を一括管理（二重描画バグ防止）
+let charts = { pie: null, bar: null, daily: null };
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
 function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) D = JSON.parse(r); } catch(e) {}
-  // migrate from old key
-  if (!D.workplaces.length) {
-    try { const old = localStorage.getItem('payapp_v3'); if (old) D = JSON.parse(old); } catch(e) {}
-  }
 }
 
 // ===== UTILS =====
@@ -732,14 +728,18 @@ function periodTotal(wpId,start,end) {
     .reduce((sum,s)=>sum+shiftPay(s).total,0);
 }
 
-// 手取り計算（税金・社会保険料を引いた後）
+// 手取り計算を一元化（重複コード解消）
+function calcNetPayFromGross(grossAmount, wp) {
+  if (!wp) return grossAmount;
+  const si=grossAmount*(wp.socialInsuranceRate||0)/100;
+  const it=(grossAmount-si)*(wp.incomeTaxRate||0)/100;
+  return grossAmount-si-it;
+}
+
 function periodNetPay(wpId,start,end) {
   const wp=D.workplaces.find(w=>w.id===wpId);
   const afterDD=periodTotal(wpId,start,end);
-  if (!wp) return afterDD;
-  const si=afterDD*(wp.socialInsuranceRate||0)/100;
-  const it=(afterDD-si)*(wp.incomeTaxRate||0)/100;
-  return afterDD-si-it;
+  return calcNetPayFromGross(afterDD, wp);
 }
 
 // ===== MONTH NAV =====
@@ -759,7 +759,6 @@ document.querySelectorAll('.tab').forEach(btn=>{
   btn.onclick=()=>{
     const now = Date.now();
     if (btn.dataset.tab==='calendar') {
-      // ダブルタップで今日に戻る
       if (now - calTabLastTap < 400) {
         const t = new Date();
         S.y = t.getFullYear(); S.m = t.getMonth()+1; S.sel = todayStr();
@@ -834,17 +833,12 @@ function renderCal() {
 // ===== SUMMARY =====
 function renderSummary() {
   const sel=S.sel, todS=todayStr();
-  // その日の手取り
   const dayShifts=D.shifts.filter(s=>s.date===sel);
-  const dayGross=dayShifts.reduce((sum,s)=>sum+shiftPay(s).total,0);
   const dayNet=dayShifts.reduce((sum,s)=>{
     const wp=D.workplaces.find(w=>w.id===s.workplaceId);
-    if(!wp) return sum+shiftPay(s).total;
-    const g=shiftPay(s).total;
-    const si=g*(wp.socialInsuranceRate||0)/100;
-    const it=(g-si)*(wp.incomeTaxRate||0)/100;
-    return sum+g-si-it;
+    return sum + calcNetPayFromGross(shiftPay(s).total, wp);
   },0);
+
   let toDate=0, forecast=0;
   D.workplaces.forEach(wp=>{
     const p=payPeriod(wp,S.y,S.m);
@@ -968,14 +962,12 @@ function renderDetailCharts() {
   const el=document.getElementById('det-charts'); el.innerHTML='';
   if (!D.workplaces.length) return;
 
-  // ドーナツ: 今期バイト別収入
   const wpAmounts=D.workplaces.map(wp=>{
     const start=ds(S.y,S.m,1), end=ds(S.y,S.m,daysInMonth(S.y,S.m));
     return {name:wp.name,color:wp.color||'#ec4899',
       amount:periodTotal(wp.id,start,end)};
   }).filter(x=>x.amount>0);
 
-  // 過去6ヶ月の棒グラフ
   const months=[];
   for (let i=5;i>=0;i--){
     let y=S.y, m=S.m-i;
@@ -1005,10 +997,8 @@ function renderDetailCharts() {
     return card;
   }
 
-  // ① タイムライン（最上部）
   el.appendChild(makeChartCard('timeline', `${S.m}月のシフトタイムライン`, `<div id="det-timeline"></div>`));
 
-  // ② 収入割合（ドーナツ）
   if (wpAmounts.length) {
     const legendRows = wpAmounts.map(x=>`
       <div class="donut-legend-row">
@@ -1022,18 +1012,17 @@ function renderDetailCharts() {
       `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`));
   }
 
-  // ③ 日別勤務時間
   el.appendChild(makeChartCard('daily', `${S.m}月の日別勤務時間`, `<canvas id="det-daily"></canvas>`));
-
-  // ④ 過去6ヶ月の推移
   el.appendChild(makeChartCard('bar', '過去6ヶ月の推移', `<canvas id="det-bar"></canvas>`));
-
   el.style.paddingBottom='10px';
 
-  // Render donut
+  // 全グラフ破棄・クリーンアップ（二重描画対策）
+  if (charts.pie) charts.pie.destroy();
+  if (charts.bar) charts.bar.destroy();
+  if (charts.daily) charts.daily.destroy();
+
   if (wpAmounts.length) {
-    if (chartPie) chartPie.destroy();
-    chartPie=new Chart(document.getElementById('det-donut'),{
+    charts.pie=new Chart(document.getElementById('det-donut'),{
       type:'doughnut',
       data:{labels:wpAmounts.map(x=>x.name),
         datasets:[{data:wpAmounts.map(x=>x.amount),
@@ -1045,8 +1034,6 @@ function renderDetailCharts() {
     });
   }
 
-  // Render bar (6-month trend per workplace - カレンダー月ベース)
-  if (chartBar) chartBar.destroy();
   const datasets=D.workplaces.map(wp=>({
     label:wp.name,
     data:months.map(({y,m})=>{
@@ -1055,7 +1042,7 @@ function renderDetailCharts() {
     }),
     backgroundColor:wp.color||'#ec4899',borderRadius:4,
   }));
-  chartBar=new Chart(document.getElementById('det-bar'),{
+  charts.bar=new Chart(document.getElementById('det-bar'),{
     type:'bar',
     data:{labels:months.map(x=>x.label),datasets},
     options:{plugins:{legend:{display:false},
@@ -1065,11 +1052,9 @@ function renderDetailCharts() {
       maintainAspectRatio:true}
   });
 
-  // Daily hours chart
   const dim=daysInMonth(S.y,S.m);
   const labels=Array.from({length:dim},(_,i)=>String(i+1));
   const dailyDatasets=D.workplaces.map(wp=>{
-    const key=`${wp.id}-${S.y}-${String(S.m).padStart(2,'0')}`;
     const list=D.shifts.filter(s=>s.workplaceId===wp.id&&s.date.startsWith(`${S.y}-${String(S.m).padStart(2,'0')}`));
     const data=labels.map((_,i)=>{
       const dstr=ds(S.y,S.m,i+1);
@@ -1080,7 +1065,7 @@ function renderDetailCharts() {
     });
     return {label:wp.name,data,backgroundColor:wp.color||'#ec4899',borderRadius:3};
   });
-  new Chart(document.getElementById('det-daily'),{
+  charts.daily=new Chart(document.getElementById('det-daily'),{
     type:'bar',
     data:{labels,datasets:dailyDatasets},
     options:{plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,boxWidth:10}},
@@ -1096,36 +1081,28 @@ function renderTimeline() {
   const el = document.getElementById('det-timeline');
   if (!el) return;
   const DOW = ['日','月','火','水','木','金','土'];
-  const monthPrefix = `${S.y}-${String(S.m).padStart(2,'0')}`;
   const RRANGE = 1440;
-  const gridHTML = [6,12,18].map(h =>
-    `<div class="tl-grid" style="left:${h/24*100}%"></div>`).join('');
+  const gridHTML = [6,12,18].map(h => `<div class="tl-grid" style="left:${h/24*100}%"></div>`).join('');
 
-  // 全日分のバー生成
   const dim = daysInMonth(S.y, S.m);
   const rowsHTML = Array.from({length: dim}, (_,i) => {
     const date = ds(S.y, S.m, i+1);
     const d = new Date(date+'T00:00:00');
     const dow = DOW[d.getDay()];
     const isRed = d.getDay()===0, isSat = d.getDay()===6;
-    // この日に始まるシフト
     const dayShifts = D.shifts.filter(s=>s.date===date);
-    // 前日から持ち越すシフト（前日のシフトが深夜をまたぐ場合）
     const prevDate = addDay(date, -1);
     const overShifts = D.shifts.filter(s => {
       if (s.date !== prevDate) return false;
-      const st = toMin(s.startTime), en = toMin(s.endTime);
-      return en <= st; // 深夜またぎ
+      return toMin(s.endTime) <= toMin(s.startTime);
     });
 
     const barsHTML = [
-      // 前日からの持ち越し（0時〜終了時刻）
       ...overShifts.map(s => {
         const end = toMin(s.endTime);
         const barWidth = end / RRANGE * 100;
         return `<div class="tl-bar tl-bar-cont-left" style="left:0%;width:${Math.max(.5,barWidth).toFixed(1)}%;background:${s.color||'#ec4899'}" title="${s.title||''} 〜${s.endTime}"><span class="tl-bar-ov" style="left:2px;right:auto">‹</span></div>`;
       }),
-      // この日のシフト
       ...dayShifts.map(s => {
         const start = toMin(s.startTime);
         let end = toMin(s.endTime);
@@ -1161,13 +1138,12 @@ function renderDetailCards() {
     let workDays=0,nh=0,dh=0,np=0,dp=0,tr=0,ddTotal=0,gross=0;
     periodShifts.forEach(s=>{const x=shiftPay(s);workDays++;nh+=x.nh;dh+=x.dh;np+=x.np;dp+=x.dp;tr+=x.tr;ddTotal+=x.dd;gross+=x.gross;});
     const afterDD=gross-ddTotal;
-    const siRate=wp.socialInsuranceRate||0;
-    const itRate=wp.incomeTaxRate||0;
+    const siRate=wp.socialInsuranceRate||0, itRate=wp.incomeTaxRate||0;
     const siAmt=afterDD*siRate/100;
     const itAmt=(afterDD-siAmt)*itRate/100;
     const netPay=afterDD-siAmt-itAmt;
-    const [,ps,pd]=[...p.start.split('-').map(Number)];
-    const [,pe,ped]=[...p.end.split('-').map(Number)];
+    const [,ps,pd]=p.start.split('-').map(Number);
+    const [,pe,ped]=p.end.split('-').map(Number);
     const payD=wp.payDay===0?'月末':`${wp.payDay}日`;
     const payMLabel=p.end.slice(0,7)===`${S.y}-${String(S.m).padStart(2,'0')}`?`翌月${payD}`:`${S.m}月${payD}`;
 
@@ -1235,7 +1211,6 @@ function renderDetailCards() {
       localStorage.setItem(colKey, nowCollapsed ? '1' : '0');
     };
 
-    // シフト一覧トグル
     const sltKey = `slt_${wp.id}`;
     const sltOpen = localStorage.getItem(sltKey) === '1';
     const sltBtn = card.querySelector(`#slt-${wp.id}`);
@@ -1462,10 +1437,8 @@ function openDayDetail(dstr) {
   D.shifts.filter(s => s.date === dstr).forEach(sh => {
     const wp = D.workplaces.find(w => w.id === sh.workplaceId);
     const pay = shiftPay(sh);
-
     const wrapper = document.createElement('div');
 
-    // シフト行
     const item = document.createElement('div');
     item.className = 'dd-item';
     item.innerHTML = `
@@ -1478,7 +1451,6 @@ function openDayDetail(dstr) {
       <div class="dd-pay">${fmt(pay.total)}</div>
       <button class="dd-pencil" title="編集">✏️</button>`;
 
-    // インライン編集フォーム（初期は非表示）
     const form = document.createElement('div');
     form.className = 'dd-edit-form hidden';
     const colorSwatchesHTML = COLORS.map(c =>
@@ -1496,7 +1468,6 @@ function openDayDetail(dstr) {
         <button class="dd-ef-save">保存</button>
       </div>`;
 
-    // カラー選択
     let editColor = sh.color || COLORS[0];
     form.querySelectorAll('.dd-sw').forEach(sw => {
       sw.onclick = () => {
@@ -1506,7 +1477,6 @@ function openDayDetail(dstr) {
       };
     });
 
-    // 鉛筆ボタンでフォームをトグル
     item.querySelector('.dd-pencil').onclick = e => {
       e.stopPropagation();
       form.classList.toggle('hidden');
@@ -1536,7 +1506,6 @@ function openDayDetail(dstr) {
     list.appendChild(wrapper);
   });
 
-
   ddMask.classList.remove('hidden');
   requestAnimationFrame(() => ddMask.classList.add('show'));
 }
@@ -1546,10 +1515,8 @@ function closeDayDetail() {
   setTimeout(() => ddMask.classList.add('hidden'), 300);
 }
 
-// 背景タップで閉じる
 ddMask.addEventListener('click', e => { if (e.target === ddMask) closeDayDetail(); });
 
-// スワイプダウンで閉じる
 let ddTouchY = 0;
 ddSheet.addEventListener('touchstart', e => { ddTouchY = e.touches[0].clientY; }, { passive: true });
 ddSheet.addEventListener('touchend', e => {
@@ -1559,20 +1526,18 @@ ddSheet.addEventListener('touchend', e => {
 // ===== THEME =====
 const DEFAULT_THEME = { g1:'#fdd5e8', g2:'#f9a8d4', ac:'#ec4899', tx:'#ec5b97' };
 
-// 2色をwhiteと混ぜて派生色を作る
-function mixColor(hex, ratio) { // ratio: 0=hex, 1=white
+function mixColor(hex, ratio) {
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
   const mix = c => Math.round(c*(1-ratio)+255*ratio);
   return `#${mix(r).toString(16).padStart(2,'0')}${mix(g).toString(16).padStart(2,'0')}${mix(b).toString(16).padStart(2,'0')}`;
 }
 
 function applyTheme(t) {
-  // 4色から派生色を自動計算
-  const border   = mixColor(t.g2, 0.55);  // ボーダー・区切り線
-  const lightBg  = mixColor(t.g1, 0.75);  // 薄い背景（セル・カード）
-  const subtleBg = mixColor(t.g1, 0.88);  // 極薄背景（ホバー・アイテム）
-  const bodyBg   = mixColor(t.g1, 0.70);  // ページ背景
-  const mutedTx  = mixColor(t.g2, 0.15);  // ヒント・サブテキスト
+  const border   = mixColor(t.g2, 0.55);
+  const lightBg  = mixColor(t.g1, 0.75);
+  const subtleBg = mixColor(t.g1, 0.88);
+  const bodyBg   = mixColor(t.g1, 0.70);
+  const mutedTx  = mixColor(t.g2, 0.15);
 
   document.getElementById('theme-vars').textContent = `
     body { background: ${bodyBg} !important; }
@@ -1584,8 +1549,6 @@ function applyTheme(t) {
     #month-title { color: ${t.tx} !important; text-shadow: none !important; }
     .app-title-main { color: ${t.tx} !important; }
     .app-title-sub { color: ${t.ac} !important; }
-
-    /* カレンダー */
     .cal-dow { border-bottom-color: ${border} !important; }
     .cal-dow div { color: ${t.tx} !important; }
     .cal-dow div:first-child { color: #e11d48 !important; }
@@ -1595,16 +1558,12 @@ function applyTheme(t) {
     .cal-cell.sel { outline-color: ${t.g2} !important; background: ${lightBg} !important; }
     .cal-cell.tod .cal-day { background: ${t.ac} !important; }
     .cal-cell:active { background: ${lightBg} !important; }
-
-    /* サマリー */
     .summary-bar { border-top-color: ${border} !important; }
     .sum-item { background: ${lightBg} !important; }
     .sum-item-lbl { color: ${t.tx} !important; }
     .sum-item-val.accent { color: ${t.ac} !important; }
     .add-shift-btn { background: linear-gradient(135deg,${t.g1},${t.g2}) !important; box-shadow: 0 4px 14px ${t.g2}60 !important; }
     .add-shift-icon, .add-shift-label { color: ${t.tx} !important; }
-
-    /* ボトムシート */
     .bs-bar { background: ${border} !important; }
     .bs-head { border-bottom-color: ${border} !important; }
     .bs-head-hint { color: ${mutedTx} !important; }
@@ -1618,11 +1577,7 @@ function applyTheme(t) {
     .bf-row label { color: ${t.tx} !important; }
     .bf-row select, .bf-row input { border-color: ${border} !important; }
     .btn-bs-save { background: linear-gradient(135deg,${t.g2},${t.ac}) !important; }
-
-    /* ボタン共通 */
     .btn-save, .btn-bs-save, .dd-ef-save, .btn-backup { background: linear-gradient(135deg,${t.g2},${t.ac}) !important; }
-
-    /* 明細 */
     .det-card { box-shadow: 0 2px 8px ${t.g2}30 !important; }
     .det-chart-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .det-chart-title { color: ${t.tx} !important; }
@@ -1633,8 +1588,6 @@ function applyTheme(t) {
     .det-total .lbl { color: ${t.tx} !important; }
     .det-total .val { color: ${t.ac} !important; }
     .det-period, .det-payday { color: ${mutedTx} !important; }
-
-    /* 設定 */
     .set-list { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .set-item { border-bottom-color: ${border} !important; }
     .set-item:active { background: ${lightBg} !important; }
@@ -1642,8 +1595,6 @@ function applyTheme(t) {
     .set-sub, .set-arr { color: ${mutedTx} !important; }
     .btn-add { border-color: ${border} !important; color: ${t.ac} !important; }
     .btn-add:active { background: ${lightBg} !important; border-color: ${t.ac} !important; }
-
-    /* モーダル */
     .modal-head, .modal-foot { border-color: ${border} !important; }
     .btn-mclose { color: ${t.tx} !important; background: ${lightBg} !important; }
     .fg label { color: ${t.tx} !important; }
@@ -1658,8 +1609,6 @@ function applyTheme(t) {
     .backup-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .backup-divider { background: ${border} !important; }
     .backup-sub { color: ${mutedTx} !important; }
-
-    /* 詳細シート */
     .dd-sheet { box-shadow: 0 -4px 24px ${t.g2}40 !important; }
     .dd-handle { background: ${border} !important; }
     .dd-head { border-bottom-color: ${border} !important; }
@@ -1670,8 +1619,6 @@ function applyTheme(t) {
     .dd-ef-in { border-color: ${border} !important; }
     .dd-ef-in:focus { border-color: ${t.ac} !important; }
     .dd-ef-cancel { color: ${t.tx} !important; background: ${lightBg} !important; }
-
-    /* テーマ設定 */
     .theme-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .theme-row { border-bottom-color: ${border} !important; }
     .theme-hex { border-color: ${border} !important; }
@@ -1773,7 +1720,7 @@ document.getElementById('btn-share').onclick = () => {
       .sort((a,b) => a.date.localeCompare(b.date));
 
     let wDays=0, wGross=0, wDD=0;
-    shifts.forEach(s=>{ const x=shiftPay(s); wDays++; wGross+=x.gross; wDD+=x.dd; });
+    shifts.forEach(s => { const x=shiftPay(s); wDays++; wGross+=x.gross; wDD+=x.dd; });
     const afterDD = wGross - wDD;
     const si = afterDD * (wp.socialInsuranceRate||0) / 100;
     const it = (afterDD - si) * (wp.incomeTaxRate||0) / 100;
@@ -1813,22 +1760,19 @@ document.getElementById('btn-share').onclick = () => {
 };
 
 // ===== CALENDAR SWIPE =====
-(()=>{
+(() => {
   const pane = document.getElementById('pane-calendar');
   let tx = 0, ty = 0, moved = false;
-  pane.addEventListener('touchstart', e=>{
+  pane.addEventListener('touchstart', e => {
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
     moved = false;
   }, { passive: true });
-  pane.addEventListener('touchmove', e=>{
-    moved = true;
-  }, { passive: true });
-  pane.addEventListener('touchend', e=>{
+  pane.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  pane.addEventListener('touchend', e => {
     if (!moved) return;
     const dx = e.changedTouches[0].clientX - tx;
     const dy = e.changedTouches[0].clientY - ty;
-    // 水平スワイプのみ（縦スクロールと区別）
     if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     if (dx < 0) { S.m++; if(S.m>12){S.m=1;S.y++;} }
     else        { S.m--; if(S.m<1) {S.m=12;S.y--;} }
