@@ -90,7 +90,7 @@
     .cal-cell.tod .cal-day { background: #ec4899; color: white !important; }
     .cal-badges { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
     .cal-badge { font-size: .6rem; font-weight: 700; padding: 1px 3px; border-radius: 3px;
-      color: white; line-height: 1.5; width: 100%; box-sizing: border-box;
+      color: #2d2d2d; line-height: 1.5; width: 100%; box-sizing: border-box;
       overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
       display: flex; align-items: center; gap: 2px; pointer-events: none; }
     .badge-t { font-weight: 700; flex-shrink: 0; }
@@ -475,8 +475,52 @@
     .restore-msg.hidden { display: none; }
     .restore-msg.ok { background: #f0fdf4; color: #16a34a; }
     .restore-msg.err { background: #fff5f5; color: #e11d48; }
+    /* ===== Tax tab ===== */
+    .tax-year-nav { display:flex; align-items:center; justify-content:center; gap:12px; padding:14px 16px 8px; flex-shrink:0; }
+    .tax-year-btn { background:rgba(253,212,232,.5); border:none; color:#be185d; width:30px; height:30px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .tax-year-lbl { font-size:1.05rem; font-weight:800; color:#3d1a2e; }
+    .tax-summary-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 12px 10px; }
+    .tax-sum-card { background:white; border-radius:14px; padding:12px 14px; box-shadow:0 2px 8px rgba(236,72,153,.08); }
+    .tax-sum-lbl { font-size:.65rem; font-weight:700; color:#be185d; margin-bottom:4px; letter-spacing:.04em; }
+    .tax-sum-val { font-size:1.05rem; font-weight:800; color:#3d1a2e; }
+    .tax-sum-val.accent { color:#ec4899; }
+    .tax-sum-val.warn { color:#e11d48; }
+    .tax-sum-val.ok { color:#16a34a; }
+    .tax-warn-box { margin:0 12px 10px; padding:12px 14px; border-radius:12px; background:#fff5f5; border:1px solid #fecaca; font-size:.82rem; color:#e11d48; font-weight:600; line-height:1.6; }
+    .tax-warn-box.hidden { display:none; }
+    .tax-ok-box { margin:0 12px 10px; padding:12px 14px; border-radius:12px; background:#f0fdf4; border:1px solid #bbf7d0; font-size:.82rem; color:#16a34a; font-weight:600; line-height:1.6; }
+    .tax-ok-box.hidden { display:none; }
+    .tax-calc-detail { margin:0 12px 10px; background:white; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(236,72,153,.08); }
+    .tax-calc-head { padding:11px 14px; font-size:.72rem; font-weight:700; color:#f9a8d4; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #fce7f3; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; }
+    .tax-calc-body { }
+    .tax-calc-body.hidden { display:none; }
+    .tax-calc-row { display:flex; justify-content:space-between; padding:8px 14px; border-bottom:1px solid #fff5f9; font-size:.83rem; }
+    .tax-calc-row .lbl { color:#be185d; }
+    .tax-calc-row .val { font-weight:600; color:#3d1a2e; }
+    .tax-calc-row.deduct .val { color:#e11d48; }
+    .tax-calc-row.total { background:#fff5f9; }
+    .tax-calc-row.total .lbl, .tax-calc-row.total .val { font-weight:700; }
+    .tax-month-sec { margin:0 12px 10px; }
+    .tax-month-sec-title { font-size:.68rem; font-weight:700; color:#f9a8d4; text-transform:uppercase; letter-spacing:.06em; padding:0 2px 6px; }
+    .tax-month-card { background:white; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(236,72,153,.08); margin-bottom:8px; }
+    .tax-month-head { padding:11px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #fce7f3; cursor:pointer; }
+    .tax-month-lbl { font-size:.9rem; font-weight:700; color:#3d1a2e; }
+    .tax-month-total { font-size:.88rem; font-weight:700; color:#ec4899; }
+    .tax-month-body { }
+    .tax-month-body.hidden { display:none; }
+    .tax-wp-row { padding:10px 14px; border-bottom:1px solid #fff5f9; }
+    .tax-wp-row:last-child { border-bottom:none; }
+    .tax-wp-name { font-size:.82rem; font-weight:700; color:#3d1a2e; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+    .tax-inp-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+    .tax-inp-wrap { display:flex; flex-direction:column; gap:3px; }
+    .tax-inp-lbl { font-size:.62rem; color:#be185d; font-weight:600; }
+    .tax-inp { width:100%; padding:6px 8px; border:1px solid #fce7f3; border-radius:8px; font-size:.82rem; outline:none; color:#3d1a2e; text-align:right; }
+    .tax-inp:focus { border-color:#ec4899; }
+    .tax-inp.si { border-color:#bde0fe; background:#f0f8ff; }
+    .tax-no-si { grid-template-columns:1fr 1fr; }
+    .tax-add-btn { display:flex; align-items:center; justify-content:center; gap:6px; margin:4px 12px 16px; padding:12px; background:white; border:1.5px dashed #fce7f3; border-radius:14px; color:#ec4899; font-size:.87rem; font-weight:600; cursor:pointer; }
+    .tax-add-btn:active { background:#fff0f7; border-color:#ec4899; }
   </style>
-</head>
 <body>
 <div id="app">
   <header>
@@ -522,7 +566,8 @@
     <nav class="tabs">
       <button class="tab active" data-tab="calendar">カレンダー</button>
       <button class="tab" data-tab="charts">グラフ</button>
-      <button class="tab" data-tab="detail">明細</button>
+      <button class="tab" data-tab="detail">見込</button>
+      <button class="tab" data-tab="tax">明細</button>
       <button class="tab" data-tab="settings">設定</button>
     </nav>
   </header>
@@ -533,20 +578,21 @@
     </div>
     <div class="cal-grid" id="cal-grid"></div>
     <div class="summary-bar">
-      <div class="summary-items">
+      <div class="summary-items" id="summary-items">
         <div class="sum-item">
           <div class="sum-item-lbl" id="sum-label">日付を選択</div>
           <div class="sum-item-val" id="sum-day">¥0</div>
         </div>
         <div class="sum-item">
-          <div class="sum-item-lbl">今日までの給料</div>
+          <div class="sum-item-lbl" id="sum-todate-lbl">今日までの給料</div>
           <div class="sum-item-val" id="sum-todate">¥0</div>
         </div>
         <div class="sum-item">
-          <div class="sum-item-lbl">今月の見込み</div>
+          <div class="sum-item-lbl" id="sum-forecast-lbl">今月の見込み</div>
           <div class="sum-item-val accent" id="sum-forecast">¥0</div>
         </div>
       </div>
+      <div id="sum-mode-hint" style="text-align:center;font-size:.62rem;color:#f9a8d4;margin:-4px 0 4px;letter-spacing:.03em;">ダブルタップで総支給⇔手取り切り替え</div>
       <button class="add-shift-btn" id="add-shift-btn">
         <span class="add-shift-icon">＋</span>
         <span class="add-shift-label">シフトを登録</span>
@@ -560,6 +606,10 @@
 
   <div class="pane" id="pane-detail">
     <div id="det-content" style="padding: 0 0 16px"></div>
+  </div>
+
+  <div class="pane" id="pane-tax">
+    <div id="tax-content"></div>
   </div>
 
   <div class="pane" id="pane-settings">
@@ -653,18 +703,20 @@ const COLORS = [
 ];
 
 // ===== STATE =====
-let D = { workplaces: [], templates: [], shifts: [] };
+let D = { workplaces: [], templates: [], shifts: [], taxRecords: {} };
 let S = { y: 0, m: 0, sel: null };
 let lastTap = { date: null, time: 0 };
 let calTabLastTap = 0;
 let charts = { pie: null, bar: null, daily: null };
 let currentBSDate = null;
+let showGross = false; // false=手取り, true=総支給
+let chartShowGross = false; // グラフ用
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
 function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
 function load() {
-  try { const r = localStorage.getItem(KEY); if (r) D = JSON.parse(r); } catch(e) {}
+  try { const r = localStorage.getItem(KEY); if (r) { D = JSON.parse(r); if (!D.taxRecords) D.taxRecords = {}; } } catch(e) {}
 }
 
 // ===== UTILS =====
@@ -860,6 +912,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
     if (btn.dataset.tab==='detail') renderDetail();
     if (btn.dataset.tab==='settings') { renderSettings(); initThemeUI(); }
     if (btn.dataset.tab==='calendar') { renderCal(); renderSummary(); }
+    if (btn.dataset.tab==='tax') renderTax();
   };
 });
 
@@ -952,26 +1005,39 @@ function renderSummary() {
   const sel=S.sel, todS=todayStr();
   const dayShifts=D.shifts.filter(s=>s.date===sel);
   
-  let dayNet = 0;
+  let dayNet = 0, dayGross = 0;
   dayShifts.forEach(s => {
-    dayNet += shiftPay(s).total;
+    const p = shiftPay(s);
+    dayNet += p.total;
+    dayGross += p.gross;
   });
 
-  let toDate=0, forecast=0;
+  let toDateNet=0, forecastNet=0, toDateGross=0, forecastGross=0;
   D.workplaces.forEach(wp=>{
     const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
     cdList.forEach(cd => {
       const p=payPeriod(wp,S.y,S.m,cd);
       const todEnd=todS<p.end?todS:p.end;
-      if (todS>=p.start) toDate+=periodNetPay(wp.id,p.start,todEnd);
-      forecast+=periodNetPay(wp.id,p.start,p.end);
+      if (todS>=p.start) {
+        toDateNet += periodNetPay(wp.id,p.start,todEnd);
+        toDateGross += periodTotal(wp.id,p.start,todEnd);
+      }
+      forecastNet += periodNetPay(wp.id,p.start,p.end);
+      forecastGross += periodTotal(wp.id,p.start,p.end);
     });
   });
+
   const [,mm,dd]=sel?sel.split('-').map(Number):[0,0,0];
-  document.getElementById('sum-label').textContent=sel?`${mm}月${dd}日の目安給料`:'日付を選択';
-  document.getElementById('sum-day').textContent=fmt(dayNet);
-  document.getElementById('sum-todate').textContent=fmt(toDate);
-  document.getElementById('sum-forecast').textContent=fmt(forecast);
+  const modeLabel = showGross ? '（総支給）' : '（手取り）';
+  document.getElementById('sum-label').textContent = sel ? `${mm}月${dd}日の目安給料` : '日付を選択';
+  document.getElementById('sum-day').textContent = fmt(showGross ? dayGross : dayNet);
+  document.getElementById('sum-todate-lbl').textContent = `今日までの給料${modeLabel}`;
+  document.getElementById('sum-todate').textContent = fmt(showGross ? toDateGross : toDateNet);
+  document.getElementById('sum-forecast-lbl').textContent = `今月の見込み${modeLabel}`;
+  document.getElementById('sum-forecast').textContent = fmt(showGross ? forecastGross : forecastNet);
+  document.getElementById('sum-mode-hint').textContent = showGross
+    ? 'ダブルタップで手取りに切り替え ✦'
+    : 'ダブルタップで総支給⇔手取り切り替え';
 }
 
 // ===== BOTTOM SHEET =====
@@ -986,6 +1052,14 @@ function closeBS(){document.getElementById('bs-mask').classList.add('hidden');cu
 document.getElementById('btn-bs-close').onclick=closeBS;
 document.getElementById('add-shift-btn').onclick=()=>{ if(S.sel) openBS(S.sel); };
 document.getElementById('bs-mask').onclick=e=>{if(e.target===document.getElementById('bs-mask'))closeBS();};
+
+// サマリーバー ダブルタップで総支給⇔手取り切り替え
+let sumLastTap = 0;
+document.getElementById('summary-items').addEventListener('click', () => {
+  const now = Date.now();
+  if (now - sumLastTap < 380) { showGross = !showGross; renderSummary(); }
+  sumLastTap = now;
+});
 
 document.getElementById('bs-prev-day').onclick=()=>{
   if(!currentBSDate) return;
@@ -1043,7 +1117,7 @@ function renderBSContent(dstr) {
   }
   const acts=document.createElement('div'); acts.className='bs-act';
   acts.innerHTML=`<button class="bs-act-btn" id="btn-manual">✏ 手動で入力</button>
-    <button class="bs-act-btn" id="btn-new-tmpl">＋テンプレート追加</button>`;
+    <button class="bs-act-btn" id="btn-new-tmpl">＋ テンプレート追加</button>`;
   body.appendChild(acts);
   document.getElementById('btn-manual').onclick=()=>showManualForm(dstr,body);
   document.getElementById('btn-new-tmpl').onclick=()=>{closeBS();openTemplateModal(null);};
@@ -1100,9 +1174,13 @@ function renderDetailCharts() {
   if (!D.workplaces.length) return;
 
   const wpAmounts=D.workplaces.map(wp=>{
-    const p=payPeriod(wp,S.y,S.m);
-    return {name:wp.name,color:wp.color||'#ec4899',
-      amount:periodNetPay(wp.id,p.start,p.end)};
+    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+    let amount = 0;
+    cdList.forEach(cd => {
+      const p=payPeriod(wp,S.y,S.m,cd);
+      amount += chartShowGross ? periodTotal(wp.id,p.start,p.end) : periodNetPay(wp.id,p.start,p.end);
+    });
+    return {name:wp.name,color:wp.color||'#ec4899',amount};
   }).filter(x=>x.amount>0);
 
   const months=[];
@@ -1112,13 +1190,16 @@ function renderDetailCharts() {
     months.push({y,m,label:`${m}月`});
   }
 
-  function makeChartCard(key, title, bodyHTML) {
+  function makeChartCard(key, title, bodyHTML, doubletapable) {
     const collapsed = (JSON.parse(localStorage.getItem('chart_collapsed')||'{}'))[key];
     const card = document.createElement('div');
     card.className = 'det-chart-card full';
+    const modeTag = doubletapable
+      ? `<span style="font-size:.58rem;color:#f9a8d4;font-weight:400;margin-left:4px">${chartShowGross?'総支給':'手取り'}</span>`
+      : '';
     card.innerHTML = `
       <div class="det-chart-title chart-toggle-row" data-key="${key}">
-        <span>${title}</span>
+        <span>${title}${modeTag}</span>
         <span class="chart-toggle-icon">${collapsed ? '▶' : '▼'}</span>
       </div>
       <div class="chart-body${collapsed ? ' chart-collapsed' : ''}">${bodyHTML}</div>`;
@@ -1131,12 +1212,24 @@ function renderDetailCharts() {
       state[key] = isCollapsed;
       localStorage.setItem('chart_collapsed', JSON.stringify(state));
     };
+    if (doubletapable) {
+      let lastTapChart = 0;
+      card.addEventListener('click', e => {
+        if (e.target.closest('.chart-toggle-row')) return;
+        const now = Date.now();
+        if (now - lastTapChart < 380) { chartShowGross = !chartShowGross; renderDetailCharts(); }
+        lastTapChart = now;
+      });
+    }
     return card;
   }
 
-  el.appendChild(makeChartCard('timeline', `${S.m}月のシフトタイムライン`, `<div id="det-timeline"></div>`));
+  // グラフ順：タイムライン → 日別勤務時間 → 手取り割合 → 過去6ヶ月
+  el.appendChild(makeChartCard('timeline', `${S.m}月のシフトタイムライン`, `<div id="det-timeline"></div>`, false));
+  el.appendChild(makeChartCard('daily', `${S.m}月の日別勤務時間`, `<canvas id="det-daily"></canvas>`, false));
 
   if (wpAmounts.length) {
+    const modeLabel = chartShowGross ? '総支給' : '手取り';
     const legendRows = wpAmounts.map(x=>`
       <div class="donut-legend-row">
         <span class="donut-legend-dot" style="background:${x.color}"></span>
@@ -1145,12 +1238,11 @@ function renderDetailCharts() {
           <span class="donut-legend-amt">${fmt(x.amount)}</span>
         </div>
       </div>`).join('');
-    el.appendChild(makeChartCard('donut', `${S.m}月の手取り推移・割合`,
-      `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`));
+    el.appendChild(makeChartCard('donut', `${S.m}月の${modeLabel}・割合`,
+      `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`, true));
   }
 
-  el.appendChild(makeChartCard('daily', `${S.m}月の日別勤務時間`, `<canvas id="det-daily"></canvas>`));
-  el.appendChild(makeChartCard('bar', '過去6ヶ月の手取り推移', `<canvas id="det-bar"></canvas>`));
+  el.appendChild(makeChartCard('bar', `過去6ヶ月の${chartShowGross?'総支給':'手取り'}推移`, `<canvas id="det-bar"></canvas>`, true));
   el.style.paddingBottom='10px';
 
   if (charts.pie) charts.pie.destroy();
@@ -1173,8 +1265,13 @@ function renderDetailCharts() {
   const datasets=D.workplaces.map(wp=>({
     label:wp.name,
     data:months.map(({y,m})=>{
-      const p=payPeriod(wp,y,m);
-      return periodNetPay(wp.id,p.start,p.end);
+      const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+      let total = 0;
+      cdList.forEach(cd => {
+        const p=payPeriod(wp,y,m,cd);
+        total += chartShowGross ? periodTotal(wp.id,p.start,p.end) : periodNetPay(wp.id,p.start,p.end);
+      });
+      return total;
     }),
     backgroundColor:wp.color||'#ec4899',borderRadius:4,
   }));
@@ -1955,6 +2052,23 @@ function applyTheme(t) {
     .theme-reset { color: ${t.tx} !important; background: ${lightBg} !important; }
     .dyn-item { background: ${subtleBg} !important; border-color: ${border} !important; }
     .cutoff-item { background: ${subtleBg} !important; border-color: ${border} !important; }
+    .tax-year-btn { background: ${lightBg} !important; color: ${t.tx} !important; }
+    .tax-year-lbl { color: ${t.tx} !important; }
+    .tax-sum-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
+    .tax-sum-lbl { color: ${t.tx} !important; }
+    .tax-calc-detail { box-shadow: 0 2px 8px ${t.g2}20 !important; }
+    .tax-calc-head { color: ${mutedTx} !important; border-bottom-color: ${border} !important; }
+    .tax-calc-row { border-bottom-color: ${subtleBg} !important; }
+    .tax-calc-row .lbl { color: ${t.tx} !important; }
+    .tax-month-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
+    .tax-month-head { border-bottom-color: ${border} !important; }
+    .tax-month-lbl { color: ${t.tx} !important; }
+    .tax-month-total { color: ${t.ac} !important; }
+    .tax-wp-row { border-bottom-color: ${subtleBg} !important; }
+    .tax-inp-lbl { color: ${t.tx} !important; }
+    .tax-inp { border-color: ${border} !important; }
+    .tax-inp:focus { border-color: ${t.ac} !important; }
+    .tax-month-sec-title { color: ${mutedTx} !important; }
   `;
 }
 
@@ -1996,7 +2110,304 @@ function initThemeUI() {
   };
 }
 
-// ===== BACKUP / RESTORE =====
+// ===== TAX TAB =====
+let taxYear = new Date().getFullYear();
+
+function calcIncomeTax(annualIncome) {
+  // 給与所得控除
+  let deduction = 0;
+  if (annualIncome <= 1625000) deduction = 550000;
+  else if (annualIncome <= 1800000) deduction = annualIncome * 0.4 - 100000;
+  else if (annualIncome <= 3600000) deduction = annualIncome * 0.3 + 80000;
+  else if (annualIncome <= 6600000) deduction = annualIncome * 0.2 + 440000;
+  else if (annualIncome <= 8500000) deduction = annualIncome * 0.1 + 1100000;
+  else deduction = 1950000;
+  deduction = Math.min(deduction, 1950000);
+
+  return deduction;
+}
+
+function calcTaxAmount(taxableIncome) {
+  // 所得税率（復興特別所得税2.1%込み）
+  const brackets = [
+    [1950000, 0.05], [3300000, 0.10], [6950000, 0.20],
+    [9000000, 0.23], [18000000, 0.33], [40000000, 0.40], [Infinity, 0.45]
+  ];
+  let tax = 0, prev = 0;
+  for (const [limit, rate] of brackets) {
+    if (taxableIncome <= prev) break;
+    tax += (Math.min(taxableIncome, limit) - prev) * rate;
+    prev = limit;
+  }
+  // 復興特別所得税
+  return Math.floor(tax * 1.021);
+}
+
+function getTaxKey(wpId, year, month, cdIdx) {
+  // cdIdx省略時は旧形式（後方互換）
+  if (cdIdx === undefined || cdIdx === 0) return `${wpId}_${year}_${String(month).padStart(2,'0')}`;
+  return `${wpId}_${year}_${String(month).padStart(2,'0')}_cd${cdIdx}`;
+}
+
+function getTaxRecord(wpId, year, month, cdIdx) {
+  // 新キーで検索、なければ旧キー（cdIdx=0）でもチェック
+  const key = getTaxKey(wpId, year, month, cdIdx);
+  if (D.taxRecords[key]) return D.taxRecords[key];
+  if (cdIdx > 0) {
+    const oldKey = getTaxKey(wpId, year, month, 0);
+    if (D.taxRecords[oldKey]) return D.taxRecords[oldKey];
+  }
+  return { income: '', withholding: '', si: '' };
+}
+
+function setTaxRecord(wpId, year, month, cdIdx, field, value) {
+  const key = getTaxKey(wpId, year, month, cdIdx);
+  if (!D.taxRecords[key]) D.taxRecords[key] = { income: '', withholding: '', si: '' };
+  D.taxRecords[key][field] = value;
+  save();
+  renderTaxSummary();
+}
+
+// 勤務先の締め日リストを取得（後方互換込み）
+function getWpCutoffs(wp) {
+  if (wp.cutoffDays?.length) return wp.cutoffDays;
+  return [{ cutoffDay: wp.cutoffDay ?? 0, payDay: wp.payDay ?? 25 }];
+}
+
+// taxYearに含まれる締め日期間を列挙（給与支払い月＝taxYear内のもの）
+function getTaxPeriods(wp) {
+  const cdList = getWpCutoffs(wp);
+  const periods = [];
+  cdList.forEach((cd, cdIdx) => {
+    // 1〜12月の各締め日期間を生成
+    for (let m = 1; m <= 12; m++) {
+      const p = payPeriod(wp, taxYear, m, cd);
+      // 期間終了日がtaxYear内のものを対象
+      const endYear = parseInt(p.end.slice(0,4));
+      if (endYear === taxYear) {
+        periods.push({ m, cdIdx, cd, start: p.start, end: p.end, payDay: p.payDay });
+      }
+    }
+  });
+  // 重複除去（start/endが同じもの）してソート
+  const seen = new Set();
+  return periods.filter(p => {
+    const k = `${p.cdIdx}_${p.start}_${p.end}`;
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  }).sort((a,b) => a.end.localeCompare(b.end) || a.cdIdx - b.cdIdx);
+}
+
+function renderTaxSummary() {
+  const el = document.getElementById('tax-summary-area');
+  if (!el) return;
+
+  let totalIncome = 0, totalWithholding = 0, totalSI = 0;
+  D.workplaces.forEach(wp => {
+    getTaxPeriods(wp).forEach(({ m, cdIdx }) => {
+      const rec = getTaxRecord(wp.id, taxYear, m, cdIdx);
+      totalIncome += parseFloat(rec.income) || 0;
+      totalWithholding += parseFloat(rec.withholding) || 0;
+      totalSI += parseFloat(rec.si) || 0;
+    });
+  });
+
+  const employmentDeduction = calcIncomeTax(totalIncome);
+  const basicDeduction = totalIncome > 0 ? 480000 : 0;
+  const taxableIncome = Math.max(0, totalIncome - employmentDeduction - basicDeduction - totalSI);
+  const properTax = calcTaxAmount(taxableIncome);
+  const diff = properTax - totalWithholding;
+
+  el.innerHTML = `
+    <div class="tax-summary-cards">
+      <div class="tax-sum-card">
+        <div class="tax-sum-lbl">年間総収入（額面）</div>
+        <div class="tax-sum-val">${fmt(totalIncome)}</div>
+      </div>
+      <div class="tax-sum-card">
+        <div class="tax-sum-lbl">源泉徴収済み合計</div>
+        <div class="tax-sum-val">${fmt(totalWithholding)}</div>
+      </div>
+      <div class="tax-sum-card">
+        <div class="tax-sum-lbl">本来の所得税（推定）</div>
+        <div class="tax-sum-val accent">${totalIncome > 0 ? fmt(properTax) : '―'}</div>
+      </div>
+      <div class="tax-sum-card">
+        <div class="tax-sum-lbl">${diff >= 0 ? '追加納税の可能性' : '還付の可能性'}</div>
+        <div class="tax-sum-val ${diff > 0 ? 'warn' : diff < 0 ? 'ok' : ''}">${totalIncome > 0 ? (diff >= 0 ? '+' : '') + fmt(diff) : '―'}</div>
+      </div>
+    </div>
+    ${totalIncome > 0 ? `
+    <div class="tax-warn-box${diff <= 0 ? ' hidden' : ''}">
+      ⚠️ 確定申告で約 ${fmt(diff)} 追加で払う可能性があります。<br>
+      来年3月の確定申告期間内に申告してね。
+    </div>
+    <div class="tax-ok-box${diff > 0 ? ' hidden' : ''}">
+      ✓ ${diff < 0 ? `確定申告で約 ${fmt(Math.abs(diff))} 還付される可能性があります。` : '源泉徴収額と本来の税額がほぼ一致しています。'}
+    </div>
+    <div class="tax-calc-detail">
+      <div class="tax-calc-head" id="tax-calc-toggle">
+        計算の内訳 <span id="tax-calc-icon">▼</span>
+      </div>
+      <div class="tax-calc-body" id="tax-calc-body">
+        <div class="tax-calc-row"><span class="lbl">年間総収入</span><span class="val">${fmt(totalIncome)}</span></div>
+        <div class="tax-calc-row deduct"><span class="lbl">給与所得控除</span><span class="val">－${fmt(employmentDeduction)}</span></div>
+        <div class="tax-calc-row deduct"><span class="lbl">基礎控除</span><span class="val">－${fmt(basicDeduction)}</span></div>
+        ${totalSI > 0 ? `<div class="tax-calc-row deduct"><span class="lbl">社会保険料控除</span><span class="val">－${fmt(totalSI)}</span></div>` : ''}
+        <div class="tax-calc-row total"><span class="lbl">課税所得</span><span class="val">${fmt(taxableIncome)}</span></div>
+        <div class="tax-calc-row total"><span class="lbl">本来の所得税（推定）</span><span class="val">${fmt(properTax)}</span></div>
+        <div class="tax-calc-row"><span class="lbl">源泉徴収済み</span><span class="val">${fmt(totalWithholding)}</span></div>
+        <div class="tax-calc-row total"><span class="lbl">${diff >= 0 ? '不足額（追納）' : '超過額（還付）'}</span><span class="val" style="font-weight:800;color:${diff > 0 ? '#e11d48' : '#16a34a'}">${diff >= 0 ? '+' : ''}${fmt(diff)}</span></div>
+      </div>
+    </div>` : '<div style="padding:16px;text-align:center;font-size:.83rem;color:#f9a8d4;">各締め日期間の給与明細を入力すると計算されます</div>'}
+  `;
+
+  if (totalIncome > 0) {
+    const tog = document.getElementById('tax-calc-toggle');
+    const body = document.getElementById('tax-calc-body');
+    const icon = document.getElementById('tax-calc-icon');
+    const colKey = 'tax_calc_collapsed';
+    if (localStorage.getItem(colKey) === '1') { body.classList.add('hidden'); icon.textContent = '▶'; }
+    tog.onclick = () => {
+      const now = body.classList.toggle('hidden');
+      icon.textContent = now ? '▶' : '▼';
+      localStorage.setItem(colKey, now ? '1' : '0');
+    };
+  }
+}
+
+function renderTax() {
+  const el = document.getElementById('tax-content');
+  el.innerHTML = '';
+
+  // 年ナビ
+  const nav = document.createElement('div');
+  nav.className = 'tax-year-nav';
+  nav.innerHTML = `<button class="tax-year-btn" id="tax-prev-year">‹</button>
+    <span class="tax-year-lbl">${taxYear}年</span>
+    <button class="tax-year-btn" id="tax-next-year">›</button>`;
+  el.appendChild(nav);
+  nav.querySelector('#tax-prev-year').onclick = () => { taxYear--; renderTax(); };
+  nav.querySelector('#tax-next-year').onclick = () => { taxYear++; renderTax(); };
+
+  // サマリーエリア
+  const summaryArea = document.createElement('div');
+  summaryArea.id = 'tax-summary-area';
+  el.appendChild(summaryArea);
+
+  if (!D.workplaces.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = '<div class="empty-ico">🌸</div><div class="empty-txt">勤務先を登録してください</div>';
+    el.appendChild(empty);
+    return;
+  }
+
+  renderTaxSummary();
+
+  // 締め日期間別入力セクション
+  const sec = document.createElement('div');
+  sec.className = 'tax-month-sec';
+  const secTitle = document.createElement('div');
+  secTitle.className = 'tax-month-sec-title';
+  secTitle.textContent = '締め日期間別 給与明細入力';
+  sec.appendChild(secTitle);
+
+  // 社会保険加入職場を判定
+  function hasSI(wpId) {
+    return Object.keys(D.taxRecords).some(k => k.startsWith(wpId + '_') && parseFloat(D.taxRecords[k].si) > 0);
+  }
+
+  // 全勤務先の期間をまとめてendDate順で並べる
+  const allPeriods = []; // { wp, m, cdIdx, cd, start, end, payDay }
+  D.workplaces.forEach(wp => {
+    getTaxPeriods(wp).forEach(p => allPeriods.push({ wp, ...p }));
+  });
+  allPeriods.sort((a, b) => a.end.localeCompare(b.end) || a.wp.name.localeCompare(b.wp.name));
+
+  // end月でグループ化して表示
+  const byEndMonth = {};
+  allPeriods.forEach(p => {
+    const endM = parseInt(p.end.slice(5, 7));
+    if (!byEndMonth[endM]) byEndMonth[endM] = [];
+    byEndMonth[endM].push(p);
+  });
+
+  Object.keys(byEndMonth).sort((a,b)=>+a-+b).forEach(endM => {
+    const periods = byEndMonth[endM];
+
+    // カードヘッダー用の月合計
+    let monthTotal = 0;
+    periods.forEach(({ wp, m, cdIdx }) => {
+      monthTotal += parseFloat(getTaxRecord(wp.id, taxYear, m, cdIdx).income) || 0;
+    });
+
+    const card = document.createElement('div');
+    card.className = 'tax-month-card';
+    const colKey = `tax_period_${taxYear}_${endM}`;
+    const isOpen = localStorage.getItem(colKey) === '1';
+
+    const head = document.createElement('div');
+    head.className = 'tax-month-head';
+    head.innerHTML = `<span class="tax-month-lbl">${endM}月締め</span><span class="tax-month-total">${monthTotal > 0 ? fmt(monthTotal) : '―'}</span>`;
+    card.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'tax-month-body' + (isOpen ? '' : ' hidden');
+
+    periods.forEach(({ wp, m, cdIdx, cd, start, end }) => {
+      const rec = getTaxRecord(wp.id, taxYear, m, cdIdx);
+      const showSI = hasSI(wp.id) || parseFloat(rec.si) > 0;
+      const cdList = getWpCutoffs(wp);
+      const periodLabel = cdList.length > 1
+        ? `${wp.name}（締め${cdIdx + 1}：${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`
+        : `${wp.name}（${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`;
+
+      const row = document.createElement('div');
+      row.className = 'tax-wp-row';
+      row.innerHTML = `
+        <div class="tax-wp-name">
+          <span style="width:10px;height:10px;border-radius:50%;background:${wp.color||'#ec4899'};display:inline-block;flex-shrink:0"></span>
+          ${periodLabel}
+        </div>
+        <div class="tax-inp-grid ${showSI ? '' : 'tax-no-si'}">
+          <div class="tax-inp-wrap">
+            <span class="tax-inp-lbl">額面給与（円）</span>
+            <input type="number" class="tax-inp" placeholder="0" value="${rec.income}"
+              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="income">
+          </div>
+          <div class="tax-inp-wrap">
+            <span class="tax-inp-lbl">源泉徴収額（円）</span>
+            <input type="number" class="tax-inp" placeholder="0" value="${rec.withholding}"
+              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="withholding">
+          </div>
+          ${showSI ? `<div class="tax-inp-wrap">
+            <span class="tax-inp-lbl">社会保険料（円）</span>
+            <input type="number" class="tax-inp si" placeholder="0" value="${rec.si}"
+              data-wp="${wp.id}" data-m="${m}" data-cdidx="${cdIdx}" data-field="si">
+          </div>` : ''}
+        </div>`;
+      body.appendChild(row);
+    });
+
+    card.appendChild(body);
+    head.onclick = () => {
+      const now = body.classList.toggle('hidden') === false;
+      localStorage.setItem(colKey, now ? '1' : '0');
+    };
+    sec.appendChild(card);
+  });
+
+  el.appendChild(sec);
+
+  // 入力イベント
+  el.querySelectorAll('.tax-inp').forEach(inp => {
+    inp.oninput = () => {
+      const { wp, m, cdidx, field } = inp.dataset;
+      setTaxRecord(wp, taxYear, parseInt(m), parseInt(cdidx), field, inp.value);
+    };
+  });
+}
 document.getElementById('btn-export').onclick = () => {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
@@ -2018,6 +2429,7 @@ document.getElementById('btn-import').onchange = e => {
       const parsed = JSON.parse(ev.target.result);
       if (!parsed.workplaces || !parsed.shifts) throw new Error('形式が違います');
       D = parsed;
+      if (!D.taxRecords) D.taxRecords = {};
       // cutoffDays の互換処理
       D.workplaces.forEach(wp => {
         if (!wp.cutoffDays) {
