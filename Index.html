@@ -1043,7 +1043,7 @@ function renderBSContent(dstr) {
   }
   const acts=document.createElement('div'); acts.className='bs-act';
   acts.innerHTML=`<button class="bs-act-btn" id="btn-manual">✏ 手動で入力</button>
-    <button class="bs-act-btn" id="btn-new-tmpl">＋ 新しいシフト</button>`;
+    <button class="bs-act-btn" id="btn-new-tmpl">＋ テンプレート追加</button>`;
   body.appendChild(acts);
   document.getElementById('btn-manual').onclick=()=>showManualForm(dstr,body);
   document.getElementById('btn-new-tmpl').onclick=()=>{closeBS();openTemplateModal(null);};
