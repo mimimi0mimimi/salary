@@ -3155,12 +3155,11 @@ document.getElementById('btn-import').onchange = e => {
   const grid = document.getElementById('cal-grid');
   const SWITCH_THRESHOLD = 60;  // 月切り替えに必要なスワイプ距離(px)
   const MAX_SHIFT = 48;         // カレンダーが動く最大量(px)
-  const MAX_ROTATE = 2.5;       // 最大傾き(deg)
   let tx = 0, ty = 0, isDragging = false, isHorizontal = null;
 
   function resetGridStyle(animate) {
     grid.style.transition = animate ? 'transform 0.3s cubic-bezier(.25,.8,.25,1), opacity 0.3s' : '';
-    grid.style.transform = 'translateX(0) rotate(0deg)';
+    grid.style.transform = 'translateX(0)';
     grid.style.opacity = '1';
   }
 
@@ -3187,10 +3186,9 @@ document.getElementById('btn-import').onchange = e => {
     // 指の移動量に応じてカレンダーを動かす（端に近づくほど抵抗感）
     const resistance = Math.max(0, 1 - Math.abs(dx) / (MAX_SHIFT * 3));
     const shift = Math.sign(dx) * Math.min(MAX_SHIFT, Math.abs(dx) * 0.6 * (0.4 + resistance));
-    const rotate = (shift / MAX_SHIFT) * MAX_ROTATE;
     const opacity = 1 - (Math.abs(shift) / MAX_SHIFT) * 0.18;
 
-    grid.style.transform = `translateX(${shift}px) rotate(${rotate}deg)`;
+    grid.style.transform = `translateX(${shift}px)`;
     grid.style.opacity = opacity;
   }, { passive: true });
 
@@ -3206,7 +3204,7 @@ document.getElementById('btn-import').onchange = e => {
       // 閾値超え → 月切り替え方向にさっと飛ばしてから切り替え
       const flyX = Math.sign(dx) * (MAX_SHIFT * 2.5);
       grid.style.transition = 'transform 0.18s ease-in, opacity 0.18s ease-in';
-      grid.style.transform = `translateX(${flyX}px) rotate(${Math.sign(dx) * MAX_ROTATE * 1.5}deg)`;
+      grid.style.transform = `translateX(${flyX}px)`;
       grid.style.opacity = '0';
       setTimeout(() => {
         if (dx < 0) { S.m++; if(S.m>12){S.m=1;S.y++;} }
@@ -3396,6 +3394,7 @@ document.getElementById('btn-import').onchange = e => {
       });
     });
 
+    const addedCount = parsedRows.length;
     save();
     renderCal();
     renderSummary();
@@ -3403,7 +3402,7 @@ document.getElementById('btn-import').onchange = e => {
 
     // 完了トースト
     const toast = document.createElement('div');
-    toast.textContent = `✓ ${parsedRows.length}件のシフトを追加しました`;
+    toast.textContent = `✓ ${addedCount}件のシフトを追加しました`;
     toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d1a2e;color:white;padding:10px 20px;border-radius:99px;font-size:.85rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
