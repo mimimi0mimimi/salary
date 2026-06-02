@@ -1145,6 +1145,16 @@ document.querySelectorAll('.tab').forEach(btn=>{
 });
 
 // ===== CALENDAR =====
+// フローティングUIを閉じた直後、同じタップが下のカレンダーまで貫通して
+// 日付選択されるのを防ぐための短いガード。
+let suppressCalendarClicksUntil = 0;
+function suppressCalendarClicks(ms = 450) {
+  suppressCalendarClicksUntil = Date.now() + ms;
+}
+function isCalendarClickSuppressed() {
+  return Date.now() < suppressCalendarClicksUntil;
+}
+
 // セル全体を再描画せずに選択状態（.sel クラス）だけを付け替える
 function updateSelCell(dstr) {
   document.querySelectorAll('#cal-grid .cal-cell').forEach(cell => {
@@ -1227,6 +1237,11 @@ function renderCal() {
     // カレンダーマスのタップイベント
     cell.onclick=(e)=>{
       const now=Date.now();
+      if (isCalendarClickSuppressed()) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       const isDouble=lastTap.date===dstr&&now-lastTap.time<400;
       lastTap={date:dstr,time:now};
       const prevSel = S.sel;
@@ -1353,6 +1368,9 @@ document.getElementById('summary-items').addEventListener('click', () => {
 
 const bsCloseBtn = document.getElementById('bs-close-btn');
 function handleBSCloseButton() {
+  // ✕のタップが、閉じた直後に下のカレンダーへ貫通して
+  // 日付選択まで起こすのを防ぐ。
+  suppressCalendarClicks();
   // 手動入力フォーム中は、上の✕でフォームだけ閉じて登録画面へ戻る。
   if (closeManualFormIfOpen()) return;
   closeBS();
@@ -1362,8 +1380,18 @@ bsCloseBtn.onclick = handleBSCloseButton;
 bsCloseBtn.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   e.stopPropagation();
+  suppressCalendarClicks();
   handleBSCloseButton();
 }, { passive: false });
+
+// シート内の操作は下のカレンダー操作として扱わない。
+// draggable-modeではマスクがクリックを通すため、シート側で明示的に止める。
+const bsSheetElForEvents = document.getElementById('bs-sheet');
+if (bsSheetElForEvents) {
+  ['pointerdown','click','dblclick'].forEach(type => {
+    bsSheetElForEvents.addEventListener(type, e => e.stopPropagation(), true);
+  });
+}
 
 document.getElementById('bs-date-input').onchange = () => {
   const newDate = document.getElementById('bs-date-input').value;
@@ -2689,6 +2717,7 @@ function closeDayDetail() {
 document.getElementById('dd-handle').onclick = (e) => {
   e.preventDefault();
   e.stopPropagation();
+  suppressCalendarClicks();
   closeDayDetail();
 };
 
