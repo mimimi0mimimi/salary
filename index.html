@@ -1574,7 +1574,8 @@ function renderDetailSummary() {
   let grandH = 0, grandNightH = 0, grandNet = 0, grandDays = 0;
   const wpRows = [];
   D.workplaces.forEach(wp => {
-    getPayPeriods(wp, S.y, S.m).forEach((p, cdIdx) => {
+    const resolvedList = getPayPeriods(wp, S.y, S.m);
+    resolvedList.forEach((p, cdIdx) => {
       const res = calcPeriodSummary(wp, p.start, p.end);
       if (res.workDays === 0) return;
       const sr = getSalaryRecord(wp.id, S.y, S.m, cdIdx);
@@ -1615,7 +1616,7 @@ function renderDetailSummary() {
       const effDays = srEff('workDays', res.workDays);
       grandH += totalH; grandNightH += effDh; grandNet += effNet; grandDays += effDays;
       const hasNightWage = wp.nightWage?.enabled;
-      const cdLabel = cdList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
+      const cdLabel = resolvedList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
       wpRows.push(`<div class="thb-row">
         <span class="thb-dot" style="background:${wp.color||th.ac}"></span>
         <span class="thb-name">${wp.name}${cdLabel}</span>
@@ -1921,7 +1922,7 @@ function renderDetailCards() {
     };
 
     el.appendChild(card);
-  }); // cdList forEach
+  }); // getPayPeriods forEach
   }); // workplaces forEach
 }
 
@@ -3335,7 +3336,8 @@ document.getElementById('btn-share').onclick = () => {
   let grandTotal = 0;
 
   D.workplaces.forEach(wp => {
-    getPayPeriods(wp, S.y, S.m).forEach((p, cdIdx) => {
+    const resolvedList = getPayPeriods(wp, S.y, S.m);
+    resolvedList.forEach((p, cdIdx) => {
       const res = calcPeriodSummary(wp, p.start, p.end);
       const periodShifts = D.shifts
         .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
@@ -3366,7 +3368,7 @@ document.getElementById('btn-share').onclick = () => {
 
       const [,ps,pd] = p.start.split('-').map(Number);
       const [,pe,ped] = p.end.split('-').map(Number);
-      const cdLabel = cdList.length > 1 ? `（締め${cdIdx+1}）` : '';
+      const cdLabel = resolvedList.length > 1 ? `（締め${cdIdx+1}）` : '';
       lines.push(`【${wp.name}${cdLabel}】${ps}/${pd}〜${pe}/${ped}${hasManual ? ' ✏️実績' : ''}`);
 
       periodShifts.forEach(s => {
