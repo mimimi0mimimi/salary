@@ -983,6 +983,24 @@ function payPeriod(wp,refY,refM,cdEntry) {
   return {start:ds(py,pm,c+1),end:ds(refY,refM,c),payDay:cdEntry?.payDay??wp.payDay??25};
 }
 
+// 同一勤務先の複数締め日区間が重複している場合に重複部分を除去する。
+// 各 cdEntry の期間を計算し、後の区間の start を前の区間の end+1 以降に補正して返す。
+function resolvePayPeriods(wp, refY, refM) {
+  const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
+  const periods = cdList.map(cd => ({ cd, ...payPeriod(wp, refY, refM, cd) }));
+  // start 昇順にソート
+  periods.sort((a, b) => a.start.localeCompare(b.start));
+  // 前の期間の end+1 を次の期間の start の下限として補正
+  for (let i = 1; i < periods.length; i++) {
+    const prevEnd = addDay(periods[i-1].end);
+    if (periods[i].start < prevEnd) {
+      periods[i] = { ...periods[i], start: prevEnd };
+    }
+  }
+  // 期間が空（start > end）になったものは除外
+  return periods.filter(p => p.start <= p.end);
+}
+
 function calcPeriodSummary(wp, start, end) {
   const periodShifts = D.shifts.filter(s => s.workplaceId === wp.id && s.date >= start && s.date <= end);
   let workDays = 0, nh = 0, dh = 0, np = 0, dp = 0, dpPremium = 0, totalAdjustment = 0;
@@ -1189,9 +1207,7 @@ function renderSummary() {
 
   let toDateNet=0, forecastNet=0, toDateGross=0, forecastGross=0;
   D.workplaces.forEach(wp=>{
-    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
-    cdList.forEach(cd => {
-      const p=payPeriod(wp,S.y,S.m,cd);
+    resolvePayPeriods(wp,S.y,S.m).forEach(p => {
       const todEnd=todS<p.end?todS:p.end;
       if (todS>=p.start) {
         toDateNet += periodNetPay(wp.id,p.start,todEnd);
@@ -1349,10 +1365,8 @@ function renderDetailCharts() {
   if (!D.workplaces.length) return;
 
   const wpAmounts=D.workplaces.map(wp=>{
-    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
     let amount = 0;
-    cdList.forEach(cd => {
-      const p=payPeriod(wp,S.y,S.m,cd);
+    resolvePayPeriods(wp,S.y,S.m).forEach(p => {
       amount += chartShowGross ? periodTotal(wp.id,p.start,p.end) : periodNetPay(wp.id,p.start,p.end);
     });
     return {name:wp.name,color:wp.color||'#ec4899',amount};
@@ -1441,10 +1455,8 @@ function renderDetailCharts() {
   const datasets=D.workplaces.map(wp=>({
     label:wp.name,
     data:months.map(({y,m})=>{
-      const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
       let total = 0;
-      cdList.forEach(cd => {
-        const p=payPeriod(wp,y,m,cd);
+      resolvePayPeriods(wp,y,m).forEach(p => {
         total += chartShowGross ? periodTotal(wp.id,p.start,p.end) : periodNetPay(wp.id,p.start,p.end);
       });
       return total;
@@ -1551,15 +1563,15 @@ function renderDetailSummary() {
   let grandH = 0, grandNightH = 0, grandNet = 0, grandDays = 0;
   const wpRows = [];
   D.workplaces.forEach(wp => {
-    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
-    cdList.forEach((cd, cdIdx) => {
-      const p = payPeriod(wp, S.y, S.m, cd);
+    const resolvedList = resolvePayPeriods(wp, S.y, S.m);
+    resolvedList.forEach((p, cdIdx) => {
       const res = calcPeriodSummary(wp, p.start, p.end);
       if (res.workDays === 0) return;
       const sr = getSalaryRecord(wp.id, S.y, S.m, cdIdx);
       function srEff(f, autoVal) {
         const v = sr[f]; return (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : autoVal;
       }
+      const cdLabel = resolvedList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
       let effGrossSm;
       if (sr.gross !== '' && !isNaN(parseFloat(sr.gross))) {
         effGrossSm = parseFloat(sr.gross);
@@ -1594,7 +1606,6 @@ function renderDetailSummary() {
       const effDays = srEff('workDays', res.workDays);
       grandH += totalH; grandNightH += effDh; grandNet += effNet; grandDays += effDays;
       const hasNightWage = wp.nightWage?.enabled;
-      const cdLabel = cdList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
       wpRows.push(`<div class="thb-row">
         <span class="thb-dot" style="background:${wp.color||th.ac}"></span>
         <span class="thb-name">${wp.name}${cdLabel}</span>
@@ -1641,17 +1652,19 @@ function renderDetailCards() {
   renderDetailSummary();
 
   D.workplaces.forEach(wp=>{
-    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
-    cdList.forEach((cd, cdIdx) => {
-    const p = payPeriod(wp,S.y,S.m,cd);
+    resolvePayPeriods(wp,S.y,S.m).forEach((p, cdIdx) => {
     const res = calcPeriodSummary(wp, p.start, p.end);
     
     const periodShifts=D.shifts.filter(s=>s.workplaceId===wp.id&&s.date>=p.start&&s.date<=p.end);
     const [,ps,pd]=p.start.split('-').map(Number);
     const [,pe,ped]=p.end.split('-').map(Number);
     const payD=p.payDay===0?'月末':`${p.payDay}日`;
-    const payMLabel=p.end.slice(0,7)===`${S.y}-${String(S.m).padStart(2,'0')}`?`翌月${payD}`:`${S.m}月${payD}`;
-    const cdSuffix = cdList.length > 1 ? `-cd${cdIdx}` : '';
+    // 給料支払月 = 締め日(p.end)の翌月
+    const [endY, endM] = p.end.slice(0,7).split('-').map(Number);
+    let payMon = endM + 1, payYr = endY;
+    if (payMon > 12) { payMon = 1; payYr++; }
+    const payMLabel = `${payMon}月${payD}`;
+    const cdSuffix = (resolvePayPeriods(wp, S.y, S.m).length > 1) ? `-cd${cdIdx}` : '';
     const colKey = `wp_collapsed_${wp.id}${cdSuffix}`;
     const isCollapsed = localStorage.getItem(colKey) === '1';
 
@@ -1725,7 +1738,8 @@ function renderDetailCards() {
 
     const th = loadTheme();
     const cardId = `${wp.id}${cdSuffix}`;
-    const nameLabel = cdList.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:${th.ac}">（締め${cdIdx+1}）</span>` : wp.name;
+    const resolvedCount = resolvePayPeriods(wp, S.y, S.m).length;
+    const nameLabel = resolvedCount > 1 ? `${wp.name} <span style="font-size:.7rem;color:${th.ac}">（締め${cdIdx+1}）</span>` : wp.name;
     const card=document.createElement('div'); card.className='det-card';
     card.innerHTML=`
       <div class="det-card-head det-card-toggle">
@@ -1898,7 +1912,7 @@ function renderDetailCards() {
     };
 
     el.appendChild(card);
-  }); // cdList forEach
+  }); // resolvePayPeriods forEach
   }); // workplaces forEach
 }
 
@@ -3329,9 +3343,8 @@ document.getElementById('btn-share').onclick = () => {
   let grandTotal = 0;
 
   D.workplaces.forEach(wp => {
-    const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
-    cdList.forEach((cd, cdIdx) => {
-      const p = payPeriod(wp, S.y, S.m, cd);
+    const resolvedList = resolvePayPeriods(wp, S.y, S.m);
+    resolvedList.forEach((p, cdIdx) => {
       const res = calcPeriodSummary(wp, p.start, p.end);
       const periodShifts = D.shifts
         .filter(s => s.workplaceId === wp.id && s.date >= p.start && s.date <= p.end)
@@ -3362,7 +3375,7 @@ document.getElementById('btn-share').onclick = () => {
 
       const [,ps,pd] = p.start.split('-').map(Number);
       const [,pe,ped] = p.end.split('-').map(Number);
-      const cdLabel = cdList.length > 1 ? `（締め${cdIdx+1}）` : '';
+      const cdLabel = resolvedList.length > 1 ? `（締め${cdIdx+1}）` : '';
       lines.push(`【${wp.name}${cdLabel}】${ps}/${pd}〜${pe}/${ped}${hasManual ? ' ✏️実績' : ''}`);
 
       periodShifts.forEach(s => {
