@@ -1391,21 +1391,41 @@ function renderDetailCharts() {
     return {name:wp.name,color:wp.color||'#ec4899',amount};
   }).filter(x=>x.amount>0);
 
+  // 過去12ヶ月
   const months=[];
-  for (let i=5;i>=0;i--){
+  for (let i=11;i>=0;i--){
     let y=S.y, m=S.m-i;
     while(m<1){m+=12;y--;}
     months.push({y,m,label:`${m}月`});
   }
+
+  // 年別手取り割合（当年含む過去10年）
+  const years=[];
+  for (let i=9;i>=0;i--) years.push(S.y-i);
+
+  // 年別勤務先ごとの手取り合計
+  function yearNetByWp(wp, yr) {
+    let total = 0;
+    for (let m=1;m<=12;m++){
+      getPayPeriods(wp,yr,m).forEach(p=>{
+        total += periodNetPay(wp.id,p.start,p.end);
+      });
+    }
+    return total;
+  }
+
+  // 年別円グラフ用データ
+  const yearAmounts=D.workplaces.map(wp=>{
+    const amount = yearNetByWp(wp, S.y);
+    return {name:wp.name,color:wp.color||'#ec4899',amount};
+  }).filter(x=>x.amount>0);
 
   function makeChartCard(key, title, bodyHTML, doubletapable) {
     const collapsed = (JSON.parse(localStorage.getItem('chart_collapsed')||'{}'))[key];
     const card = document.createElement('div');
     card.className = 'det-chart-card full';
     const t = loadTheme();
-    const modeTag = doubletapable
-      ? `<span style="font-size:.58rem;color:${t.ac};font-weight:400;margin-left:4px">${chartShowGross?'総支給':'手取り'}</span>`
-      : '';
+    const modeTag = '';
     card.innerHTML = `
       <div class="det-chart-title chart-toggle-row" data-key="${key}">
         <span>${title}${modeTag}</span>
@@ -1451,11 +1471,28 @@ function renderDetailCharts() {
       `<div class="donut-wrap"><canvas id="det-donut"></canvas><div class="donut-legend">${legendRows}</div></div>`, true));
   }
 
-  el.appendChild(makeChartCard('bar', `過去6ヶ月の${chartShowGross?'総支給':'手取り'}推移`, `<canvas id="det-bar"></canvas>`, true));
+  // 年の手取り割合（月の円グラフと同フォーマット）
+  if (yearAmounts.length) {
+    const yearLegendRows = yearAmounts.map(x=>`
+      <div class="donut-legend-row">
+        <span class="donut-legend-dot" style="background:${x.color}"></span>
+        <div class="donut-legend-info">
+          <span class="donut-legend-name">${x.name}</span>
+          <span class="donut-legend-amt">${fmt(x.amount)}</span>
+        </div>
+      </div>`).join('');
+    el.appendChild(makeChartCard('donut-year', `${S.y}年の手取り・割合`,
+      `<div class="donut-wrap"><canvas id="det-donut-year"></canvas><div class="donut-legend">${yearLegendRows}</div></div>`, false));
+  }
+
+  el.appendChild(makeChartCard('bar', `過去12ヶ月の${chartShowGross?'総支給':'手取り'}推移`, `<canvas id="det-bar"></canvas>`, true));
+  el.appendChild(makeChartCard('bar10y', `過去10年の手取り推移`, `<canvas id="det-bar10y"></canvas>`, false));
   el.style.paddingBottom='10px';
 
   if (charts.pie) charts.pie.destroy();
+  if (charts.pieYear) charts.pieYear.destroy();
   if (charts.bar) charts.bar.destroy();
+  if (charts.bar10y) charts.bar10y.destroy();
   if (charts.daily) charts.daily.destroy();
 
   if (wpAmounts.length) {
@@ -1464,6 +1501,20 @@ function renderDetailCharts() {
       data:{labels:wpAmounts.map(x=>x.name),
         datasets:[{data:wpAmounts.map(x=>x.amount),
           backgroundColor:wpAmounts.map(x=>x.color),
+          borderWidth:2,borderColor:'white'}]},
+      options:{plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},
+        cutout:'55%',maintainAspectRatio:true}
+    });
+  }
+
+  // 年の手取り割合グラフ
+  if (yearAmounts.length && document.getElementById('det-donut-year')) {
+    charts.pieYear=new Chart(document.getElementById('det-donut-year'),{
+      type:'doughnut',
+      data:{labels:yearAmounts.map(x=>x.name),
+        datasets:[{data:yearAmounts.map(x=>x.amount),
+          backgroundColor:yearAmounts.map(x=>x.color),
           borderWidth:2,borderColor:'white'}]},
       options:{plugins:{legend:{display:false},
         tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},
@@ -1518,6 +1569,24 @@ function renderDetailCharts() {
         ticks:{callback:v=>`${v}h`,font:{size:9}}}},
       maintainAspectRatio:true}
   });
+  // 過去10年棒グラフ
+  if (document.getElementById('det-bar10y')) {
+    const datasets10y=D.workplaces.map(wp=>({
+      label:wp.name,
+      data:years.map(yr=>yearNetByWp(wp,yr)),
+      backgroundColor:wp.color||'#ec4899',borderRadius:4,
+    }));
+    charts.bar10y=new Chart(document.getElementById('det-bar10y'),{
+      type:'bar',
+      data:{labels:years.map(y=>`${y}年`),datasets:datasets10y},
+      options:{plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmt(ctx.raw)}`}}},
+        scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,beginAtZero:true,
+          ticks:{callback:v=>`¥${(v/10000).toFixed(0)}万`,font:{size:9}}}},
+        maintainAspectRatio:true}
+    });
+  }
+
   renderTimeline();
 }
 
@@ -3519,6 +3588,10 @@ document.getElementById('btn-share').onclick = () => {
     });
   }
 };
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 
 // ===== INIT =====
 initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
