@@ -257,7 +257,7 @@
     }
     .det-row-manual .manual-inp:focus { border-color: #ec4899; background: white; }
     .det-row-manual .manual-inp.has-value { border-color: #ec4899; border-style: solid; background: #fff0f7; font-weight: 700; color: #be185d; }
-    .det-row-manual.gross-row { background: #fff5f9; }
+    .det-row-manual.gross-row { background: #fff5f9; font-weight: 700; }
     .det-row-manual.deduct .val-auto { color: #e11d48; }
     .det-row-manual.deduct .val-auto::before { content: '-'; }
     .det-row-manual.deduct .val-auto.overridden { color: #ccc; }
@@ -714,7 +714,7 @@
           <div class="sum-item-val accent" id="sum-forecast">¥0</div>
         </div>
       </div>
-      <div id="sum-mode-hint" style="text-align:center;font-size:.62rem;color:#f9a8d4;margin:-4px 0 4px;letter-spacing:.03em;">ダブルタップで総支給⇔手取り切り替え</div>
+      <div id="sum-mode-hint" style="text-align:center;font-size:.62rem;margin:-4px 0 4px;letter-spacing:.03em;">ダブルタップで総支給⇔手取り切り替え</div>
       <button class="add-shift-btn" id="add-shift-btn">
         <span class="add-shift-icon">＋</span>
         <span class="add-shift-label">シフトを登録</span>
@@ -775,8 +775,9 @@
         <div id="theme-presets"></div>
         <div class="theme-row"><span class="theme-lbl">グラデーション（薄）</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-g1"><input type="text" class="theme-hex" id="th-g1" maxlength="7" placeholder="#fdd5e8"></div></div>
         <div class="theme-row"><span class="theme-lbl">グラデーション（濃）</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-g2"><input type="text" class="theme-hex" id="th-g2" maxlength="7" placeholder="#f9a8d4"></div></div>
-        <div class="theme-row"><span class="theme-lbl">アクセントカラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-ac"><input type="text" class="theme-hex" id="th-ac" maxlength="7" placeholder="#ec4899"></div></div>
         <div class="theme-row"><span class="theme-lbl">文字カラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-tx"><input type="text" class="theme-hex" id="th-tx" maxlength="7" placeholder="#ec5b97"></div></div>
+        <div class="theme-row"><span class="theme-lbl">サブ文字カラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-txm"><input type="text" class="theme-hex" id="th-txm" maxlength="7" placeholder="#fab5da"></div></div>
+        <div class="theme-row"><span class="theme-lbl">アクセント文字カラー</span><div class="theme-input-wrap"><input type="color" class="theme-picker" id="tc-ac"><input type="text" class="theme-hex" id="th-ac" maxlength="7" placeholder="#ec4899"></div></div>
       </div>
     </div>
   </div>
@@ -794,8 +795,8 @@
   <div class="bs-sheet" id="import-sheet">
     <div class="bs-bar"></div>
     <div class="bs-head">
-      <div style="font-size:1rem;font-weight:700;color:#3d1a2e;text-align:center;padding:4px 0 2px">シフトを一括インポート</div>
-      <div style="font-size:.72rem;color:#f9a8d4;text-align:center;margin-top:4px">日付,タイトル,開始,終了,休憩(分) の形式で貼り付け</div>
+      <div style="font-size:1rem;font-weight:700;text-align:center;padding:4px 0 2px" id="import-title">シフトを一括インポート</div>
+      <div style="font-size:.72rem;text-align:center;margin-top:4px" id="import-hint">日付,タイトル,開始,終了,休憩(分) の形式で貼り付け</div>
     </div>
     <div style="padding:10px 16px 6px">
       <textarea id="import-textarea"
@@ -1135,6 +1136,9 @@ function updateSelCell(dstr) {
 function renderCal() {
   document.getElementById('month-title').textContent=`${S.y}年 ${S.m}月`;
   const grid=document.getElementById('cal-grid');
+  grid.style.transition = '';
+  grid.style.transform = '';
+  grid.style.opacity = '';
   grid.innerHTML='';
   const todS=todayStr();
   const first=new Date(S.y,S.m-1,1).getDay();
@@ -1373,6 +1377,10 @@ function renderDetail() {
 
 function renderDetailCharts() {
   const el=document.getElementById('det-charts'); el.innerHTML='';
+  if (typeof Chart === 'undefined') {
+    el.innerHTML = '<div style="padding:32px;text-align:center;font-size:.85rem;opacity:.6;">📶 オフラインのためグラフは利用できません</div>';
+    return;
+  }
   if (!D.workplaces.length) return;
 
   const wpAmounts=D.workplaces.map(wp=>{
@@ -1633,20 +1641,19 @@ function renderDetailSummary() {
   sumCard.innerHTML = `
     <div class="total-hours-head">
       <span>📊 ${S.m}月 勤務先別まとめ</span>
-      ${hasAnyNight ? '<span class="night-badge"><span class="night-badge-dot"></span>深夜あり</span>' : ''}
     </div>
     <div class="thb-header">
-      <span class="thb-name" style="flex:1;font-size:.6rem;color:#be185d;font-weight:700">勤務先</span>
-      <span class="thb-days" style="font-size:.6rem;color:#be185d;font-weight:700">日数</span>
-      <span class="thb-hours" style="font-size:.6rem;color:#be185d;font-weight:700">総時間</span>
-      <span class="thb-pay" style="font-size:.6rem;color:#be185d;font-weight:700">手取り</span>
+      <span class="thb-name" style="flex:1;font-size:.6rem;font-weight:700">勤務先</span>
+      <span class="thb-days" style="font-size:.6rem;font-weight:700">日数</span>
+      <span class="thb-hours" style="font-size:.6rem;font-weight:700">総時間</span>
+      <span class="thb-pay" style="font-size:.6rem;font-weight:700">手取り</span>
     </div>
     ${wpRows.join('')}
     ${wpRows.length > 1 ? `<div class="thb-total">
-      <span style="flex:1;font-size:.72rem;font-weight:700;color:#3d1a2e">合計</span>
-      <span class="thb-days" style="font-weight:700;color:#3d1a2e">${grandDays}日</span>
-      <span class="thb-hours" style="font-weight:700;color:#3d1a2e">${fmtH(grandH)}<span style="font-size:.6rem;color:#718096">（計）</span></span>
-      <span class="thb-pay" style="font-weight:800;color:#ec4899">${fmt(grandNet)}</span>
+      <span style="flex:1;font-size:.72rem;font-weight:700">合計</span>
+      <span class="thb-days" style="font-weight:700">${grandDays}日</span>
+      <span class="thb-hours" style="font-weight:700">${fmtH(grandH)}<span style="font-size:.6rem;opacity:.65">（計）</span></span>
+      <span class="thb-pay" style="font-weight:800">${fmt(grandNet)}</span>
     </div>` : ''}`;
   // 先頭に挿入
   el.insertBefore(sumCard, el.firstChild);
@@ -1760,18 +1767,18 @@ function renderDetailCards() {
             <span class="det-toggle-icon">${isCollapsed?'▶':'▼'}</span>
           </div>
           <div class="det-head-sub${isCollapsed?'':' hidden'}">
-            <span class="det-period">${ps}/${pd}〜${pe}/${ped}</span>
+            <span class="det-period">${ps}/${pd}〜${pe}/${ped}　<span style="font-size:.7rem">(${periodShifts.length}件)</span></span>
             <span class="det-net-inline">手取り ${fmt(hasAnyManual ? manualNet : res.netPay)}</span>
           </div>
-          <span class="det-period det-period-open${isCollapsed?' hidden':''}">${ps}/${pd}〜${pe}/${ped}</span>
+          <span class="det-period det-period-open${isCollapsed?' hidden':''}">${ps}/${pd}〜${pe}/${ped}　<span style="font-size:.7rem">(${periodShifts.length}件)</span></span>
         </div>
       </div>
       <div class="det-card-body${isCollapsed?' hidden':''}">
         <div class="det-inp-hint">✏️ 実績値を入力すると自動計算より優先・税金タブへ反映</div>
-        <div class="det-row-manual" style="background:#fff8fb;padding:5px 14px 4px">
-          <span class="lbl" style="font-size:.62rem;color:#f9a8d4">項目</span>
-          <span class="val-auto" style="font-size:.62rem;color:#f9a8d4;text-align:right">自動計算</span>
-          <span style="font-size:.62rem;color:#f9a8d4;width:88px;text-align:right">実績入力</span>
+        <div class="det-row-manual" style="padding:5px 14px 4px">
+          <span class="lbl" style="font-size:.62rem;color:${th.txMuted}">項目</span>
+          <span class="val-auto" style="font-size:.62rem;color:${th.txMuted};text-align:right">自動計算</span>
+          <span style="font-size:.62rem;color:${th.txMuted};width:88px;text-align:right">実績入力</span>
         </div>
         ${mRow('出勤日数', res.workDays + '日', 'workDays', false, false)}
         ${mRow('勤務時間', fmtH(res.nh + res.dh), 'nh', false, false, 'text')}
@@ -2283,7 +2290,7 @@ function fillDayDetail(dstr) {
   const dow = ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()];
   const dayTotal = D.shifts.filter(s=>s.date===dstr).reduce((sum,s)=>sum+shiftPay(s).total,0);
   document.getElementById('dd-head').innerHTML =
-    `<span>${m}月${d}日（${dow}）</span><span style="font-size:.95rem;color:#ec4899">${fmt(dayTotal)}</span>`;
+    `<span>${m}月${d}日（${dow}）</span><span style="font-size:.95rem;color:${loadTheme().ac}">${fmt(dayTotal)}</span>`;
 
   const list = document.getElementById('dd-list');
   list.innerHTML = '';
@@ -2412,11 +2419,11 @@ ddSheet.addEventListener('touchend', e => {
 
 // ===== THEME =====
 const THEME_PRESETS = [
-  { id:'peach',     name:'ピーチ',     g1:'#fdd5e8', g2:'#f9a8d4', ac:'#db2777', tx:'#9d174d' },
-  { id:'lemon',     name:'レモン',     g1:'#fffbeb', g2:'#fde68a', ac:'#d97706', tx:'#78350f' },
-  { id:'mint',      name:'ミント',     g1:'#ecfdf5', g2:'#6ee7b7', ac:'#059669', tx:'#064e3b' },
-  { id:'sky',       name:'スカイ',     g1:'#eff6ff', g2:'#93c5fd', ac:'#1d4ed8', tx:'#1e3a8a' },
-  { id:'lavender',  name:'ラベンダー', g1:'#f5f3ff', g2:'#c4b5fd', ac:'#6d28d9', tx:'#3b0764' },
+  { id:'peach',     name:'ピーチ',     g1:'#fdd5e8', g2:'#f9a8d4', ac:'#db2777', tx:'#9d174d', txMuted:'#fab5da' },
+  { id:'lemon',     name:'レモン',     g1:'#fffbeb', g2:'#fde68a', ac:'#d97706', tx:'#78350f', txMuted:'#fdea9c' },
+  { id:'mint',      name:'ミント',     g1:'#ecfdf5', g2:'#6ee7b7', ac:'#059669', tx:'#064e3b', txMuted:'#84ebc2' },
+  { id:'sky',       name:'スカイ',     g1:'#eff6ff', g2:'#93c5fd', ac:'#1d4ed8', tx:'#1e3a8a', txMuted:'#a3cefd' },
+  { id:'lavender',  name:'ラベンダー', g1:'#f5f3ff', g2:'#c4b5fd', ac:'#6d28d9', tx:'#3b0764', txMuted:'#cdc0fd' },
 ];
 const DEFAULT_THEME = THEME_PRESETS[0];
 
@@ -2428,13 +2435,11 @@ function mixColor(hex, ratio) {
 
 function applyTheme(t) {
   const border   = mixColor(t.g2, 0.55);
-  const lightBg  = mixColor(t.g1, 0.75);
-  const subtleBg = mixColor(t.g1, 0.88);
-  const bodyBg   = mixColor(t.g1, 0.70);
-  const mutedTx  = mixColor(t.g2, 0.15);
+  const lightBg  = mixColor(t.g1, 0.60);
+  const subtleBg = mixColor(t.g1, 0.85);
 
   document.getElementById('theme-vars').textContent = `
-    body { background: ${bodyBg} !important; }
+    body { background: ${lightBg} !important; }
     header { background: linear-gradient(135deg,${t.g1},${t.g2}) !important; box-shadow: 0 2px 12px ${t.g2}40 !important; }
     .nav-btn { color: ${t.tx} !important; background: rgba(255,255,255,.5) !important; }
     .tab { color: ${t.tx}80 !important; }
@@ -2448,7 +2453,7 @@ function applyTheme(t) {
     .cal-dow div:first-child { color: #e11d48 !important; }
     .cal-dow div:last-child { color: #3b82f6 !important; }
     .cal-grid { background: ${border} !important; }
-    .cal-cell.other { background: ${mixColor(t.g2, 0.85)} !important; }
+    .cal-cell.other { background: ${mixColor(t.g1, 0.85)} !important; }
     .cal-cell.sel { outline-color: ${t.g2} !important; background: ${lightBg} !important; }
     .cal-cell.tod .cal-day { background: ${t.ac} !important; }
     .cal-cell:active { background: ${lightBg} !important; }
@@ -2460,10 +2465,10 @@ function applyTheme(t) {
     .add-shift-icon, .add-shift-label { color: ${t.tx} !important; }
     .bs-bar { background: ${border} !important; }
     .bs-head { border-bottom-color: ${border} !important; }
-    .bs-head-hint { color: ${mutedTx} !important; }
+    .bs-head-hint { color: ${t.txMuted} !important; }
     .bs-head-date { color: ${t.tx} !important; }
     .bs-nav-btn { background: ${lightBg} !important; color: ${t.tx} !important; }
-    .bs-sec-lbl { color: ${mutedTx} !important; }
+    .bs-sec-lbl { color: ${t.txMuted} !important; }
     .bs-reg-row { border-bottom-color: ${subtleBg} !important; }
     .bs-reg-time { color: ${t.tx} !important; }
     .bs-reg-pay, .dd-pay { color: ${t.ac} !important; }
@@ -2477,18 +2482,18 @@ function applyTheme(t) {
     .det-card { box-shadow: 0 2px 8px ${t.g2}30 !important; }
     .det-chart-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .det-chart-title { color: ${t.tx} !important; }
-    .det-card-head { border-bottom-color: ${border} !important; }
+    .det-card-head { border-bottom-color: ${border} !important; background: ${t.g1} !important; }
     .det-row { border-bottom-color: ${subtleBg} !important; }
     .det-row .lbl { color: ${t.tx} !important; }
     .det-total { background: linear-gradient(135deg,${subtleBg},${lightBg}) !important; border-top-color: ${border} !important; }
     .det-total .lbl { color: ${t.tx} !important; }
     .det-total .val { color: ${t.ac} !important; }
-    .det-period, .det-payday { color: ${mutedTx} !important; }
+    .det-period, .det-payday { color: ${t.txMuted} !important; }
     .set-list { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .set-item { border-bottom-color: ${border} !important; }
     .set-item:active { background: ${lightBg} !important; }
-    .set-sec-title { color: ${mutedTx} !important; }
-    .set-sub, .set-arr { color: ${mutedTx} !important; }
+    .set-sec-title { color: ${t.txMuted} !important; }
+    .set-sub, .set-arr { color: ${t.txMuted} !important; }
     .btn-add { border-color: ${border} !important; color: ${t.ac} !important; }
     .btn-add:active { background: ${lightBg} !important; border-color: ${t.ac} !important; }
     .modal-head, .modal-foot { border-color: ${border} !important; }
@@ -2496,7 +2501,7 @@ function applyTheme(t) {
     .fg label { color: ${t.tx} !important; }
     .fi { border-color: ${border} !important; }
     .fi:focus { border-color: ${t.ac} !important; }
-    .fsec { color: ${mutedTx} !important; border-bottom-color: ${border} !important; }
+    .fsec { color: ${t.txMuted} !important; border-bottom-color: ${border} !important; }
     .wh-item { background: ${subtleBg} !important; }
     .btn-awage { color: ${t.ac} !important; border-color: ${t.g2} !important; background: ${lightBg} !important; }
     .tog-sl { background: ${border} !important; }
@@ -2504,7 +2509,7 @@ function applyTheme(t) {
     .btn-restore { color: ${t.ac} !important; border-color: ${border} !important; background: ${lightBg} !important; }
     .backup-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .backup-divider { background: ${border} !important; }
-    .backup-sub { color: ${mutedTx} !important; }
+    .backup-sub { color: ${t.txMuted} !important; }
     .dd-sheet { box-shadow: 0 -4px 24px ${t.g2}40 !important; pointer-events: none; }
     .dd-sheet.show { pointer-events: all; }
     .dd-handle { background: ${border} !important; }
@@ -2530,9 +2535,11 @@ function applyTheme(t) {
     .tax-sum-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .tax-sum-lbl { color: ${t.tx} !important; }
     .tax-calc-detail { box-shadow: 0 2px 8px ${t.g2}20 !important; }
-    .tax-calc-head { color: ${mutedTx} !important; border-bottom-color: ${border} !important; }
+    .tax-calc-head { color: ${t.txMuted} !important; border-bottom-color: ${border} !important; }
     .tax-calc-row { border-bottom-color: ${subtleBg} !important; }
     .tax-calc-row .lbl { color: ${t.tx} !important; }
+    .tax-calc-row.total { background: ${lightBg} !important; }
+    .tax-calc-row.total .lbl, .tax-calc-row.total .val { color: ${t.tx} !important; }
     .tax-month-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .tax-month-head { border-bottom-color: ${border} !important; }
     .tax-month-lbl { color: ${t.tx} !important; }
@@ -2541,40 +2548,42 @@ function applyTheme(t) {
     .tax-inp-lbl { color: ${t.tx} !important; }
     .tax-inp { border-color: ${border} !important; }
     .tax-inp:focus { border-color: ${t.ac} !important; }
-    .tax-month-sec-title { color: ${mutedTx} !important; }
+    .tax-month-sec-title { color: ${t.txMuted} !important; }
     .total-hours-card { box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .total-hours-head { color: ${t.tx} !important; border-bottom-color: ${border} !important; }
     .total-hours-grid { background: ${border} !important; }
     .th-cell-lbl { color: ${t.tx} !important; }
     .th-cell-val { color: ${t.tx} !important; }
-    .thb-header { background: ${subtleBg} !important; border-bottom-color: ${border} !important; }
+    .thb-header { background: ${t.g1} !important; border-bottom-color: ${border} !important; }
     .thb-row { border-bottom-color: ${subtleBg} !important; }
     .thb-total { background: ${lightBg} !important; border-top-color: ${border} !important; }
     .thb-name { color: ${t.tx} !important; }
+    .thb-days { color: ${t.tx} !important; }
+    .thb-hours { color: ${t.tx} !important; }
     .thb-pay { color: ${t.ac} !important; }
     /* 残存ハードコードピンクの全上書き */
     .tl-dc { color: ${t.tx} !important; }
-    .tl-dow { color: ${mutedTx} !important; }
+    .tl-dow { color: ${t.txMuted} !important; }
     .tl-sun, .tl-sun .tl-dow { color: #e11d48 !important; }
     .tl-sat, .tl-sat .tl-dow { color: #4a90d9 !important; }
-    .chart-toggle-icon { color: ${mutedTx} !important; }
-    .set-empty { color: ${mutedTx} !important; }
+    .chart-toggle-icon { color: ${t.txMuted} !important; }
+    .set-empty { color: ${t.txMuted} !important; }
     .tabs { border-top-color: ${border} !important; }
-    .cal-cell.other .cal-day { color: ${mixColor(t.g2, 0.35)} !important; }
-    .cal-cell.other { background: ${mixColor(t.g2, 0.88)} !important; }
-    .det-toggle-icon, .shift-list-toggle { color: ${mutedTx} !important; }
-    .shift-list-toggle { border-top-color: ${border} !important; }
+    .cal-cell.other .cal-day { color: ${mixColor(t.g1, 0.35)} !important; }
+    .cal-cell.other { background: ${mixColor(t.g1, 0.88)} !important; }
+    .det-toggle-icon, .shift-list-toggle { color: ${t.txMuted} !important; }
+    .shift-list-toggle { background: ${t.g1} !important; border-top-color: ${border} !important; }
     .shift-list-toggle:active { background: ${lightBg} !important; }
-    .shift-list-body { background: ${subtleBg} !important; }
+    .shift-list-body { background: white !important; }
     .sli { border-bottom-color: ${border} !important; }
-    .det-row.gross-row { background: ${lightBg} !important; }
+    .det-row.gross-row { background: white !important; }
     .det-row.gross-row .lbl, .det-row.gross-row .val { color: ${t.tx} !important; }
-    .det-total { background: linear-gradient(135deg,${lightBg},${mixColor(t.g1,0.6)}) !important; border-top-color: ${border} !important; }
+    .det-total { background: white !important; border-top-color: ${border} !important; }
     .det-card-toggle:active { background: ${lightBg} !important; }
     .det-net-inline { color: ${t.ac} !important; }
     .tl-ba { background: ${lightBg} !important; }
     .tl-grid { background: ${t.g2}55 !important; }
-    .tl-tick { color: ${mutedTx} !important; }
+    .tl-tick { color: ${t.txMuted} !important; }
     .tax-expense-inp { border-color: #fde68a !important; }
     .tax-expense-inp:focus { border-color: #d97706 !important; }
     .manual-inp { border-color: ${border} !important; background: ${subtleBg} !important; }
@@ -2582,14 +2591,18 @@ function applyTheme(t) {
     .manual-inp.has-value { border-color: ${t.ac} !important; background: ${lightBg} !important; }
     .det-row-manual { border-bottom-color: ${subtleBg} !important; }
     .det-row-manual .lbl { color: ${t.tx} !important; }
-    .det-row-manual.gross-row { background: ${lightBg} !important; }
-    .det-total-manual { background: linear-gradient(135deg,${lightBg},${mixColor(t.g1,0.6)}) !important; border-top-color: ${border} !important; }
+    .det-row-manual.gross-row { background: white !important; }
+    .det-total-manual { background: white !important; border-top-color: ${border} !important; }
     .det-total-manual .lbl { color: ${t.tx} !important; }
     .det-total-manual .val { color: ${t.ac} !important; }
     .manual-sync-badge { background: ${t.ac} !important; }
     .contract-select { border-color: ${border} !important; }
     .contract-select:focus { border-color: ${t.ac} !important; }
     .tax-val-display { color: ${t.tx} !important; }
+    #sum-mode-hint { color: ${t.txMuted} !important; }
+    #import-title { color: ${t.tx} !important; }
+    #import-hint { color: ${t.txMuted} !important; }
+    .det-inp-hint { color: ${t.txMuted} !important; }
   `;
 }
 
@@ -2597,7 +2610,7 @@ function saveTheme(t) { localStorage.setItem('payapp_theme', JSON.stringify(t));
 function loadTheme() {
   try {
     const saved = JSON.parse(localStorage.getItem('payapp_theme'));
-    if (saved) return saved;
+    if (saved) { if (!saved.txMuted) saved.txMuted = DEFAULT_THEME.txMuted; return saved; }
   } catch(e) {}
   return DEFAULT_THEME;
 }
@@ -2630,8 +2643,8 @@ function initThemeUI() {
 
   // カラーピッカー
   function syncPickers(t) {
-    const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx' };
-    const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx' };
+    const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx', txMuted:'tc-txm' };
+    const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx', txMuted:'th-txm' };
     Object.entries(fields).forEach(([key, id]) => {
       const picker = document.getElementById(id);
       const hexInput = document.getElementById(hexFields[key]);
@@ -2642,8 +2655,8 @@ function initThemeUI() {
   }
   syncPickers(cur);
 
-  const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx' };
-  const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx' };
+  const fields = { g1:'tc-g1', g2:'tc-g2', ac:'tc-ac', tx:'tc-tx', txMuted:'tc-txm' };
+  const hexFields = { g1:'th-g1', g2:'th-g2', ac:'th-ac', tx:'th-tx', txMuted:'th-txm' };
   Object.entries(fields).forEach(([key, id]) => {
     const picker = document.getElementById(id);
     const hexInput = document.getElementById(hexFields[key]);
@@ -2754,18 +2767,35 @@ function setTaxRecord(wpId, year, month, cdIdx, field, value) {
   renderTaxSummary();
 }
 
-// taxYearに含まれる締め日期間を列挙（期間終了日がtaxYear内のもの）
+// taxYearに含まれる締め日期間を列挙（支給日の年がtaxYearのもの）
+// 所得税は「支払われた年」が基準のため、締め日終了日ではなく支給日で判定する
 function getTaxPeriods(wp) {
   const periods = [];
-  for (let m = 1; m <= 12; m++) {
-    getPayPeriods(wp, taxYear, m).forEach((p, cdIdx) => {
-      if (parseInt(p.end.slice(0,4)) === taxYear) {
-        periods.push({ m, cdIdx, start: p.start, end: p.end, payDay: p.payDay });
-      }
-    });
+  // taxYear-1年12月分〜taxYear年12月分まで走査（前年12月締め→翌1月支給を拾うため）
+  for (let scanY = taxYear - 1; scanY <= taxYear; scanY++) {
+    for (let m = 1; m <= 12; m++) {
+      getPayPeriods(wp, scanY, m).forEach((p, cdIdx) => {
+        // 支給日を算出：締め期間終了月の翌月 + payDay
+        const [endY, endM] = p.end.slice(0, 7).split('-').map(Number);
+        let payM = endM + 1, payY = endY;
+        if (payM > 12) { payM = 1; payY++; }
+        // 支給日の年がtaxYearと一致するものを収集（重複防止のためendをキーに管理）
+        if (payY === taxYear) {
+          periods.push({ m, cdIdx, start: p.start, end: p.end, payDay: p.payDay });
+        }
+      });
+    }
   }
-  // start昇順ソート（getPayPeriodsが重複なしを保証するため重複除去不要）
-  return periods.sort((a,b) => a.end.localeCompare(b.end) || a.cdIdx - b.cdIdx);
+  // end昇順ソート・重複除去（同じ期間が複数入らないよう）
+  const seen = new Set();
+  return periods
+    .sort((a, b) => a.end.localeCompare(b.end) || a.cdIdx - b.cdIdx)
+    .filter(p => {
+      const key = p.start + '_' + p.end + '_' + p.cdIdx;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function renderTaxSummary() {
@@ -2778,7 +2808,8 @@ function renderTaxSummary() {
   D.workplaces.forEach(wp => {
     const isCommission = wp.contractType === 'commission';
     getTaxPeriods(wp).forEach(({ m, cdIdx, start, end }) => {
-      const sr = getSalaryRecord(wp.id, taxYear, m, cdIdx);
+      const srY = parseInt(end.slice(0, 4));
+      const sr = getSalaryRecord(wp.id, srY, m, cdIdx);
       const autoRes = calcPeriodSummary(wp, start, end);
 
       // 総支給：手入力gross > 自動計算gross
@@ -2926,16 +2957,18 @@ function renderTax() {
   });
   allPeriods.sort((a, b) => a.end.localeCompare(b.end) || a.wp.name.localeCompare(b.wp.name));
 
-  // end月でグループ化して表示
-  const byEndMonth = {};
+  // 支給月でグループ化して表示（支給日基準で年間収入を集計するため）
+  const byPayMonth = {};
   allPeriods.forEach(p => {
-    const endM = parseInt(p.end.slice(5, 7));
-    if (!byEndMonth[endM]) byEndMonth[endM] = [];
-    byEndMonth[endM].push(p);
+    const [endY, endM_] = p.end.slice(0, 7).split('-').map(Number);
+    let payM = endM_ + 1;
+    if (payM > 12) payM = 1;
+    if (!byPayMonth[payM]) byPayMonth[payM] = [];
+    byPayMonth[payM].push(p);
   });
 
-  Object.keys(byEndMonth).sort((a,b)=>+a-+b).forEach(endM => {
-    const periods = byEndMonth[endM];
+  Object.keys(byPayMonth).sort((a,b)=>+a-+b).forEach(endM => {
+    const periods = byPayMonth[endM];
 
     let monthTotal = 0;
     periods.forEach(({ wp, m, cdIdx, start, end }) => {
@@ -2952,18 +2985,20 @@ function renderTax() {
 
     const head = document.createElement('div');
     head.className = 'tax-month-head';
-    head.innerHTML = `<span class="tax-month-lbl">${endM}月締め</span><span class="tax-month-total">${monthTotal > 0 ? fmt(monthTotal) : '―'}</span>`;
+    head.innerHTML = `<span class="tax-month-lbl">${endM}月支給分</span><span class="tax-month-total">${monthTotal > 0 ? fmt(monthTotal) : '―'}</span>`;
     card.appendChild(head);
 
     const body = document.createElement('div');
     body.className = 'tax-month-body' + (isOpen ? '' : ' hidden');
 
     periods.forEach(({ wp, m, cdIdx, cd, start, end }) => {
-      const periodLabel = getPayPeriods(wp, taxYear, m).length > 1
+      // startの年を使って正しいgetPayPeriodsを参照（前年12月分対応）
+      const refY = parseInt(end.slice(0, 4));
+      const periodLabel = getPayPeriods(wp, refY, m).length > 1
         ? `${wp.name}（締め${cdIdx + 1}：${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`
         : `${wp.name}（${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`;
 
-      const sr = getSalaryRecord(wp.id, taxYear, m, cdIdx);
+      const sr = getSalaryRecord(wp.id, refY, m, cdIdx);
       const autoRes = calcPeriodSummary(wp, start, end);
 
       const income = (sr.gross !== '' && !isNaN(parseFloat(sr.gross)))
@@ -3117,21 +3152,80 @@ document.getElementById('btn-import').onchange = e => {
 };
 (() => {
   const pane = document.getElementById('pane-calendar');
-  let tx = 0, ty = 0, moved = false;
+  const grid = document.getElementById('cal-grid');
+  const SWITCH_THRESHOLD = 60;  // 月切り替えに必要なスワイプ距離(px)
+  const MAX_SHIFT = 48;         // カレンダーが動く最大量(px)
+  const MAX_ROTATE = 2.5;       // 最大傾き(deg)
+  let tx = 0, ty = 0, isDragging = false, isHorizontal = null;
+
+  function resetGridStyle(animate) {
+    grid.style.transition = animate ? 'transform 0.3s cubic-bezier(.25,.8,.25,1), opacity 0.3s' : '';
+    grid.style.transform = 'translateX(0) rotate(0deg)';
+    grid.style.opacity = '1';
+  }
+
   pane.addEventListener('touchstart', e => {
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
-    moved = false;
+    isDragging = true;
+    isHorizontal = null;
+    grid.style.transition = '';
   }, { passive: true });
-  pane.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+
+  pane.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - tx;
+    const dy = e.touches[0].clientY - ty;
+
+    // 最初の動きで縦か横か判定
+    if (isHorizontal === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      isHorizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+    }
+    if (!isHorizontal) return;
+
+    // 指の移動量に応じてカレンダーを動かす（端に近づくほど抵抗感）
+    const resistance = Math.max(0, 1 - Math.abs(dx) / (MAX_SHIFT * 3));
+    const shift = Math.sign(dx) * Math.min(MAX_SHIFT, Math.abs(dx) * 0.6 * (0.4 + resistance));
+    const rotate = (shift / MAX_SHIFT) * MAX_ROTATE;
+    const opacity = 1 - (Math.abs(shift) / MAX_SHIFT) * 0.18;
+
+    grid.style.transform = `translateX(${shift}px) rotate(${rotate}deg)`;
+    grid.style.opacity = opacity;
+  }, { passive: true });
+
   pane.addEventListener('touchend', e => {
-    if (!moved) return;
+    if (!isDragging) return;
+    isDragging = false;
+    if (!isHorizontal) return;
+
     const dx = e.changedTouches[0].clientX - tx;
     const dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    if (dx < 0) { S.m++; if(S.m>12){S.m=1;S.y++;} }
-    else        { S.m--; if(S.m<1) {S.m=12;S.y--;} }
-    onMonthChange();
+
+    if (Math.abs(dx) >= SWITCH_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      // 閾値超え → 月切り替え方向にさっと飛ばしてから切り替え
+      const flyX = Math.sign(dx) * (MAX_SHIFT * 2.5);
+      grid.style.transition = 'transform 0.18s ease-in, opacity 0.18s ease-in';
+      grid.style.transform = `translateX(${flyX}px) rotate(${Math.sign(dx) * MAX_ROTATE * 1.5}deg)`;
+      grid.style.opacity = '0';
+      setTimeout(() => {
+        if (dx < 0) { S.m++; if(S.m>12){S.m=1;S.y++;} }
+        else        { S.m--; if(S.m<1) {S.m=12;S.y--;} }
+        // 切り替え後は逆側からスライドインして戻る
+        grid.style.transition = '';
+        grid.style.transform = `translateX(${-Math.sign(dx) * MAX_SHIFT * 2}px)`;
+        grid.style.opacity = '0';
+        onMonthChange();
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            resetGridStyle(true);
+          });
+        });
+      }, 160);
+    } else {
+      // 閾値未満 → 元の位置にバウンスして戻る
+      resetGridStyle(true);
+    }
   }, { passive: true });
 })();
 
@@ -3238,7 +3332,8 @@ document.getElementById('btn-import').onchange = e => {
     const rangeStr = ms === me ? `${ms}/${ds2} 〜 ${ms}/${de}` : `${ms}/${ds2} 〜 ${me}/${de}`;
 
     previewEl.style.display = 'block';
-    previewEl.innerHTML = `<span style="font-size:1rem;font-weight:800;color:#ec4899">${rows.length}件</span><span style="color:#be185d;font-weight:600"> のシフト　</span><span style="color:#be185d;font-size:.78rem">${rangeStr}</span>`;
+    const _th = loadTheme();
+    previewEl.innerHTML = `<span style="font-size:1rem;font-weight:800;color:${_th.ac}">${rows.length}件</span><span style="color:${_th.tx};font-weight:600"> のシフト　</span><span style="color:${_th.tx};font-size:.78rem">${rangeStr}</span>`;
 
     // 職場選択ボタンを生成
     wpSection.style.display = 'block';
@@ -3248,7 +3343,7 @@ document.getElementById('btn-import').onchange = e => {
     setExecBtn(false);
 
     if (D.workplaces.length === 0) {
-      wpBtns.innerHTML = '<span style="font-size:.8rem;color:#f9a8d4">先に職場を登録してください</span>';
+      wpBtns.innerHTML = `<span style="font-size:.8rem;color:${loadTheme().txMuted}">先に職場を登録してください</span>`;
       return;
     }
 
