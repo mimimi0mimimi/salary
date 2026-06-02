@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>バイト給料計算</title>
+  <title>バイト給料計算 v7.2</title>
   <link class="favicon" rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="manifest" href="manifest.json">
@@ -212,6 +212,17 @@
     .det-card:first-of-type { margin-top: 0; }
     .det-card-head { padding: 13px 14px; display: flex; align-items: center;
       gap: 10px; border-bottom: 1px solid #fce7f3; }
+    .det-card.no-shifts .det-card-head {
+      opacity: .42;
+      filter: grayscale(.35);
+    }
+    .det-card.no-shifts .det-name::after {
+      content: ' データなし';
+      font-size: .66rem;
+      font-weight: 700;
+      color: #aaa;
+      margin-left: 6px;
+    }
     .det-card-toggle { cursor: pointer; user-select: none; }
     .det-card-toggle:active { background: #fff5f9; }
     .det-head-main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
@@ -692,7 +703,7 @@
         <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 Q27 29 24 32 Z" fill="#ec4899" opacity=".7"/>
       </svg>
       <div class="header-usagi-text">
-        <span class="app-title-main">バイト給料計算</span>
+        <span class="app-title-main">バイト給料計算 <span style="font-size:.68em;opacity:.75;margin-left:4px">v7.2</span></span>
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
       <div style="display:flex;gap:4px;margin-left:auto">
@@ -1367,6 +1378,7 @@ document.getElementById('summary-items').addEventListener('click', () => {
 });
 
 const bsCloseBtn = document.getElementById('bs-close-btn');
+let lastBSClosePointerAt = 0;
 function handleBSCloseButton() {
   // ✕のタップが、閉じた直後に下のカレンダーへ貫通して
   // 日付選択まで起こすのを防ぐ。
@@ -1375,23 +1387,20 @@ function handleBSCloseButton() {
   if (closeManualFormIfOpen()) return;
   closeBS();
 }
-bsCloseBtn.onclick = handleBSCloseButton;
+bsCloseBtn.onclick = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  // pointerdownで既に閉じた直後のclickは二重実行しない。
+  if (Date.now() - lastBSClosePointerAt < 600) return;
+  handleBSCloseButton();
+};
 // カレンダー側を触った直後でも閉じる操作を確実に拾うため、clickより早いpointerdownでも閉じる
 bsCloseBtn.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  suppressCalendarClicks();
+  lastBSClosePointerAt = Date.now();
   handleBSCloseButton();
 }, { passive: false });
-
-// シート内の操作は下のカレンダー操作として扱わない。
-// draggable-modeではマスクがクリックを通すため、シート側で明示的に止める。
-const bsSheetElForEvents = document.getElementById('bs-sheet');
-if (bsSheetElForEvents) {
-  ['pointerdown','click','dblclick'].forEach(type => {
-    bsSheetElForEvents.addEventListener(type, e => e.stopPropagation(), true);
-  });
-}
 
 document.getElementById('bs-date-input').onchange = () => {
   const newDate = document.getElementById('bs-date-input').value;
@@ -1461,8 +1470,12 @@ function registerFromTemplate(dstr,t){
   D.shifts.push({id:uid(),date:dstr,workplaceId:t.workplaceId,
     title:t.title,color:t.color,startTime:t.startTime,endTime:t.endTime,breakMinutes:t.breakMinutes||0});
   save();
-  closeBS(); renderCal(); renderSummary();
-  setTimeout(()=>openBS(dstr),160);
+  // v7.2: テンプレート登録後にシートを閉じ直すと、ドラッグした位置が初期化されるため、
+  // 開いたまま中身だけ更新する。これでフォーム位置を維持する。
+  renderCal();
+  renderSummary();
+  renderBSContent(dstr);
+  document.getElementById('bs-mask').dispatchEvent(new Event('bs-reposition'));
 }
 
 function showManualForm(dstr,container){
@@ -1996,8 +2009,8 @@ function renderDetailCards() {
     const th = loadTheme();
     const cardId = `${wp.id}${cdSuffix}`;
     const nameLabel = periods.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:${th.ac}">（締め${cdIdx+1}）</span>` : wp.name;
-    const manualBadge = hasAnyManual ? `<span class="manual-badge-tag" style="display:inline-flex;align-items:center;gap:3px;background:#ec4899;color:white;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;letter-spacing:.02em">✏️ 修正済み</span>` : '';
-    const card=document.createElement('div'); card.className='det-card';
+    const manualBadge = hasAnyManual ? `<span class="manual-badge-tag" style="display:inline-flex;align-items:center;gap:3px;background:#ec4899;color:white;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;letter-spacing:.02em">実績</span>` : '';
+    const card=document.createElement('div'); card.className='det-card' + (periodShifts.length === 0 ? ' no-shifts' : '');
     card.innerHTML=`
       <div class="det-card-head det-card-toggle">
         <span class="det-dot" style="background:${wp.color||'#ec4899'}"></span>
@@ -2153,7 +2166,7 @@ function renderDetailCards() {
         // ヘッダーの手取りも更新
         const netInline = card.querySelector('.det-net-inline');
         if (netInline) netInline.textContent = `手取り ${fmt(hasAny ? net : res.netPay)}`;
-        // 修正済みバッジを即時更新
+        // 実績バッジを即時更新
         const detName = card.querySelector('.det-name');
         if (detName) {
           const badgeEl = detName.querySelector('.manual-badge-tag');
@@ -2161,7 +2174,7 @@ function renderDetailCards() {
             const badge = document.createElement('span');
             badge.className = 'manual-badge-tag';
             badge.style.cssText = 'display:inline-flex;align-items:center;gap:3px;background:#ec4899;color:white;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;letter-spacing:.02em';
-            badge.textContent = '✏️ 修正済み';
+            badge.textContent = '実績';
             detName.appendChild(badge);
           } else if (!hasAny && badgeEl) {
             badgeEl.remove();
