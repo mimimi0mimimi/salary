@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>バイト給料計算 v7.2</title>
+  <title>バイト給料計算 v1.3</title>
   <link class="favicon" rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="manifest" href="manifest.json">
@@ -876,7 +876,8 @@
       <div style="display:flex;align-items:center;justify-content:center;gap:4px">
         <span id="bs-date-txt" style="font-size:1rem;font-weight:700;color:#3d1a2e"></span>
         <span id="bs-dow-lbl" style="font-size:1rem;font-weight:700;color:#3d1a2e"></span>
-        <input type="date" id="bs-date-input" style="border:none;outline:none;background:transparent;cursor:pointer;width:28px;color:transparent;font-size:1rem">
+	<span style="font-size:1rem;line-height:1;pointer-events:none">📅</span>
+	<input type="date" id="bs-date-input" style="position:absolute;right:44px;top:50%;transform:translateY(-50%);width:32px;height:32px;opacity:0;border:none;outline:none;cursor:pointer">
       </div>
       <button id="bs-close-btn" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;background:#fff0f7;border:none;border-radius:50%;cursor:pointer;font-size:.85rem;color:#be185d;display:flex;align-items:center;justify-content:center;flex-shrink:0;pointer-events:all">✕</button>
     </div>
