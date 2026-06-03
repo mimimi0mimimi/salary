@@ -2614,9 +2614,11 @@ function openWpModal(wpId){
       <label class="tog"><input type="checkbox" id="wm-ne"${nw.enabled?' checked':''}><span class="tog-sl"></span></label>
     </div>
     <div id="wm-nf" style="${nw.enabled?'':'display:none'}">
-      <div class="f2 night-time-grid" style="margin-bottom:10px">
-        <div class="fg"><label>開始時刻</label><input type="time" class="fi" id="wm-ns" value="${nw.startTime||'22:00'}"></div>
-        <div class="fg"><label>終了時刻</label><input type="time" class="fi" id="wm-ne2" value="${nw.endTime||'05:00'}"></div>
+      <div class="bf-row" style="margin-bottom:10px">
+        <label style="width:68px;flex-shrink:0;font-size:.75rem;color:#be185d">時間帯</label>
+        <input type="time" class="fi" id="wm-ns" value="${nw.startTime||'22:00'}" style="flex:1;padding:7px 10px;font-size:.87rem">
+        <span style="font-size:.75rem;flex-shrink:0;padding:0 2px">〜</span>
+        <input type="time" class="fi" id="wm-ne2" value="${nw.endTime||'05:00'}" style="flex:1;padding:7px 10px;font-size:.87rem">
       </div>
       <div class="fg"><label>深夜時給（円）</label><input type="number" class="fi" id="wm-nw" value="${nw.wage||''}" placeholder="例: 1375"></div>
     </div>
@@ -2777,9 +2779,13 @@ function openTemplateModal(tmplId, returnDate){
     <div class="fg"><label>カラー</label>${swatchHTML(selColor)}</div>
     <div class="fg"><label>勤務先</label>
       <select class="fi" id="tm-wp"><option value="">選択してください</option>${wpOpts}</select></div>
-    <div class="f2">
-      <div class="fg"><label>開始時刻</label><input type="time" class="fi" id="tm-start" value="${t?.startTime||'09:00'}"></div>
-      <div class="fg"><label>終了時刻</label><input type="time" class="fi" id="tm-end" value="${t?.endTime||'17:00'}"></div>
+    <div class="fg">
+      <label>時間</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="time" class="fi" id="tm-start" value="${t?.startTime||'09:00'}" style="flex:1;padding:7px 10px;font-size:.87rem">
+        <span style="font-size:.75rem;flex-shrink:0;padding:0 2px">〜</span>
+        <input type="time" class="fi" id="tm-end" value="${t?.endTime||'17:00'}" style="flex:1;padding:7px 10px;font-size:.87rem">
+      </div>
     </div>
     <div class="fg"><label>休憩時間（分）</label><input type="number" class="fi" id="tm-break" value="${t?.breakMinutes||0}" min="0" step="15"></div>`;
 
