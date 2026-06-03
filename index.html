@@ -405,8 +405,8 @@
     .sli-night { color: #7c3aed; font-size: .62rem; font-weight: 700; }
 
     /* ===== Settings tab ===== */
-    .set-sec { padding: 12px 12px 0; }
-    .set-sec:last-child { padding-bottom: 20px; }
+    .set-sec { padding: 20px 12px 0; }
+    .set-sec:last-child { padding-bottom: 28px; }
     .set-sec-title {
       font-size: .78rem; font-weight: 800; color: #be185d;
       letter-spacing: .04em; padding: 6px 12px 7px;
@@ -414,7 +414,7 @@
       border-radius: 10px 10px 0 0; margin-bottom: 0;
       display: flex; align-items: center; gap: 6px;
     }
-    .set-list { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
+    .set-list { background: white; border-radius: 0; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .set-item { display: flex; align-items: center; padding: 12px 14px;
       border-bottom: 1px solid #fce7f3; gap: 10px; cursor: pointer; }
@@ -426,11 +426,18 @@
     .set-sub { font-size: .72rem; color: #f9a8d4; margin-top: 1px; }
     .set-arr { color: #f9a8d4; }
     .set-empty { padding: 16px; text-align: center; font-size: .83rem; color: #f9a8d4; }
-    .btn-add { width: 100%; margin-top: 8px; padding: 12px;
-      background: white; border: 1.5px dashed #fce7f3; border-radius: 14px;
-      color: #ec4899; font-size: .87rem; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-add:active { background: #fff0f7; border-color: #ec4899; }
+    .btn-add {
+      width: 100%; padding: 13px 14px; margin-top: 0;
+      background: #fff0f7; border: none; border-top: 1px solid #fce7f3;
+      border-radius: 0; color: #ec4899; font-size: .87rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-add:active { background: #fce7f3; }
+    /* set-listの直後にbtn-addが来るとき、set-listの下角丸を消してbtn-addで締める */
+    .set-list + .btn-add {
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 2px 8px rgba(236,72,153,.08);
+    }
 
     /* ===== Modal ===== */
     .modal-mask { position: fixed; inset: 0; background: rgba(61,26,46,.45);
@@ -926,7 +933,8 @@
         <div class="disp-row">
           <span class="disp-lbl">タイトル</span>
           <div class="disp-opts" id="disp-title-opts">
-            <button class="disp-opt-btn on" data-val="show">表示する</button>
+            <button class="disp-opt-btn on" data-val="char1">1文字</button>
+            <button class="disp-opt-btn" data-val="full">全て</button>
             <button class="disp-opt-btn" data-val="hide">表示しない</button>
           </div>
         </div>
@@ -1424,7 +1432,9 @@ function renderCal() {
         b.style.background=sh.color||'#ec4899';
         const titleChars = Array.from(sh.title || '？');
         const titleChar = titleChars[0] || '?';
+        const titleFull = sh.title || '？';
         const showTitle = dispS.titleShow !== 'hide';
+        const titleText = dispS.titleShow === 'full' ? titleFull : titleChar;
         let timeHTML = '';
         if (dispS.timeMode === 'short') {
           timeHTML = `<span class="badge-time">${fhShort(sh.startTime)}-${fhShort(sh.endTime)}</span>`;
@@ -1432,13 +1442,13 @@ function renderCal() {
         } else if (dispS.timeMode === 'long') {
           // longモード：1行目に「タイトル + 開始時間」、2行目に「-終了時間（右寄せ）」
           b.classList.add('badge-long');
-          const titlePart = showTitle ? `<span class="badge-long-title">${titleChar}</span>` : '';
+          const titlePart = showTitle ? `<span class="badge-long-title">${titleText}</span>` : '';
           b.innerHTML = `<span class="badge-long-row1">${titlePart}<span class="badge-long-start">${fhLong(sh.startTime)}</span></span><span class="badge-long-end">-${fhLong(sh.endTime)}</span>`;
           wrap.appendChild(b);
           continue;
         }
         // timeMode==='hide' の場合はtimeHTML空のまま
-        b.innerHTML = (showTitle ? `<span class="badge-t">${titleChar}</span>` : '') + timeHTML;
+        b.innerHTML = (showTitle ? `<span class="badge-t">${titleText}</span>` : '') + timeHTML;
         wrap.appendChild(b);
       }
       cell.appendChild(wrap);
@@ -3016,8 +3026,8 @@ function applyTheme(t) {
     .set-item:active { background: ${lightBg} !important; }
     .set-sec-title { color: ${t.tx} !important; background: linear-gradient(135deg,${t.g1},${t.g2}) !important; }
     .set-sub, .set-arr { color: ${t.txMuted} !important; }
-    .btn-add { border-color: ${border} !important; color: ${t.ac} !important; }
-    .btn-add:active { background: ${lightBg} !important; border-color: ${t.ac} !important; }
+    .btn-add { border-color: ${border} !important; color: ${t.ac} !important; background: ${lightBg} !important; }
+    .btn-add:active { background: ${border} !important; }
     .modal-head, .modal-foot { border-color: ${border} !important; }
     .btn-mclose { color: ${t.tx} !important; background: ${lightBg} !important; }
     .fg label { color: ${t.tx} !important; }
@@ -3167,7 +3177,7 @@ function loadTheme() {
 
 // ===== DISPLAY SETTINGS =====
 const DISP_KEY = 'payapp_display';
-const DISP_DEFAULT = { titleShow: 'show', timeMode: 'short' };
+const DISP_DEFAULT = { titleShow: 'char1', timeMode: 'short' };
 
 function saveDisplaySettings(s) {
   localStorage.setItem(DISP_KEY, JSON.stringify(s));
