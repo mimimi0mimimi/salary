@@ -269,6 +269,8 @@
       padding: 9px 14px; font-size: .78rem; font-weight: 600; color: #f9a8d4;
       cursor: pointer; border-top: 1px solid #fce7f3;
     }
+    .slt-left { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+    .slt-net-label { font-size: .7rem; font-weight: 800; color: #ec4899; white-space: nowrap; }
     .shift-list-toggle:active { background: #fff5f9; }
     .slt-icon { font-size: .65rem; }
     .shift-list-body { background: #fff8fb; }
@@ -2251,6 +2253,10 @@ function renderDetailCards() {
     const cardId = `${wp.id}${cdSuffix}`;
     const nameLabel = periods.length > 1 ? `${esc(wp.name)} <span style="font-size:.7rem;color:${safeColor(th.ac)}">（締め${cdIdx+1}）</span>` : esc(wp.name);
     const manualBadge = hasAnyManual ? `<span class="manual-badge-tag" style="display:inline-flex;align-items:center;gap:3px;background:var(--theme-ac,#ec4899);color:white;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;letter-spacing:.02em">実績</span>` : '';
+    // シフト一覧では、締め期間全体の手取りに合うよう月次手当・控除・実績差額をシフト件数で按分する。
+    const listBaseNet = periodShifts.reduce((sum, s) => sum + shiftPay(s).total, 0);
+    const listShownNet = hasAnyManual ? manualNet : res.netPay;
+    const listNetAdjust = periodShifts.length ? (listShownNet - listBaseNet) / periodShifts.length : 0;
     const card=document.createElement('div'); card.className='det-card' + (periodShifts.length === 0 ? ' no-shifts' : '');
     card.innerHTML=`
       <div class="det-card-head det-card-toggle">
@@ -2289,7 +2295,7 @@ function renderDetailCards() {
         </div>
         <div class="det-payday">給料日: ${payMLabel}</div>
         <div class="shift-list-toggle" id="slt-${cardId}">
-          <span>シフト一覧（${res.workDays}件）</span><span class="slt-icon">▶</span>
+          <span class="slt-left"><span>シフト一覧（${res.workDays}件）</span><span class="slt-net-label">手取り目安</span></span><span class="slt-icon">▶</span>
         </div>
         <div class="shift-list-body hidden" id="slb-${cardId}">
           ${periodShifts.sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
@@ -2303,6 +2309,7 @@ function renderDetailCards() {
             if (rUnit > 1) tMin = roundMinutes(tMin, rUnit);
             const h = tMin / 60;
             const pay = shiftPay(s);
+            const shiftNet = pay.total + listNetAdjust;
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
             const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${esc(s.memo)}</span>` : '';
             const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">⭐${fmtH(pay.dh)}</span>` : '';
@@ -2312,7 +2319,7 @@ function renderDetailCards() {
               <span class="sli-h">${fmtH(h)}</span>
               ${nightStr}
               ${adjStr}
-              <span class="sli-pay" style="color:${th.ac}">手取り ${fmt(pay.total)}</span>
+              <span class="sli-pay" style="color:${th.ac}">${fmt(shiftNet)}</span>
             </div>`;
           }).join('')}
         </div>
@@ -3153,6 +3160,7 @@ function applyTheme(t) {
     .cal-cell.other .cal-day { color: ${mixColor(t.g1, 0.35)} !important; }
     .cal-cell.other { background: ${mixColor(t.g1, 0.88)} !important; }
     .det-toggle-icon, .shift-list-toggle { color: ${t.txMuted} !important; }
+    .slt-net-label { color: ${t.ac} !important; }
     .shift-list-toggle { background: ${t.g1} !important; border-top-color: ${border} !important; }
     .shift-list-toggle:active { background: ${lightBg} !important; }
     .shift-list-body { background: white !important; }
