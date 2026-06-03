@@ -92,7 +92,8 @@
     .cal-badge { font-size: .6rem; font-weight: 700; padding: 1px 3px; border-radius: 3px;
       color: #2d2d2d; line-height: 1.5; width: 100%; box-sizing: border-box;
       overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-      display: flex; align-items: center; gap: 2px; pointer-events: none; }
+      display: flex; align-items: center; gap: 2px; pointer-events: none;
+      min-height: 1.4em; }
     .badge-t { font-weight: 700; flex-shrink: 0; }
     .badge-time { font-size: .52rem; opacity: .92; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
     /* longモード（2行）バッジ */
@@ -410,10 +411,10 @@
       font-size: .78rem; font-weight: 800; color: #be185d;
       letter-spacing: .04em; padding: 6px 12px 7px;
       background: linear-gradient(135deg, #fdd5e8, #f9a8d4);
-      border-radius: 10px; margin-bottom: 8px;
+      border-radius: 10px 10px 0 0; margin-bottom: 0;
       display: flex; align-items: center; gap: 6px;
     }
-    .set-list { background: white; border-radius: 14px; overflow: hidden;
+    .set-list { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .set-item { display: flex; align-items: center; padding: 12px 14px;
       border-bottom: 1px solid #fce7f3; gap: 10px; cursor: pointer; }
@@ -597,7 +598,7 @@
     .tl-bar-ov { position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:.6rem; color:white; }
 
     /* ===== Theme settings ===== */
-    .theme-card { background: white; border-radius: 14px; overflow: hidden;
+    .theme-card { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); padding: 4px 0; }
     .theme-presets-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 12px 16px 8px; }
     .theme-preset-btn {
@@ -627,7 +628,7 @@
       font-family: monospace; text-align: center; }
 
     /* ===== Display Settings ===== */
-    .disp-card { background: white; border-radius: 14px; overflow: hidden;
+    .disp-card { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .disp-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -646,7 +647,7 @@
     .disp-opt-btn:active { opacity: .7; }
 
     /* ===== Data Reset ===== */
-    .reset-card { background: white; border-radius: 14px; overflow: hidden;
+    .reset-card { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .reset-chip-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px; }
     .reset-chip { padding: 7px 13px; border-radius: 99px;
@@ -695,7 +696,7 @@
       pointer-events: none; white-space: nowrap;
     }
     .theme-save-toast.show { opacity: 1; }
-    .backup-card { background: white; border-radius: 14px; overflow: hidden;
+    .backup-card { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
       box-shadow: 0 2px 8px rgba(236,72,153,.08); }
     .backup-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
     .backup-divider { height: 1px; background: #fce7f3; margin: 0 16px; }
@@ -1416,7 +1417,7 @@ function renderCal() {
     if (dayShifts.length) {
       const wrap=document.createElement('div'); wrap.className='cal-badges';
       const dispS = loadDisplaySettings();
-      const fhShort=t=>{const[h,m]=t.split(':').map(Number);return m===0?String(h):`${h}${String(m).padStart(2,'0')}`;}
+      const fhShort=t=>{const[h]=t.split(':').map(Number);return String(h);}
       const fhLong=t=>t; // 9:30 そのまま
       for (const sh of dayShifts) {
         const b=document.createElement('div'); b.className='cal-badge';
