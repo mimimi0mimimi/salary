@@ -1104,6 +1104,18 @@ function load() {
 // ===== UTILS =====
 function uid() { return Math.random().toString(36).slice(2,9); }
 function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+function safeColor(v, fallback = '#ec4899') {
+  return /^#[0-9a-f]{6}$/i.test(String(v || '')) ? String(v) : fallback;
+}
 function toMin(t) { if (!t) return 0; const [h,m]=t.split(':').map(Number); return h*60+m; }
 function ds(y,m,d) { return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 function todayStr() { const d=new Date(); return ds(d.getFullYear(),d.getMonth()+1,d.getDate()); }
@@ -1429,10 +1441,10 @@ function renderCal() {
       const fhLong=t=>t; // 9:30 そのまま
       for (const sh of dayShifts) {
         const b=document.createElement('div'); b.className='cal-badge';
-        b.style.background=sh.color||'#ec4899';
+        b.style.background=safeColor(sh.color);
         const titleChars = Array.from(sh.title || '？');
-        const titleChar = titleChars[0] || '?';
-        const titleFull = sh.title || '？';
+        const titleChar = esc(titleChars[0] || '?');
+        const titleFull = esc(sh.title || '？');
         const showTitle = dispS.titleShow !== 'hide';
         const isFull = dispS.titleShow === 'full';
 
@@ -1649,9 +1661,9 @@ function renderBSContent(dstr) {
     dayShifts.forEach(sh=>{
       const p=shiftPay(sh);
       const row=document.createElement('div'); row.className='bs-reg-row';
-      row.innerHTML=`<span class="bs-reg-dot" style="background:${sh.color||'#ec4899'}"></span>
+      row.innerHTML=`<span class="bs-reg-dot" style="background:${safeColor(sh.color)}"></span>
         <div class="bs-reg-info">
-          <div class="bs-reg-name">${sh.title||'シフト'}</div>
+          <div class="bs-reg-name">${esc(sh.title||'シフト')}</div>
           <div class="bs-reg-time">${sh.startTime}〜${sh.endTime}（休憩${sh.breakMinutes||0}分）</div>
         </div>
         <div class="bs-reg-pay">${fmt(p.total)}</div>
@@ -1673,11 +1685,11 @@ function renderBSContent(dstr) {
     D.templates.forEach(t=>{
       const wp=D.workplaces.find(w=>w.id===t.workplaceId);
       const btn=document.createElement('button'); btn.className='bs-tmpl-btn';
-      btn.style.background=t.color||'#ec4899';
+      btn.style.background=safeColor(t.color);
       btn.style.color=loadTheme().ac;
-      btn.innerHTML=`<div class="bs-tmpl-name">${t.title}</div>
+      btn.innerHTML=`<div class="bs-tmpl-name">${esc(t.title)}</div>
         <div class="bs-tmpl-time">${t.startTime} - ${t.endTime}</div>
-        <div class="bs-tmpl-wp">${wp?wp.name:'勤務先未設定'}</div>`;
+        <div class="bs-tmpl-wp">${wp?esc(wp.name):'勤務先未設定'}</div>`;
       btn.onclick=()=>registerFromTemplate(dstr,t);
       grid.appendChild(btn);
     });
@@ -1712,7 +1724,7 @@ function showManualForm(dstr,container){
     return;
   }
   const form=document.createElement('div'); form.className='bs-form';
-  const wpOpts=D.workplaces.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+  const wpOpts=D.workplaces.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');
   form.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:flex-start;padding:10px 16px 6px">
       <span style="font-size:.88rem;font-weight:700;color:#3d1a2e">シフトを手動入力</span>
@@ -1869,9 +1881,9 @@ function renderDetailCharts() {
     const modeLabel = chartShowGross ? '総支給' : '手取り';
     const legendRows = wpAmounts.map(x=>`
       <div class="donut-legend-row">
-        <span class="donut-legend-dot" style="background:${x.color}"></span>
+        <span class="donut-legend-dot" style="background:${safeColor(x.color, loadTheme().ac)}"></span>
         <div class="donut-legend-info">
-          <span class="donut-legend-name">${x.name}</span>
+          <span class="donut-legend-name">${esc(x.name)}</span>
           <span class="donut-legend-amt">${fmt(x.amount)}</span>
         </div>
       </div>`).join('');
@@ -1883,9 +1895,9 @@ function renderDetailCharts() {
   if (yearAmounts.length) {
     const yearLegendRows = yearAmounts.map(x=>`
       <div class="donut-legend-row">
-        <span class="donut-legend-dot" style="background:${x.color}"></span>
+        <span class="donut-legend-dot" style="background:${safeColor(x.color, loadTheme().ac)}"></span>
         <div class="donut-legend-info">
-          <span class="donut-legend-name">${x.name}</span>
+          <span class="donut-legend-name">${esc(x.name)}</span>
           <span class="donut-legend-amt">${fmt(x.amount)}</span>
         </div>
       </div>`).join('');
@@ -2103,8 +2115,8 @@ function renderDetailSummary() {
       const hasNightWage = wp.nightWage?.enabled;
       const cdLabel = resolvedList.length > 1 ? `<span style="font-size:.58rem;opacity:.7">（締め${cdIdx+1}）</span>` : '';
       wpRows.push(`<div class="thb-row">
-        <span class="thb-dot" style="background:${wp.color||th.ac}"></span>
-        <span class="thb-name">${wp.name}${cdLabel}</span>
+        <span class="thb-dot" style="background:${safeColor(wp.color, th.ac)}"></span>
+        <span class="thb-name">${esc(wp.name)}${cdLabel}</span>
         <span class="thb-days">${effDays}日</span>
         <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtH(totalH)}<span class="thb-night">🌙</span>` : fmtH(totalH)}</span>
         <span class="thb-pay">${fmt(effNet)}</span>
@@ -2188,9 +2200,9 @@ function renderDetailCards() {
       const idAttr = rowId ? ` id="${rowId}"` : '';
       const lblClass = label.startsWith('└') ? 'lbl indent' : 'lbl';
       return `<div class="det-row-manual${deductClass}${grossClass}"${idAttr}>
-        <span class="${lblClass}">${label}</span>
-        <span class="${autoClass}">${autoDisplay}</span>
-        <input type="${itype}" class="manual-inp${has?' has-value':''}" placeholder="${placeholder}" value="${v}"
+        <span class="${lblClass}">${esc(label)}</span>
+        <span class="${autoClass}">${esc(autoDisplay)}</span>
+        <input type="${itype}" class="manual-inp${has?' has-value':''}" placeholder="${placeholder}" value="${esc(v)}"
           data-wp="${wp.id}" data-y="${S.y}" data-m="${S.m}" data-cdidx="${cdIdx}" data-field="${field}">
       </div>`;
     }
@@ -2211,7 +2223,7 @@ function renderDetailCards() {
       effGross = parseFloat(sr.gross);
     } else {
       const effNp = (sr.np !== '' && !isNaN(parseFloat(sr.np))) ? parseFloat(sr.np) : res.np;
-      const effDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dpPremium;
+      const effDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dp;
       let effAllow = 0;
       res.allowanceDetails.forEach(a => {
         const av = sr[`allowance_${a.name}`];
@@ -2227,13 +2239,13 @@ function renderDetailCards() {
       const manualAmt = (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
       effDeductions += manualAmt !== null ? manualAmt : d.value;
     });
-    const manualNet = effGross - effDeductions;
+    const manualNet = Math.max(0, effGross - effDeductions + res.totalAdjustment);
     // 全フィールドにひとつでも入力があるか
     const hasAnyManual = Object.values(sr).some(v => v !== '' && !isNaN(parseFloat(v)));
 
     const th = loadTheme();
     const cardId = `${wp.id}${cdSuffix}`;
-    const nameLabel = periods.length > 1 ? `${wp.name} <span style="font-size:.7rem;color:${th.ac}">（締め${cdIdx+1}）</span>` : wp.name;
+    const nameLabel = periods.length > 1 ? `${esc(wp.name)} <span style="font-size:.7rem;color:${safeColor(th.ac)}">（締め${cdIdx+1}）</span>` : esc(wp.name);
     const manualBadge = hasAnyManual ? `<span class="manual-badge-tag" style="display:inline-flex;align-items:center;gap:3px;background:var(--theme-ac,#ec4899);color:white;font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;letter-spacing:.02em">実績</span>` : '';
     const card=document.createElement('div'); card.className='det-card' + (periodShifts.length === 0 ? ' no-shifts' : '');
     card.innerHTML=`
@@ -2288,7 +2300,7 @@ function renderDetailCards() {
             const h = tMin / 60;
             const pay = shiftPay(s);
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
-            const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${s.memo}</span>` : '';
+            const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${esc(s.memo)}</span>` : '';
             const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">🌙${fmtH(pay.dh)}</span>` : '';
             return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto auto">
               <span class="sli-date" style="color:${th.tx}">${sm}/${sd}<span class="sli-dow" style="color:${dowColor}">${dow}</span></span>
@@ -2357,7 +2369,7 @@ function renderDetailCards() {
           effGross2 = grossManual;
         } else {
           const effNp2 = getInpVal('np') ?? res.np;
-          const effDp2 = getInpVal('dp') ?? res.dpPremium;
+          const effDp2 = getInpVal('dp') ?? res.dp;
           let effAllowances2 = 0;
           res.allowanceDetails.forEach(a => {
             const av = getInpVal(`allowance_${a.name}`);
@@ -2373,7 +2385,7 @@ function renderDetailCards() {
           deductions2 += dv !== null ? dv : d.value;
         });
 
-        const net = effGross2 - deductions2;
+        const net = Math.max(0, effGross2 - deductions2 + res.totalAdjustment);
         const hasAny = [...card.querySelectorAll('.manual-inp')].some(el => el.value !== '');
 
         // 総支給額の表示を更新（gross手入力がない場合）
@@ -2434,8 +2446,8 @@ function renderSettings() {
     const cdList = wp.cutoffDays?.length ? wp.cutoffDays : [{cutoffDay: wp.cutoffDay??0, payDay: wp.payDay??25}];
     const cLabel = cdList.map(cd => cd.cutoffDay===0?'月末締め':`${cd.cutoffDay}日締め`).join(' / ');
     const rLabel = !wp.roundUnit || wp.roundUnit == 1 ? '丸めなし' : `${wp.roundUnit}分単位`;
-    item.innerHTML=`<span class="set-dot" style="background:${wp.color||'#ec4899'}"></span>
-      <div class="set-info"><div class="set-name">${wp.name}</div>
+    item.innerHTML=`<span class="set-dot" style="background:${safeColor(wp.color)}"></span>
+      <div class="set-info"><div class="set-name">${esc(wp.name)}</div>
       <div class="set-sub">${cLabel} / ${rLabel}</div></div>
       <span class="set-arr">›</span>`;
     item.onclick=()=>openWpModal(wp.id);
@@ -2446,9 +2458,9 @@ function renderSettings() {
   D.templates.forEach(t=>{
     const wp=D.workplaces.find(w=>w.id===t.workplaceId);
     const item=document.createElement('div'); item.className='set-item';
-    item.innerHTML=`<span class="set-dot" style="background:${t.color||'#ec4899'}"></span>
-      <div class="set-info"><div class="set-name">${t.title}</div>
-      <div class="set-sub">${t.startTime}〜${t.endTime} / ${wp?wp.name:'未設定'}</div></div>
+    item.innerHTML=`<span class="set-dot" style="background:${safeColor(t.color)}"></span>
+      <div class="set-info"><div class="set-name">${esc(t.title)}</div>
+      <div class="set-sub">${t.startTime}〜${t.endTime} / ${wp?esc(wp.name):'未設定'}</div></div>
       <span class="set-arr">›</span>`;
     item.onclick=()=>openTemplateModal(t.id);
     tl.appendChild(item);
@@ -2489,7 +2501,7 @@ function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', v
     : '';
   div.innerHTML = `
     <div class="dyn-row-top">
-      <input type="text" class="fi dyn-name" style="flex:1.5; padding:6px 8px; font-size:0.82rem;" value="${item.name}" placeholder="項目名（例: ${type==='allow'?'交通費':'所得税'}）">
+      <input type="text" class="fi dyn-name" style="flex:1.5; padding:6px 8px; font-size:0.82rem;" value="${esc(item.name)}" placeholder="項目名（例: ${type==='allow'?'交通費':'所得税'}）">
       <select class="fi dyn-timing" style="flex:1; padding:6px 4px; font-size:0.82rem;">
         <option value="day" ${item.timing==='day'?'selected':''}>日毎</option>
         <option value="month" ${item.timing==='month'?'selected':''}>月毎</option>
@@ -2557,7 +2569,7 @@ function openWpModal(wpId){
   ].map(o => `<option value="${o.v}" ${curRoundUnit===o.v?'selected':''}>${o.l}</option>`).join('');
 
   const body=`
-    <div class="fg"><label>勤務先名</label><input class="fi" id="wm-name" value="${wp?.name||''}" placeholder="例: カフェ"></div>
+    <div class="fg"><label>勤務先名</label><input class="fi" id="wm-name" value="${esc(wp?.name||'')}" placeholder="例: カフェ"></div>
     <div class="fg"><label>カラー</label>${swatchHTML(selColor)}</div>
     
     <div class="fg" style="margin-top:8px">
@@ -2663,7 +2675,15 @@ function openWpModal(wpId){
     
     if (!isNew){
       const db=document.createElement('button'); db.className='btn-del'; db.textContent='削除';
-      db.onclick=()=>{if(!confirm('この勤務先を削除しますか？'))return;D.workplaces=D.workplaces.filter(w=>w.id!==wpId);save();closeModal();renderSettings();};
+      db.onclick=()=>{
+        if(!confirm('この勤務先と関連するシフト・テンプレート・実績を削除しますか？'))return;
+        D.workplaces=D.workplaces.filter(w=>w.id!==wpId);
+        D.templates=D.templates.filter(t=>t.workplaceId!==wpId);
+        D.shifts=D.shifts.filter(s=>s.workplaceId!==wpId);
+        Object.keys(D.salaryRecords||{}).forEach(k=>{ if(k.startsWith(wpId+'_')) delete D.salaryRecords[k]; });
+        Object.keys(D.taxRecords||{}).forEach(k=>{ if(k.startsWith(wpId+'_')) delete D.taxRecords[k]; });
+        save();closeModal();renderSettings();renderCal();renderSummary();
+      };
       foot.appendChild(db);
     }
     
@@ -2735,9 +2755,9 @@ function openTemplateModal(tmplId, returnDate){
   const t=tmplId?D.templates.find(x=>x.id===tmplId):null;
   const isNew=!t;
   const selColor=t?.color||COLORS[0];
-  const wpOpts=D.workplaces.map(w=>`<option value="${w.id}"${t?.workplaceId===w.id?' selected':''}>${w.name}</option>`).join('');
+  const wpOpts=D.workplaces.map(w=>`<option value="${esc(w.id)}"${t?.workplaceId===w.id?' selected':''}>${esc(w.name)}</option>`).join('');
   const body=`
-    <div class="fg"><label>タイトル</label><input class="fi" id="tm-title" value="${t?.title||''}" placeholder="例: 早番"></div>
+    <div class="fg"><label>タイトル</label><input class="fi" id="tm-title" value="${esc(t?.title||'')}" placeholder="例: 早番"></div>
     <div class="fg"><label>カラー</label>${swatchHTML(selColor)}</div>
     <div class="fg"><label>勤務先</label>
       <select class="fi" id="tm-wp"><option value="">選択してください</option>${wpOpts}</select></div>
@@ -2808,8 +2828,8 @@ function fillDayDetail(dstr) {
       <div class="dd-time">${sh.startTime}<br>${sh.endTime}</div>
       <div class="dd-bar" style="background:${sh.color||'#ec4899'}"></div>
       <div class="dd-info">
-        <div class="dd-title">${sh.title||'シフト'}</div>
-        <div class="dd-wp">[${wp ? wp.name : '未設定'}]${sh.memo ? ` <span style="color:#aaa">${sh.memo}</span>` : ''}</div>
+        <div class="dd-title">${esc(sh.title||'シフト')}</div>
+        <div class="dd-wp">[${wp ? esc(wp.name) : '未設定'}]${sh.memo ? ` <span style="color:#aaa">${esc(sh.memo)}</span>` : ''}</div>
         ${sh.adjustment ? `<div style="font-size:.7rem;color:${sh.adjustment>0?'#16a34a':'#e11d48'};margin-top:2px;">${sh.adjustment>0?'▲':'▼'} 調整 ${sh.adjustment>0?'+':''}${Math.round(sh.adjustment).toLocaleString('ja-JP')}円</div>` : ''}
       </div>
       <div class="dd-pay">${fmt(pay.total)}</div>
@@ -2822,7 +2842,7 @@ function fillDayDetail(dstr) {
       `<span class="sw dd-sw${c===sh.color?' on':''}" style="background:${c}" data-c="${c}"></span>`
     ).join('');
     const wpOptsEdit = D.workplaces.map(w =>
-      `<option value="${w.id}"${w.id===sh.workplaceId?' selected':''}>${w.name}</option>`
+      `<option value="${esc(w.id)}"${w.id===sh.workplaceId?' selected':''}>${esc(w.name)}</option>`
     ).join('');
     form.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px">
@@ -2831,7 +2851,7 @@ function fillDayDetail(dstr) {
       </div>
       <div class="bf-row"><label>日付</label><input type="date" class="dd-ef-in" id="ef-date-${sh.id}" value="${sh.date}"></div>
       <div class="bf-row"><label>勤務先</label><select class="dd-ef-in" id="ef-wp-${sh.id}" style="flex:1">${wpOptsEdit}</select></div>
-      <div class="bf-row"><label>タイトル</label><input type="text" class="dd-ef-in" id="ef-title-${sh.id}" value="${sh.title||''}"></div>
+      <div class="bf-row"><label>タイトル</label><input type="text" class="dd-ef-in" id="ef-title-${sh.id}" value="${esc(sh.title||'')}"></div>
       <div class="bf-row"><label>カラー</label><div class="swatches" id="ef-swatches-${sh.id}">${colorSwatchesHTML}</div></div>
       <div class="bf-row">
         <label>時間</label>
@@ -2849,7 +2869,7 @@ function fillDayDetail(dstr) {
       </div>
       <div class="bf-row" style="align-items:flex-start">
         <label style="padding-top:6px">メモ</label>
-        <textarea class="dd-ef-in" id="ef-memo-${sh.id}" rows="2" placeholder="任意メモ" style="flex:1;resize:none;font-family:inherit">${sh.memo||''}</textarea>
+        <textarea class="dd-ef-in" id="ef-memo-${sh.id}" rows="2" placeholder="任意メモ" style="flex:1;resize:none;font-family:inherit">${esc(sh.memo||'')}</textarea>
       </div>
       <button class="btn-bs-save dd-ef-save">保存 ✦</button>`;
 
@@ -3042,7 +3062,7 @@ function applyTheme(t) {
     .set-item:active { background: ${lightBg} !important; }
     .set-sec-title { color: ${t.tx} !important; background: linear-gradient(135deg,${t.g1},${t.g2}) !important; }
     .set-sub, .set-arr { color: ${t.txMuted} !important; }
-    .btn-add { border-color: ${border} !important; color: ${t.ac} !important; background: ${lightBg} !important; }
+    .btn-add { border-color: ${border} !important; color: ${t.ac} !important; background: ${lightBg} !important; box-shadow: 0 2px 8px ${t.g2}20 !important; }
     .btn-add:active { background: ${border} !important; }
     .modal-head, .modal-foot { border-color: ${border} !important; }
     .btn-mclose { color: ${t.tx} !important; background: ${lightBg} !important; }
@@ -3697,8 +3717,8 @@ function renderTax() {
       // startの年を使って正しいgetPayPeriodsを参照（前年12月分対応）
       const refY = parseInt(end.slice(0, 4));
       const periodLabel = getPayPeriods(wp, refY, m).length > 1
-        ? `${wp.name}（締め${cdIdx + 1}：${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`
-        : `${wp.name}（${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`;
+        ? `${esc(wp.name)}（締め${cdIdx + 1}：${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`
+        : `${esc(wp.name)}（${start.slice(5).replace('-','/')}〜${end.slice(5).replace('-','/')}）`;
 
       const sr = getSalaryRecord(wp.id, refY, m, cdIdx);
       const autoRes = calcPeriodSummary(wp, start, end);
@@ -3725,7 +3745,7 @@ function renderTax() {
       row.className = 'tax-wp-row';
       row.innerHTML = `
         <div class="tax-wp-name">
-          <span style="width:10px;height:10px;border-radius:50%;background:${wp.color||'#ec4899'};display:inline-block;flex-shrink:0"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:${safeColor(wp.color)};display:inline-block;flex-shrink:0"></span>
           ${periodLabel}${isCommission ? '<span class="commission-badge">業務委託</span>' : ''}
         </div>
         <div class="tax-val-grid${siTotal > 0 ? '' : ' no-si'}">
@@ -3786,7 +3806,7 @@ function renderTax() {
       const row = document.createElement('div');
       row.className = 'tax-expense-row';
       row.innerHTML = `
-        <label><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${wp.color||'#ec4899'};margin-right:5px;vertical-align:middle;"></span>${wp.name} の年間経費（円）</label>
+        <label><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${safeColor(wp.color)};margin-right:5px;vertical-align:middle;"></span>${esc(wp.name)} の年間経費（円）</label>
         <input type="number" class="tax-expense-inp" placeholder="0" value="${wp.annualExpenses||''}" data-wpid="${wp.id}">`;
       expBody.appendChild(row);
     });
