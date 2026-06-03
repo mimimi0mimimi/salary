@@ -1,7 +1,7 @@
 {
-  "name": "バイト給料計算",
-  "short_name": "給料計算",
-  "description": "複数バイトの給料をまとめて管理",
+  "name": "シフトかんり",
+  "short_name": "シフトかんり",
+  "description": "かけもちバイトのシフトとお給料をまとめて管理",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#fdcfe8",
