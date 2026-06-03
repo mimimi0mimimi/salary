@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>給与計算カレンダー 使い方ガイド</title>
+  <style>
+    :root {
+      --pink-1: #fff0f7;
+      --pink-2: #fdd5e8;
+      --pink-3: #f9a8d4;
+      --pink-4: #ec4899;
+      --rose: #be185d;
+      --text: #3d1a2e;
+      --muted: #9d6b84;
+      --line: #fce7f3;
+      --white: #fff;
+      --mint: #d2f9e6;
+      --sky: #dbebff;
+      --lav: #e5e0ff;
+      --shadow: 0 10px 28px rgba(236, 72, 153, .16);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(249, 168, 212, .34), transparent 30%),
+        radial-gradient(circle at 85% 8%, rgba(210, 249, 230, .55), transparent 28%),
+        linear-gradient(180deg, #fff7fb 0%, #fff0f7 42%, #fdf7ff 100%);
+    }
+
+    .page {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 18px 14px 48px;
+    }
+
+    .hero {
+      padding: 24px 18px 18px;
+      border: 1px solid rgba(255, 255, 255, .8);
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(253, 213, 232, .94), rgba(249, 168, 212, .88));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .32);
+    }
+
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .55);
+      color: var(--rose);
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin-top: 12px;
+      font-size: 1.65rem;
+      line-height: 1.2;
+      color: #831843;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      color: #7a244d;
+      font-size: .95rem;
+      font-weight: 650;
+    }
+
+    .quick {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .quick a {
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, .82);
+      background: rgba(255, 255, 255, .74);
+      border-radius: 14px;
+      padding: 10px 11px;
+      font-size: .82rem;
+      font-weight: 800;
+      box-shadow: 0 2px 10px rgba(236, 72, 153, .08);
+    }
+
+    section {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid rgba(252, 231, 243, .95);
+      box-shadow: 0 4px 16px rgba(236, 72, 153, .08);
+    }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: var(--rose);
+      font-size: 1.08rem;
+      line-height: 1.25;
+    }
+
+    h2 .num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      color: #fff;
+      background: linear-gradient(135deg, var(--pink-3), var(--pink-4));
+      font-size: .78rem;
+      font-weight: 900;
+      box-shadow: 0 3px 10px rgba(236, 72, 153, .25);
+    }
+
+    p {
+      color: var(--text);
+      font-size: .92rem;
+    }
+
+    .note {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #fff8fc;
+      border: 1px dashed #f9a8d4;
+      color: #7a244d;
+      font-size: .86rem;
+      font-weight: 650;
+    }
+
+    .steps {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 10px;
+      border-radius: 14px;
+      background: #fffafd;
+      border: 1px solid var(--line);
+    }
+
+    .mark {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--pink-2);
+      color: var(--rose);
+      font-size: .78rem;
+      font-weight: 900;
+      margin-top: 1px;
+    }
+
+    .step strong {
+      display: block;
+      color: #831843;
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    .step span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .chips {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--pink-1);
+      color: var(--rose);
+      border: 1px solid var(--line);
+      font-size: .8rem;
+      font-weight: 800;
+    }
+
+    .grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini {
+      min-height: 100%;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: #fffafd;
+    }
+
+    .mini h3 {
+      color: #831843;
+      font-size: .94rem;
+      margin-bottom: 4px;
+    }
+
+    .mini p {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .mint { background: linear-gradient(135deg, #fbfffd, var(--mint)); }
+    .sky { background: linear-gradient(135deg, #fbfdff, var(--sky)); }
+    .lav { background: linear-gradient(135deg, #fffbff, var(--lav)); }
+
+    .backup {
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, #fffaf0, #fff7fb);
+    }
+
+    .backup h2 {
+      color: #b45309;
+    }
+
+    .backup .num {
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 650;
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding: 12px 10px 40px;
+      }
+
+      .hero {
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 1.42rem;
+      }
+
+      .quick,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">給与計算カレンダー guide</div>
+      <h1>かわいく続ける<br>シフトとお給料の使い方</h1>
+      <p class="lead">バイトやお仕事の予定を入れるだけで、今月どれくらい入りそうかを見られるアプリです。</p>
+      <nav class="quick" aria-label="目次">
+        <a href="#start">はじめに</a>
+        <a href="#settings">勤務先設定</a>
+        <a href="#shift">シフト登録</a>
+        <a href="#backup">バックアップ</a>
+      </nav>
+    </header>
+
+    <section id="start">
+      <h2><span class="num">1</span>まず覚えること</h2>
+      <p>このアプリは、スマホのホーム画面から開いて使う「自分専用の給与メモ」です。データは基本的に使っている端末の中に保存されます。</p>
+      <div class="chips">
+        <span class="chip">カレンダーで予定を見る</span>
+        <span class="chip">シフトを追加する</span>
+        <span class="chip">手取りを確認する</span>
+        <span class="chip">こまめにバックアップ</span>
+      </div>
+      <div class="note">大切なポイント: iPhoneのデータ整理、Safari履歴削除、別端末への移動などでデータが消えることがあります。バックアップだけは定期的にしておくと安心です。</div>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">2</span>最初に勤務先を登録</h2>
+      <p>使い始めたら、まず「設定」から勤務先を追加します。時給や締め日を入れておくと、給与計算がきれいに出ます。</p>
+      <div class="steps">
+        <div class="step">
+          <span class="mark">1</span>
+          <div><strong>設定タブを開く</strong><span>画面下、または上部の「設定」をタップします。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">2</span>
+          <div><strong>「勤務先を追加」をタップ</strong><span>お店や会社の名前、カラー、時給を入力します。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">3</span>
+          <div><strong>締め日・給料日を入れる</strong><span>例: 末締めなら「月末」、25日払いなら「25日」を選びます。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">4</span>
+          <div><strong>深夜時給や控除があれば設定</strong><span>深夜割増、交通費、社会保険、所得税なども必要に応じて入れます。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="shift">
+      <h2><span class="num">3</span>シフトを登録する</h2>
+      <p>カレンダーの日付を選んで、シフトを追加します。同じ時間帯が多い場合はテンプレートを作るとかなり楽です。</p>
+      <div class="grid">
+        <div class="mini mint">
+          <h3>1回だけ登録</h3>
+          <p>日付を選んで「シフト追加」から、勤務先・開始時間・終了時間・休憩を入力します。</p>
+        </div>
+        <div class="mini sky">
+          <h3>いつもの時間を登録</h3>
+          <p>「テンプレートを追加」で早番・遅番などを作ると、カレンダーからすぐ追加できます。</p>
+        </div>
+      </div>
+      <div class="note">メモ欄には「ヘルプ」「イベント」「早上がり」などを書いておくと、あとで見返しやすいです。</div>
+    </section>
+
+    <section>
+      <h2><span class="num">4</span>お給料を確認する</h2>
+      <p>カレンダー下の合計や「詳細」画面で、今月の勤務時間・総支給・手取りを確認できます。</p>
+      <div class="steps">
+        <div class="step">
+          <span class="mark">✓</span>
+          <div><strong>カレンダー画面</strong><span>ざっくり今月いくらになりそうかを見る場所です。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">✓</span>
+          <div><strong>詳細画面</strong><span>勤務先ごとの金額、控除、深夜時間などを細かく見る場所です。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">✓</span>
+          <div><strong>実績入力</strong><span>実際の給与明細と違うときは、明細の実績欄に本当の数字を入れます。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">5</span>テーマを変える</h2>
+      <p>色のテーマを変えると、アプリ全体の雰囲気が変わります。気分に合わせて、ピーチ・ミント・スカイ・ラベンダーなどから選べます。</p>
+      <div class="grid">
+        <div class="mini">
+          <h3>おすすめ</h3>
+          <p>毎日見るなら、目が疲れにくいミントやスカイも使いやすいです。</p>
+        </div>
+        <div class="mini lav">
+          <h3>自分カラー</h3>
+          <p>好きな色にしておくと、予定入力がちょっと楽しくなります。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="backup" class="backup">
+      <h2><span class="num">!</span>バックアップは忘れずに</h2>
+      <p>このアプリで一番大事なのはバックアップです。データが消えたときも、バックアップがあれば戻せます。</p>
+      <div class="steps">
+        <div class="step">
+          <span class="mark">1</span>
+          <div><strong>月1回はバックアップ</strong><span>給料日前、月末、シフトをたくさん入れた日がおすすめです。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">2</span>
+          <div><strong>全データを書き出してiCloudなどにバックアップ</strong><span>自分がなくさない場所に保存します。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">3</span>
+          <div><strong>復元するときは保存していたバックアップデータを読み込む</strong><span>今あるデータ全てが上書きされます。</span></div>
+        </div>
+      </div>
+      <div class="note">おすすめルール: 「毎月1日」と「給料日」にバックアップ。これだけでかなり安心です。</div>
+    </section>
+
+    <section>
+      <h2><span class="num">?</span>困ったとき</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="mark">Q</span>
+          <div><strong>金額が思ったより違う</strong><span>勤務先の時給、休憩時間、深夜時給、控除設定を確認します。給与明細が出たら実績欄に本当の数字を入れるのが確実です。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">Q</span>
+          <div><strong>シフトが見つからない</strong><span>表示している月と、登録した日付が合っているか確認します。</span></div>
+        </div>
+        <div class="step">
+          <span class="mark">Q</span>
+          <div><strong>データが消えた</strong><span>バックアップを保存していれば、データ管理から復元できます。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">かわいく、こまめに、無理なく続けるためのガイドです。</p>
+  </main>
+</body>
+</html>
