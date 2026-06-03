@@ -41,6 +41,19 @@
       font-size: .95rem; font-weight: 800; color: #be185d;
       letter-spacing: .02em;
     }
+    .app-update-badge {
+      display: none; margin-left: 6px; padding: 2px 7px;
+      border-radius: 999px; background: rgba(255,255,255,.72);
+      color: #be185d; font-size: .68em; font-weight: 800;
+      box-shadow: 0 2px 8px rgba(236,72,153,.18);
+      cursor: pointer; user-select: none; vertical-align: 1px;
+      animation: updateBadgePulse 1.6s ease-in-out infinite;
+    }
+    .app-update-badge.show { display: inline-flex; align-items: center; gap: 3px; }
+    @keyframes updateBadgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
     .app-title-sub {
       font-size: .62rem; color: #ec4899;
       margin-top: 1px; letter-spacing: .05em;
@@ -823,7 +836,7 @@
         <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 Q27 29 24 32 Z" fill="#ec4899" opacity=".7"/>
       </svg>
       <div class="header-usagi-text">
-        <span class="app-title-main">シフトかんり <span style="font-size:.68em;opacity:.75;margin-left:4px">v1.2</span></span>
+        <span class="app-title-main">シフトかんり <span id="app-version-label" style="font-size:.68em;opacity:.75;margin-left:4px"></span><span id="app-update-badge" class="app-update-badge" title="最新版に更新">🔄️更新あり</span></span>
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
       <div style="display:flex;gap:4px;margin-left:auto">
@@ -1222,6 +1235,49 @@ async function sendShiftUpdatedWebhook(sh) {
     queueWebhookEvent(event);
     showMiniToast('✓ 実績メモを保存しました（次回再送）');
   }
+}
+
+function initAppVersionLabel() {
+  const label = document.getElementById('app-version-label');
+  if (label) label.textContent = `v${APP_VERSION}`;
+}
+
+async function clearAppCachesAndReload() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(reg => reg.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(key => caches.delete(key)));
+    }
+  } catch(e) {}
+  const url = new URL(location.href);
+  url.searchParams.set('refresh', Date.now());
+  location.replace(url.toString());
+}
+
+function showUpdateBadge(info) {
+  const badge = document.getElementById('app-update-badge');
+  if (!badge) return;
+  badge.classList.add('show');
+  badge.onclick = () => {
+    const msg = info?.message
+      ? `更新があります。\n${info.message}\n\n更新しますか？`
+      : '更新があります。\n更新しますか？';
+    if (confirm(msg)) clearAppCachesAndReload();
+  };
+}
+
+async function checkAppUpdate() {
+  if (navigator.onLine === false) return;
+  try {
+    const res = await fetch(`./app-version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const info = await res.json();
+    if (info.version && info.version !== APP_VERSION) showUpdateBadge(info);
+  } catch(e) {}
 }
 
 // ===== UTILS =====
@@ -4875,9 +4931,11 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== INIT =====
-initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
+initState(); load(); initAppVersionLabel(); applyTheme(loadTheme()); renderCal(); renderSummary();
 setTimeout(flushPendingWebhookEvents, 0);
+setTimeout(checkAppUpdate, 1000);
 window.addEventListener('online', flushPendingWebhookEvents);
+window.addEventListener('online', checkAppUpdate);
 
 // ===== DRAGGABLE BOTTOM SHEET =====
 let bsDragging = false;
