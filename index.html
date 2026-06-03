@@ -101,7 +101,7 @@
       display: block; white-space: nowrap; overflow: hidden;
     }
     .badge-long-row1 {
-      display: flex; align-items: center; gap: 2px;
+      display: flex; align-items: center; gap: 0;
       overflow: hidden; white-space: nowrap;
     }
     .badge-long-title {
@@ -1434,21 +1434,37 @@ function renderCal() {
         const titleChar = titleChars[0] || '?';
         const titleFull = sh.title || '？';
         const showTitle = dispS.titleShow !== 'hide';
-        const titleText = dispS.titleShow === 'full' ? titleFull : titleChar;
+        const isFull = dispS.titleShow === 'full';
+
+        // fullモード：タイトルを1行目、時間は設定に従い2行目以降
+        if (isFull && showTitle) {
+          b.classList.add('badge-long');
+          const titleRow = `<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:.6rem">${titleFull}</span>`;
+          if (dispS.timeMode === 'short') {
+            // タイトル↵ スペース+9-15（左寄せ）
+            b.innerHTML = `<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:.6rem">${titleFull}</span><span style="font-size:.48rem;opacity:.9;display:block;text-align:left"> ${fhShort(sh.startTime)}-${fhShort(sh.endTime)}</span>`;
+          } else if (dispS.timeMode === 'long') {
+            b.innerHTML = titleRow + `<span style="font-size:.48rem;opacity:.9;display:block">${fhLong(sh.startTime)}</span><span class="badge-long-end">-${fhLong(sh.endTime)}</span>`;
+          } else {
+            b.innerHTML = titleRow;
+          }
+          wrap.appendChild(b);
+          continue;
+        }
+
         let timeHTML = '';
         if (dispS.timeMode === 'short') {
           timeHTML = `<span class="badge-time">${fhShort(sh.startTime)}-${fhShort(sh.endTime)}</span>`;
           b.style.flexDirection = 'row';
         } else if (dispS.timeMode === 'long') {
-          // longモード：1行目に「タイトル + 開始時間」、2行目に「-終了時間（右寄せ）」
           b.classList.add('badge-long');
-          const titlePart = showTitle ? `<span class="badge-long-title">${titleText}</span>` : '';
+          const titlePart = showTitle ? `<span class="badge-long-title">${titleChar}</span>` : '';
           b.innerHTML = `<span class="badge-long-row1">${titlePart}<span class="badge-long-start">${fhLong(sh.startTime)}</span></span><span class="badge-long-end">-${fhLong(sh.endTime)}</span>`;
           wrap.appendChild(b);
           continue;
         }
         // timeMode==='hide' の場合はtimeHTML空のまま
-        b.innerHTML = (showTitle ? `<span class="badge-t">${titleText}</span>` : '') + timeHTML;
+        b.innerHTML = (showTitle ? `<span class="badge-t">${titleChar}</span>` : '') + timeHTML;
         wrap.appendChild(b);
       }
       cell.appendChild(wrap);
@@ -3185,7 +3201,11 @@ function saveDisplaySettings(s) {
 function loadDisplaySettings() {
   try {
     const saved = JSON.parse(localStorage.getItem(DISP_KEY));
-    if (saved) return { ...DISP_DEFAULT, ...saved };
+    if (saved) {
+      // 古い 'show' 値を 'char1' に移行
+      if (saved.titleShow === 'show') saved.titleShow = 'char1';
+      return { ...DISP_DEFAULT, ...saved };
+    }
   } catch(e) {}
   return { ...DISP_DEFAULT };
 }
