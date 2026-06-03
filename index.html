@@ -1105,11 +1105,123 @@ let currentBSDate = null;
 let showGross = false; // false=手取り, true=総支給
 let chartShowGross = false; // グラフ用
 
+// オフライン時のChart.jsエラー防止用の安全装置
+if (typeof Chart === 'undefined') {
+  window.Chart = class { constructor() {} destroy() {} };
+}
+
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
+const APP_VERSION = '1.2';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDZBuPl-fy9Ixs9fPfqRhD4vz26vdv1Aw_Pt5kHGMmNsKjjrB02OkO3B5oqzsBTEuV/exec';
+const WEBHOOK_SECRET = 'shift-kanri-2026-very-long-family-secret-253110';
+const PENDING_WEBHOOK_EVENTS_KEY = 'pendingWebhookEvents';
+
 function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) { D = JSON.parse(r); if (!D.taxRecords) D.taxRecords = {}; if (!D.salaryRecords) D.salaryRecords = {}; } } catch(e) {}
+}
+
+function isWebhookConfigured() {
+  return WEBHOOK_URL && !WEBHOOK_URL.includes('ここにGAS');
+}
+
+function readPendingWebhookEvents() {
+  try {
+    const raw = localStorage.getItem(PENDING_WEBHOOK_EVENTS_KEY);
+    const events = raw ? JSON.parse(raw) : [];
+    return Array.isArray(events) ? events : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function writePendingWebhookEvents(events) {
+  localStorage.setItem(PENDING_WEBHOOK_EVENTS_KEY, JSON.stringify(events));
+}
+
+function queueWebhookEvent(event) {
+  const events = readPendingWebhookEvents();
+  events.push({
+    ...event,
+    queuedAt: event.queuedAt || new Date().toISOString(),
+    retryCount: event.retryCount || 0
+  });
+  writePendingWebhookEvents(events);
+}
+
+function showMiniToast(message) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d1a2e;color:white;padding:10px 20px;border-radius:99px;font-size:.85rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2200);
+}
+
+async function postWebhookEvent(event) {
+  if (!isWebhookConfigured()) return;
+  if (navigator.onLine === false) throw new Error('offline');
+  await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    keepalive: true,
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(event)
+  });
+}
+
+let flushingWebhookEvents = false;
+async function flushPendingWebhookEvents() {
+  if (flushingWebhookEvents || !isWebhookConfigured() || navigator.onLine === false) return;
+  const events = readPendingWebhookEvents();
+  if (!events.length) return;
+
+  flushingWebhookEvents = true;
+  const remaining = [];
+  for (const event of events) {
+    try {
+      await postWebhookEvent(event);
+    } catch(e) {
+      remaining.push({
+        ...event,
+        retryCount: (event.retryCount || 0) + 1,
+        lastErrorAt: new Date().toISOString()
+      });
+    }
+  }
+  writePendingWebhookEvents(remaining);
+  flushingWebhookEvents = false;
+}
+
+async function sendShiftUpdatedWebhook(sh) {
+  if (!isWebhookConfigured()) return;
+
+  const wp = D.workplaces.find(w => w.id === sh.workplaceId);
+  const pay = shiftPay(sh);
+  const event = {
+    eventType: 'shift_updated',
+    sentAt: new Date().toISOString(),
+    workDate: sh.date || '',
+    workplaceName: wp ? wp.name : '',
+    shiftTitle: sh.title || '',
+    startTime: sh.startTime || '',
+    endTime: sh.endTime || '',
+    breakMinutes: sh.breakMinutes || 0,
+    adjustment: sh.adjustment || 0,
+    memo: sh.memo || '',
+    netPayEstimate: Math.round(pay.total || 0),
+    appVersion: APP_VERSION,
+    secret: WEBHOOK_SECRET
+  };
+
+  flushPendingWebhookEvents();
+  try {
+    await postWebhookEvent(event);
+    showMiniToast('✓ 実績メモを保存しました');
+  } catch(e) {
+    queueWebhookEvent(event);
+    showMiniToast('✓ 実績メモを保存しました（次回再送）');
+  }
 }
 
 // ===== UTILS =====
@@ -2949,6 +3061,7 @@ function fillDayDetail(dstr) {
       sh.adjustment   = parseFloat(document.getElementById(`ef-adj-${sh.id}`).value)||0;
       sh.memo         = document.getElementById(`ef-memo-${sh.id}`).value||'';
       save();
+      sendShiftUpdatedWebhook({...sh});
       document.getElementById('dd-edit-overlay').style.display = 'none';
       if (D.shifts.some(s => s.date === newDate)) openDayDetail(newDate);
       else closeDayDetail();
@@ -4763,6 +4876,8 @@ if ('serviceWorker' in navigator) {
 
 // ===== INIT =====
 initState(); load(); applyTheme(loadTheme()); renderCal(); renderSummary();
+setTimeout(flushPendingWebhookEvents, 0);
+window.addEventListener('online', flushPendingWebhookEvents);
 
 // ===== DRAGGABLE BOTTOM SHEET =====
 let bsDragging = false;
