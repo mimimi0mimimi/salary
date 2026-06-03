@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -468,6 +468,10 @@
       border-radius: 10px; font-size: .9rem; outline: none; color: #3d1a2e; }
     .fi:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,.12); }
     .f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .f2 .fg { min-width: 0; }
+    .night-time-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+    .night-time-grid .fg { margin-bottom: 0; }
+    .night-time-grid .fi { min-width: 0; padding-left: 8px; padding-right: 8px; }
     .fsec { font-size: .7rem; font-weight: 700; color: #f9a8d4; text-transform: uppercase;
       letter-spacing: .05em; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #fce7f3; }
     .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -812,7 +816,7 @@
         <path d="M24 32 C24 32 21 29 19 31 C17 33 19 36 24 39 C29 36 31 33 29 31 Q27 29 24 32 Z" fill="#ec4899" opacity=".7"/>
       </svg>
       <div class="header-usagi-text">
-        <span class="app-title-main">シフトかんり <span style="font-size:.68em;opacity:.75;margin-left:4px">v1.0</span></span>
+        <span class="app-title-main">シフトかんり <span style="font-size:.68em;opacity:.75;margin-left:4px">v1.1</span></span>
         <span class="app-title-sub">✦ かわいく管理しよ ✦</span>
       </div>
       <div style="display:flex;gap:4px;margin-left:auto">
@@ -2118,7 +2122,7 @@ function renderDetailSummary() {
         <span class="thb-dot" style="background:${safeColor(wp.color, th.ac)}"></span>
         <span class="thb-name">${esc(wp.name)}${cdLabel}</span>
         <span class="thb-days">${effDays}日</span>
-        <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtH(totalH)}<span class="thb-night">🌙</span>` : fmtH(totalH)}</span>
+        <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtH(totalH)}<span class="thb-night">⭐</span>` : fmtH(totalH)}</span>
         <span class="thb-pay">${fmt(effNet)}</span>
       </div>`);
     });
@@ -2301,14 +2305,14 @@ function renderDetailCards() {
             const pay = shiftPay(s);
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
             const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${esc(s.memo)}</span>` : '';
-            const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">🌙${fmtH(pay.dh)}</span>` : '';
+            const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">⭐${fmtH(pay.dh)}</span>` : '';
             return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto auto">
               <span class="sli-date" style="color:${th.tx}">${sm}/${sd}<span class="sli-dow" style="color:${dowColor}">${dow}</span></span>
               <span class="sli-time">${s.startTime}〜${s.endTime}${memoStr}</span>
               <span class="sli-h">${fmtH(h)}</span>
               ${nightStr}
               ${adjStr}
-              <span class="sli-pay" style="color:${th.ac}">${fmt(pay.total)}</span>
+              <span class="sli-pay" style="color:${th.ac}">手取り ${fmt(pay.total)}</span>
             </div>`;
           }).join('')}
         </div>
@@ -2598,7 +2602,7 @@ function openWpModal(wpId){
       <label class="tog"><input type="checkbox" id="wm-ne"${nw.enabled?' checked':''}><span class="tog-sl"></span></label>
     </div>
     <div id="wm-nf" style="${nw.enabled?'':'display:none'}">
-      <div class="f2" style="margin-bottom:10px">
+      <div class="f2 night-time-grid" style="margin-bottom:10px">
         <div class="fg"><label>開始時刻</label><input type="time" class="fi" id="wm-ns" value="${nw.startTime||'22:00'}"></div>
         <div class="fg"><label>終了時刻</label><input type="time" class="fi" id="wm-ne2" value="${nw.endTime||'05:00'}"></div>
       </div>
