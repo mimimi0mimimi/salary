@@ -1125,7 +1125,7 @@ if (typeof Chart === 'undefined') {
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDZBuPl-fy9Ixs9fPfqRhD4vz26vdv1Aw_Pt5kHGMmNsKjjrB02OkO3B5oqzsBTEuV/exec';
 const WEBHOOK_SECRET = 'shift-kanri-2026-very-long-family-secret-253110';
 const PENDING_WEBHOOK_EVENTS_KEY = 'pendingWebhookEvents';
@@ -1209,13 +1209,12 @@ async function flushPendingWebhookEvents() {
 async function sendShiftUpdatedWebhook(sh) {
   if (!isWebhookConfigured()) return;
 
-  const wp = D.workplaces.find(w => w.id === sh.workplaceId);
   const pay = shiftPay(sh);
   const event = {
     eventType: 'shift_updated',
     sentAt: new Date().toISOString(),
     workDate: sh.date || '',
-    workplaceName: wp ? wp.name : '',
+    workplaceName: sh.workplaceId || '',
     shiftTitle: sh.title || '',
     startTime: sh.startTime || '',
     endTime: sh.endTime || '',
