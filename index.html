@@ -87,8 +87,8 @@
     .cal-dow { display: grid; grid-template-columns: repeat(7,1fr);
       background: white; border-bottom: 1px solid #fce7f3; flex-shrink: 0; }
     .cal-dow div { text-align: center; padding: 7px 0; font-size: 0.72rem; font-weight: 700; color: #be185d; }
-    .cal-dow div:nth-child(1) { color: #e11d48; }
-    .cal-dow div:nth-child(7) { color: #db2777; }
+    .cal-dow div.sun { color: #e11d48; }
+    .cal-dow div.sat { color: #3b82f6; }
     .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: #fce7f3; flex: 1; }
     .cal-cell { background: white; min-height: 68px; padding: 4px 3px; cursor: pointer; transition: background .1s; min-width: 0; position: relative; }
     .cal-cell:active { background: #fdf2f8; }
@@ -951,7 +951,7 @@
         <div style="padding:8px 16px 12px;display:flex;justify-content:flex-end"><button id="btn-theme-save" style="padding:8px 16px;background:linear-gradient(135deg,#f9a8d4,#ec4899);border:none;border-radius:10px;color:white;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">💾 マイカラー保存</button></div>
       </div>
     <div class="set-sec">
-      <div class="set-sec-title">見た目設定</div>
+      <div class="set-sec-title">カレンダーの見た目設定</div>
       <div class="disp-card" id="disp-card">
         <!-- タイトル表示設定 -->
         <div class="disp-row">
@@ -969,6 +969,14 @@
             <button class="disp-opt-btn on" data-val="short">9-15</button>
             <button class="disp-opt-btn" data-val="long">9:30-15:30</button>
             <button class="disp-opt-btn" data-val="hide">表示しない</button>
+          </div>
+        </div>
+        <!-- 週始まり設定 -->
+        <div class="disp-row">
+          <span class="disp-lbl">週の始まり</span>
+          <div class="disp-opts" id="disp-week-opts">
+            <button class="disp-opt-btn on" data-val="sun">日曜</button>
+            <button class="disp-opt-btn" data-val="mon">月曜</button>
           </div>
         </div>
       </div>
@@ -1125,7 +1133,7 @@ if (typeof Chart === 'undefined') {
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDZBuPl-fy9Ixs9fPfqRhD4vz26vdv1Aw_Pt5kHGMmNsKjjrB02OkO3B5oqzsBTEuV/exec';
 const WEBHOOK_SECRET = 'shift-kanri-2026-very-long-family-secret-253110';
 const PENDING_WEBHOOK_EVENTS_KEY = 'pendingWebhookEvents';
@@ -1593,13 +1601,21 @@ function syncManualShiftFormDate(dstr) {
 
 function renderCal() {
   document.getElementById('month-title').textContent=`${S.y}年 ${S.m}月`;
+  const dispS = loadDisplaySettings();
+  const weekStart = dispS.weekStart === 'mon' ? 1 : 0;
+  const dowItems = weekStart === 1
+    ? [{label:'月'}, {label:'火'}, {label:'水'}, {label:'木'}, {label:'金'}, {label:'土', cls:'sat'}, {label:'日', cls:'sun'}]
+    : [{label:'日', cls:'sun'}, {label:'月'}, {label:'火'}, {label:'水'}, {label:'木'}, {label:'金'}, {label:'土', cls:'sat'}];
+  const dowEl = document.querySelector('.cal-dow');
+  if (dowEl) dowEl.innerHTML = dowItems.map(d => `<div${d.cls ? ` class="${d.cls}"` : ''}>${d.label}</div>`).join('');
   const grid=document.getElementById('cal-grid');
   grid.style.transition = '';
   grid.style.transform = '';
   grid.style.opacity = '';
   grid.innerHTML='';
   const todS=todayStr();
-  const first=new Date(S.y,S.m-1,1).getDay();
+  const firstDow=new Date(S.y,S.m-1,1).getDay();
+  const leadingBlank=(firstDow - weekStart + 7) % 7;
   const last=daysInMonth(S.y,S.m);
 
   function makeCell(cy,cm,cd,other) {
@@ -1614,7 +1630,6 @@ function renderCal() {
     const dayShifts=D.shifts.filter(s=>s.date===dstr);
     if (dayShifts.length) {
       const wrap=document.createElement('div'); wrap.className='cal-badges';
-      const dispS = loadDisplaySettings();
       const fhShort=t=>{const[h]=t.split(':').map(Number);return String(h);}
       const fhLong=t=>t; // 9:30 そのまま
       for (const sh of dayShifts) {
@@ -1706,13 +1721,14 @@ function renderCal() {
     return cell;
   }
 
-  for (let i=0;i<first;i++){
-    const d=new Date(S.y,S.m-1,-first+1+i);
+  for (let i=0;i<leadingBlank;i++){
+    const d=new Date(S.y,S.m-1,-leadingBlank+1+i);
     grid.appendChild(makeCell(d.getFullYear(),d.getMonth()+1,d.getDate(),true));
   }
   for (let d=1;d<=last;d++) grid.appendChild(makeCell(S.y,S.m,d,false));
   const endDow=new Date(S.y,S.m-1,last).getDay();
-  for (let i=1;i<=6-endDow;i++){
+  const trailingBlank=(weekStart + 6 - endDow + 7) % 7;
+  for (let i=1;i<=trailingBlank;i++){
     const d=new Date(S.y,S.m,i);
     grid.appendChild(makeCell(d.getFullYear(),d.getMonth()+1,d.getDate(),true));
   }
@@ -3208,8 +3224,8 @@ function applyTheme(t) {
     .app-title-sub { color: ${t.ac} !important; }
     .cal-dow { border-bottom-color: ${border} !important; }
     .cal-dow div { color: ${t.tx} !important; }
-    .cal-dow div:first-child { color: #e11d48 !important; }
-    .cal-dow div:last-child { color: #3b82f6 !important; }
+    .cal-dow div.sun { color: #e11d48 !important; }
+    .cal-dow div.sat { color: #3b82f6 !important; }
     .cal-grid { background: ${border} !important; }
     .cal-cell.other { background: ${mixColor(t.g1, 0.85)} !important; }
     .cal-cell.sel { outline-color: ${t.g2} !important; background: ${lightBg} !important; }
@@ -3404,7 +3420,7 @@ function loadTheme() {
 
 // ===== DISPLAY SETTINGS =====
 const DISP_KEY = 'payapp_display';
-const DISP_DEFAULT = { titleShow: 'char1', timeMode: 'short' };
+const DISP_DEFAULT = { titleShow: 'char1', timeMode: 'short', weekStart: 'sun' };
 
 function saveDisplaySettings(s) {
   localStorage.setItem(DISP_KEY, JSON.stringify(s));
@@ -3450,6 +3466,18 @@ function initDispUI() {
       saveDisplaySettings(ns);
       document.querySelectorAll('#disp-time-opts .disp-opt-btn').forEach(b => b.classList.toggle('on', b.dataset.val === btn.dataset.val));
       updateDispPreview();
+      renderCal();
+    };
+  });
+
+  // 週の始まりボタン
+  document.querySelectorAll('#disp-week-opts .disp-opt-btn').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.val === s.weekStart);
+    btn.onclick = () => {
+      const ns = loadDisplaySettings();
+      ns.weekStart = btn.dataset.val;
+      saveDisplaySettings(ns);
+      document.querySelectorAll('#disp-week-opts .disp-opt-btn').forEach(b => b.classList.toggle('on', b.dataset.val === btn.dataset.val));
       renderCal();
     };
   });
@@ -4787,6 +4815,45 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     }
   }
 
+  function matchesResetPeriodDate(value, selY, mm) {
+    if (period === 'month') return !!(value && value.startsWith(`${selY}-${mm}`));
+    if (period === 'year') return !!(value && value.startsWith(`${selY}-`));
+    return true;
+  }
+
+  function matchesResetPeriodKey(key, selY, mm) {
+    if (period === 'month') return key.includes(`_${selY}_${mm}`);
+    if (period === 'year') return key.includes(`_${selY}_`);
+    return true;
+  }
+
+  function getResetTargetInfo() {
+    const selY = parseInt(document.getElementById('reset-sel-year').value);
+    const selM = parseInt(document.getElementById('reset-sel-month').value);
+    const mm   = String(selM).padStart(2, '0');
+    const counts = {};
+
+    selected.forEach(key => {
+      if (key === 'shifts') {
+        counts[key] = (D.shifts || []).filter(s => matchesResetPeriodDate(s.date, selY, mm)).length;
+      } else if (key === 'salary') {
+        counts[key] = Object.keys(D.salaryRecords || {}).filter(k => matchesResetPeriodKey(k, selY, mm)).length;
+      } else if (key === 'tax') {
+        counts[key] = Object.keys(D.taxRecords || {}).filter(k => matchesResetPeriodKey(k, selY, mm)).length;
+      } else if (key === 'workplaces') {
+        counts[key] = (D.workplaces || []).length;
+      } else if (key === 'templates') {
+        counts[key] = (D.templates || []).length;
+      }
+    });
+
+    const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+    const detail = Object.entries(counts)
+      .map(([key, count]) => `${LABELS[key]} ${count}件`)
+      .join(' / ');
+    return { total, detail };
+  }
+
   function updateResetUI() {
     const ymRow  = document.getElementById('reset-ym-row');
     const selY   = document.getElementById('reset-sel-year');
@@ -4822,12 +4889,14 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     }
 
     const labels = [...selected].map(k => LABELS[k]).join(' / ');
+    const target = getResetTargetInfo();
+    const countText = `（対象 ${target.total}件）`;
     if (period === 'month') {
-      hint.textContent = `${labels} ／ ${selY.value}年${selM.value}月 を削除します`;
+      hint.textContent = `${labels} ／ ${selY.value}年${selM.value}月 を削除します ${countText}`;
     } else if (period === 'year') {
-      hint.textContent = `${labels} ／ ${selY.value}年 を削除します`;
+      hint.textContent = `${labels} ／ ${selY.value}年 を削除します ${countText}`;
     } else {
-      hint.textContent = `${labels} ／ 全期間 を削除します`;
+      hint.textContent = `${labels} ／ 全期間 を削除します ${countText}`;
     }
     execBtn.disabled = false;
     const warnEl = document.getElementById('reset-backup-warn');
@@ -4838,29 +4907,29 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     const selY = parseInt(document.getElementById('reset-sel-year').value);
     const selM = parseInt(document.getElementById('reset-sel-month').value);
     const mm   = String(selM).padStart(2, '0');
+    const target = getResetTargetInfo();
+
+    if (target.total === 0) {
+      const toast = document.createElement('div');
+      toast.textContent = '削除するものがありません';
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d1a2e;color:white;padding:10px 20px;border-radius:99px;font-size:.85rem;font-weight:600;z-index:9999;white-space:nowrap';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2200);
+      return;
+    }
 
     selected.forEach(key => {
       if (key === 'shifts') {
-        if (period === 'month') {
-          D.shifts = D.shifts.filter(s => !(s.date && s.date.startsWith(`${selY}-${mm}`)));
-        } else if (period === 'year') {
-          D.shifts = D.shifts.filter(s => !(s.date && s.date.startsWith(`${selY}-`)));
-        } else {
-          D.shifts = [];
-        }
+        D.shifts = (D.shifts || []).filter(s => !matchesResetPeriodDate(s.date, selY, mm));
       }
       if (key === 'salary') {
         Object.keys(D.salaryRecords || {}).forEach(k => {
-          if (period === 'month' && k.includes(`_${selY}_${mm}`)) delete D.salaryRecords[k];
-          else if (period === 'year' && k.includes(`_${selY}_`)) delete D.salaryRecords[k];
-          else if (period === 'all') delete D.salaryRecords[k];
+          if (matchesResetPeriodKey(k, selY, mm)) delete D.salaryRecords[k];
         });
       }
       if (key === 'tax') {
         Object.keys(D.taxRecords || {}).forEach(k => {
-          if (period === 'month' && k.includes(`_${selY}_${mm}`)) delete D.taxRecords[k];
-          else if (period === 'year' && k.includes(`_${selY}_`)) delete D.taxRecords[k];
-          else if (period === 'all') delete D.taxRecords[k];
+          if (matchesResetPeriodKey(k, selY, mm)) delete D.taxRecords[k];
         });
       }
       if (key === 'workplaces') { D.workplaces = []; }
@@ -4875,7 +4944,7 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     updateResetUI();
 
     const toast = document.createElement('div');
-    toast.textContent = '✓ 削除しました';
+    toast.textContent = `✓ ${target.total}件 削除しました`;
     toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d1a2e;color:white;padding:10px 20px;border-radius:99px;font-size:.85rem;font-weight:600;z-index:9999;white-space:nowrap';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2000);
@@ -4908,7 +4977,12 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
   // 削除ボタン → 確認ダイアログ
   document.getElementById('btn-reset-exec').addEventListener('click', () => {
     const hint = document.getElementById('reset-hint').textContent;
-    if (!confirm(hint + '\nこの操作は元に戻せません。本当に削除しますか？')) return;
+    const target = getResetTargetInfo();
+    if (target.total === 0) {
+      alert('削除するものがありません');
+      return;
+    }
+    if (!confirm(hint + `\n削除対象: ${target.detail}\nこの操作は元に戻せません。本当に削除しますか？`)) return;
     execReset();
   });
 
