@@ -724,7 +724,7 @@
       color: #be185d; font-size: .82rem; font-weight: 700; cursor: pointer;
       white-space: nowrap; }
     .btn-storage-check:active { opacity: .75; }
-    .storage-result { display: none; margin-top: 12px; }
+    .storage-result { display: none; padding: 0 16px 14px; }
     .storage-bar { height: 10px; border-radius: 99px; overflow: hidden; background: #fce7f3; }
     .storage-bar-fill { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg,#f9a8d4,#ec4899); transition: width .25s; }
     .storage-result-text { margin-top: 7px; font-size: .76rem; font-weight: 700; color: #3d1a2e; }
@@ -923,7 +923,7 @@
 
   <div class="pane" id="pane-settings">
     <div class="set-sec">
-      <div class="set-sec-title">バックアップ / リストア</div>
+      <div class="set-sec-title">データ管理</div>
       <div class="backup-card">
         <div class="backup-row">
           <div class="backup-info">
@@ -943,6 +943,19 @@
           </button>
           <input type="file" id="btn-import" accept=".json" style="display:none">
         </div>
+        <div class="backup-divider"></div>
+        <div class="backup-row">
+          <div class="backup-info">
+            <div class="backup-name">容量確認</div>
+            <div class="backup-sub">ローカルストレージの使用量を確認</div>
+          </div>
+          <button class="btn-storage-check" id="btn-storage-check" type="button">確認</button>
+        </div>
+        <div class="storage-result" id="storage-result">
+          <div class="storage-bar"><div class="storage-bar-fill" id="storage-bar-fill"></div></div>
+          <div class="storage-result-text" id="storage-result-text"></div>
+          <div class="storage-note" id="storage-note">端末やブラウザにより上限は変わります</div>
+        </div>
         <div id="restore-msg" class="restore-msg hidden"></div>
       </div>
     </div>
@@ -950,23 +963,6 @@
       <div class="set-sec-title">勤務先</div>
       <div class="set-list" id="wp-list"></div>
       <button class="btn-add" id="btn-add-wp">＋ 勤務先を追加</button>
-    </div>
-    <div class="set-sec">
-      <div class="set-sec-title">保存容量</div>
-      <div class="storage-card">
-        <div class="storage-row">
-          <div>
-            <div class="storage-name">ローカルストレージ</div>
-            <div class="storage-sub">必要な時だけ容量を確認します</div>
-          </div>
-          <button class="btn-storage-check" id="btn-storage-check" type="button">容量確認</button>
-        </div>
-        <div class="storage-result" id="storage-result">
-          <div class="storage-bar"><div class="storage-bar-fill" id="storage-bar-fill"></div></div>
-          <div class="storage-result-text" id="storage-result-text"></div>
-          <div class="storage-note" id="storage-note">端末やブラウザにより上限は変わります</div>
-        </div>
-      </div>
     </div>
     <div class="set-sec">
       <div class="set-sec-title">シフトテンプレート</div>
@@ -1595,6 +1591,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
     btn.classList.add('active');
     document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
     if (btn.dataset.tab!=='calendar') { closeDayDetail(); closeBS(); }
+    if (btn.dataset.tab!=='settings') hideStorageUsageResult();
     if (btn.dataset.tab==='charts') renderDetailCharts();
     if (btn.dataset.tab==='detail') renderDetail();
     if (btn.dataset.tab==='settings') { renderSettings(); initThemeUI(); initDispUI(); }
@@ -4892,6 +4889,11 @@ function initStorageUsageUI() {
         ? '容量が増えています。定期的なバックアップをおすすめします'
         : '端末やブラウザにより上限は変わります';
   };
+}
+
+function hideStorageUsageResult() {
+  const result = document.getElementById('storage-result');
+  if (result) result.style.display = 'none';
 }
 
 // ===== DATA RESET =====
