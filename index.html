@@ -713,6 +713,23 @@
     .btn-reset-exec:disabled { opacity: .35; pointer-events: none; }
     .reset-btn-wrap { padding: 0 14px 14px; }
 
+    /* ===== Storage Usage ===== */
+    .storage-card { background: white; border-radius: 0 0 14px 14px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(236,72,153,.08); padding: 14px; }
+    .storage-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .storage-name { font-size: .88rem; font-weight: 700; color: #3d1a2e; }
+    .storage-sub { font-size: .7rem; color: #be185d; margin-top: 2px; }
+    .btn-storage-check { padding: 8px 13px; border-radius: 10px;
+      border: 1.5px solid #fce7f3; background: #fff5f9;
+      color: #be185d; font-size: .82rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap; }
+    .btn-storage-check:active { opacity: .75; }
+    .storage-result { display: none; margin-top: 12px; }
+    .storage-bar { height: 10px; border-radius: 99px; overflow: hidden; background: #fce7f3; }
+    .storage-bar-fill { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg,#f9a8d4,#ec4899); transition: width .25s; }
+    .storage-result-text { margin-top: 7px; font-size: .76rem; font-weight: 700; color: #3d1a2e; }
+    .storage-note { margin-top: 3px; font-size: .68rem; color: #be185d; }
+
     .theme-reset-btn {
       width: 28px; height: 28px; border: none; background: var(--color-background-secondary, #fff0f7);
       border-radius: 50%; cursor: pointer; font-size: .85rem;
@@ -935,6 +952,23 @@
       <button class="btn-add" id="btn-add-wp">＋ 勤務先を追加</button>
     </div>
     <div class="set-sec">
+      <div class="set-sec-title">保存容量</div>
+      <div class="storage-card">
+        <div class="storage-row">
+          <div>
+            <div class="storage-name">ローカルストレージ</div>
+            <div class="storage-sub">必要な時だけ容量を確認します</div>
+          </div>
+          <button class="btn-storage-check" id="btn-storage-check" type="button">容量確認</button>
+        </div>
+        <div class="storage-result" id="storage-result">
+          <div class="storage-bar"><div class="storage-bar-fill" id="storage-bar-fill"></div></div>
+          <div class="storage-result-text" id="storage-result-text"></div>
+          <div class="storage-note" id="storage-note">端末やブラウザにより上限は変わります</div>
+        </div>
+      </div>
+    </div>
+    <div class="set-sec">
       <div class="set-sec-title">シフトテンプレート</div>
       <div class="set-list" id="tmpl-list"></div>
       <button class="btn-add" id="btn-add-tmpl">＋ テンプレートを追加</button>
@@ -993,8 +1027,8 @@
         </div>
         <div class="reset-divider"></div>
         <div class="reset-period-row" id="reset-period-row">
-          <div class="reset-period-btn on" data-p="month">月</div>
           <div class="reset-period-btn" data-p="year">年</div>
+          <div class="reset-period-btn on" data-p="month">月</div>
           <div class="reset-period-btn" data-p="all">全て</div>
         </div>
         <div class="reset-ym-row" id="reset-ym-row">
@@ -1133,7 +1167,7 @@ if (typeof Chart === 'undefined') {
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDZBuPl-fy9Ixs9fPfqRhD4vz26vdv1Aw_Pt5kHGMmNsKjjrB02OkO3B5oqzsBTEuV/exec';
 const WEBHOOK_SECRET = 'shift-kanri-2026-very-long-family-secret-253110';
 const PENDING_WEBHOOK_EVENTS_KEY = 'pendingWebhookEvents';
@@ -1179,6 +1213,31 @@ function showMiniToast(message) {
   setTimeout(() => toast.remove(), 2200);
 }
 
+function shiftWebhookPayload(eventType, sh) {
+  return {
+    eventType,
+    sentAt: new Date().toISOString(),
+    shiftId: sh.id || '',
+    workDate: sh.date || '',
+    workplaceId: sh.workplaceId || '',
+    shiftTitle: sh.title || '',
+    startTime: sh.startTime || '',
+    endTime: sh.endTime || '',
+    breakMinutes: sh.breakMinutes || 0,
+    adjustment: sh.adjustment || 0,
+    memo: sh.memo || '',
+    secret: WEBHOOK_SECRET
+  };
+}
+
+function importedShiftWebhookPayload(sh) {
+  const p = shiftWebhookPayload('shift_created', sh);
+  delete p.eventType;
+  delete p.sentAt;
+  delete p.secret;
+  return p;
+}
+
 async function postWebhookEvent(event) {
   if (!isWebhookConfigured()) return;
   if (navigator.onLine === false) throw new Error('offline');
@@ -1189,6 +1248,18 @@ async function postWebhookEvent(event) {
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(event)
   });
+}
+
+async function sendWebhookEvent(event, successMessage, queuedMessage) {
+  if (!isWebhookConfigured()) return;
+  flushPendingWebhookEvents();
+  try {
+    await postWebhookEvent(event);
+    if (successMessage) showMiniToast(successMessage);
+  } catch(e) {
+    queueWebhookEvent(event);
+    if (queuedMessage) showMiniToast(queuedMessage);
+  }
 }
 
 let flushingWebhookEvents = false;
@@ -1214,34 +1285,37 @@ async function flushPendingWebhookEvents() {
   flushingWebhookEvents = false;
 }
 
-async function sendShiftUpdatedWebhook(sh) {
-  if (!isWebhookConfigured()) return;
+async function sendShiftWebhook(eventType, sh, successMessage, queuedMessage) {
+  return sendWebhookEvent(shiftWebhookPayload(eventType, sh), successMessage, queuedMessage);
+}
 
-  const pay = shiftPay(sh);
-  const event = {
-    eventType: 'shift_updated',
+async function sendShiftImportedWebhook(shifts) {
+  if (!shifts.length) return;
+  const dates = shifts.map(s => s.date).filter(Boolean).sort();
+  return sendWebhookEvent({
+    eventType: 'shift_imported',
     sentAt: new Date().toISOString(),
-    workDate: sh.date || '',
-    workplaceName: sh.workplaceId || '',
-    shiftTitle: sh.title || '',
-    startTime: sh.startTime || '',
-    endTime: sh.endTime || '',
-    breakMinutes: sh.breakMinutes || 0,
-    adjustment: sh.adjustment || 0,
-    memo: sh.memo || '',
-    netPayEstimate: Math.round(pay.total || 0),
-    appVersion: APP_VERSION,
+    importedCount: shifts.length,
+    periodStart: dates[0] || '',
+    periodEnd: dates[dates.length - 1] || '',
+    shifts: shifts.map(importedShiftWebhookPayload),
+    secret: WEBHOOK_SECRET
+  });
+}
+
+async function sendShiftBulkDeletedWebhook(opts) {
+  if (!opts.deletedCount) return;
+  const event = {
+    eventType: 'shift_bulk_deleted',
+    sentAt: new Date().toISOString(),
+    target: 'shifts',
+    period: opts.period,
+    deletedCount: opts.deletedCount,
     secret: WEBHOOK_SECRET
   };
-
-  flushPendingWebhookEvents();
-  try {
-    await postWebhookEvent(event);
-    showMiniToast('✓ 実績メモを保存しました');
-  } catch(e) {
-    queueWebhookEvent(event);
-    showMiniToast('✓ 実績メモを保存しました（次回再送）');
-  }
+  if (opts.period === 'month' || opts.period === 'year') event.year = opts.year;
+  if (opts.period === 'month') event.month = opts.month;
+  return sendWebhookEvent(event);
 }
 
 function initAppVersionLabel() {
@@ -1269,12 +1343,7 @@ function showUpdateBadge(info) {
   const badge = document.getElementById('app-update-badge');
   if (!badge) return;
   badge.classList.add('show');
-  badge.onclick = () => {
-    const msg = info?.message
-      ? `更新があります。\n${info.message}\n\n更新しますか？`
-      : '更新があります。\n更新しますか？';
-    if (confirm(msg)) clearAppCachesAndReload();
-  };
+  badge.onclick = clearAppCachesAndReload;
 }
 
 async function checkAppUpdate() {
@@ -1864,8 +1933,10 @@ function renderBSContent(dstr) {
         <button class="bs-del-btn" data-id="${sh.id}">🗑</button>`;
       row.querySelector('.bs-del-btn').onclick=e=>{
         e.stopPropagation();
+        const deletedShift = {...sh};
         D.shifts=D.shifts.filter(s=>s.id!==sh.id);
         save(); renderBSContent(dstr); renderCal(); renderSummary();
+        sendShiftWebhook('shift_deleted', deletedShift);
       };
       reg.appendChild(row);
     });
@@ -1898,8 +1969,9 @@ function renderBSContent(dstr) {
 }
 
 function registerFromTemplate(dstr,t){
-  D.shifts.push({id:uid(),date:dstr,workplaceId:t.workplaceId,
-    title:t.title,color:t.color,startTime:t.startTime,endTime:t.endTime,breakMinutes:t.breakMinutes||0});
+  const newShift = {id:uid(),date:dstr,workplaceId:t.workplaceId,
+    title:t.title,color:t.color,startTime:t.startTime,endTime:t.endTime,breakMinutes:t.breakMinutes||0};
+  D.shifts.push(newShift);
   save();
   // v7.2: テンプレート登録後にシートを閉じ直すと、ドラッグした位置が初期化されるため、
   // 開いたまま中身だけ更新する。これでフォーム位置を維持する。
@@ -1907,6 +1979,7 @@ function registerFromTemplate(dstr,t){
   renderSummary();
   renderBSContent(dstr);
   document.getElementById('bs-mask').dispatchEvent(new Event('bs-reposition'));
+  sendShiftWebhook('shift_created', newShift);
 }
 
 function showManualForm(dstr,container){
@@ -1965,16 +2038,18 @@ function showManualForm(dstr,container){
     const saveDate=document.getElementById('mf-date').value||dstr;
     const wpId=document.getElementById('mf-wp').value;
     const wp=D.workplaces.find(w=>w.id===wpId);
-    D.shifts.push({id:uid(),date:saveDate,workplaceId:wpId,
+    const newShift = {id:uid(),date:saveDate,workplaceId:wpId,
       title:document.getElementById('mf-title').value||'シフト',
       color:mfColor,
       startTime:document.getElementById('mf-start').value,
       endTime:document.getElementById('mf-end').value,
       breakMinutes:parseInt(document.getElementById('mf-break').value)||0,
       adjustment:parseFloat(document.getElementById('mf-adj').value)||0,
-      memo:document.getElementById('mf-memo').value||''});
+      memo:document.getElementById('mf-memo').value||''};
+    D.shifts.push(newShift);
     save();
     closeBS(); renderCal(); renderSummary();
+    sendShiftWebhook('shift_created', newShift);
   };
   const mfSaveBtn = document.getElementById('btn-mf-save');
   mfSaveBtn.onclick = saveManualForm;
@@ -3091,8 +3166,10 @@ function fillDayDetail(dstr) {
     item.querySelector('.dd-trash').onclick = e => {
       e.stopPropagation();
       if (!confirm('このシフトを削除しますか？')) return;
+      const deletedShift = {...sh};
       D.shifts = D.shifts.filter(s => s.id !== sh.id);
       save();
+      sendShiftWebhook('shift_deleted', deletedShift);
       if (D.shifts.some(s => s.date === dstr)) openDayDetail(dstr);
       else closeDayDetail();
       renderCal(); renderSummary();
@@ -3132,7 +3209,7 @@ function fillDayDetail(dstr) {
       sh.adjustment   = parseFloat(document.getElementById(`ef-adj-${sh.id}`).value)||0;
       sh.memo         = document.getElementById(`ef-memo-${sh.id}`).value||'';
       save();
-      sendShiftUpdatedWebhook({...sh});
+      sendShiftWebhook('shift_updated', {...sh}, '✓ 実績メモを保存しました', '✓ 実績メモを保存しました（次回再送）');
       document.getElementById('dd-edit-overlay').style.display = 'none';
       if (D.shifts.some(s => s.date === newDate)) openDayDetail(newDate);
       else closeDayDetail();
@@ -4372,8 +4449,9 @@ document.getElementById('btn-import').onchange = e => {
     const wp = D.workplaces.find(w => w.id === selectedWpId);
     if (!wp) return;
 
+    const addedShifts = [];
     parsedRows.forEach(row => {
-      D.shifts.push({
+      const newShift = {
         id: uid(),
         workplaceId: selectedWpId,
         color: wp.color || '#ec4899',
@@ -4384,7 +4462,9 @@ document.getElementById('btn-import').onchange = e => {
         breakMinutes: row.breakMinutes,
         adjustment: 0,
         memo: ''
-      });
+      };
+      D.shifts.push(newShift);
+      addedShifts.push(newShift);
     });
 
     const addedCount = parsedRows.length;
@@ -4392,6 +4472,7 @@ document.getElementById('btn-import').onchange = e => {
     renderCal();
     renderSummary();
     closeImport();
+    sendShiftImportedWebhook(addedShifts);
 
     // 完了トースト
     const toast = document.createElement('div');
@@ -4769,6 +4850,49 @@ function srExportCurrentMonth() {
 }
 document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
 
+// ===== STORAGE USAGE =====
+function formatBytes(bytes) {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(2)}MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)}KB`;
+  return `${bytes}B`;
+}
+
+function calcLocalStorageBytes() {
+  let chars = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i) || '';
+    const value = localStorage.getItem(key) || '';
+    chars += key.length + value.length;
+  }
+  return chars * 2;
+}
+
+function initStorageUsageUI() {
+  const btn = document.getElementById('btn-storage-check');
+  if (!btn) return;
+  btn.onclick = () => {
+    const limit = 5 * 1024 * 1024;
+    const bytes = calcLocalStorageBytes();
+    const pct = Math.min(100, Math.round(bytes / limit * 100));
+    const result = document.getElementById('storage-result');
+    const fill = document.getElementById('storage-bar-fill');
+    const text = document.getElementById('storage-result-text');
+    const note = document.getElementById('storage-note');
+    result.style.display = 'block';
+    fill.style.width = `${pct}%`;
+    fill.style.background = pct >= 95
+      ? 'linear-gradient(90deg,#f97316,#e11d48)'
+      : pct >= 80
+        ? 'linear-gradient(90deg,#facc15,#f97316)'
+        : 'linear-gradient(90deg,#f9a8d4,#ec4899)';
+    text.textContent = `約 ${formatBytes(bytes)} / 5MB目安（${pct}%）`;
+    note.textContent = pct >= 95
+      ? '容量がかなり少なくなっています。バックアップをおすすめします'
+      : pct >= 80
+        ? '容量が増えています。定期的なバックアップをおすすめします'
+        : '端末やブラウザにより上限は変わります';
+  };
+}
 
 // ===== DATA RESET =====
 (function() {
@@ -4908,6 +5032,9 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     const selM = parseInt(document.getElementById('reset-sel-month').value);
     const mm   = String(selM).padStart(2, '0');
     const target = getResetTargetInfo();
+    const deletedShiftCount = selected.has('shifts')
+      ? (D.shifts || []).filter(s => matchesResetPeriodDate(s.date, selY, mm)).length
+      : 0;
 
     if (target.total === 0) {
       const toast = document.createElement('div');
@@ -4942,6 +5069,12 @@ document.getElementById('btn-sr-export-hdr').onclick = srExportCurrentMonth;
     if (document.getElementById('pane-tax')?.classList.contains('active')) renderTax();
     buildSelects();
     updateResetUI();
+    sendShiftBulkDeletedWebhook({
+      period,
+      year: selY,
+      month: selM,
+      deletedCount: deletedShiftCount
+    });
 
     const toast = document.createElement('div');
     toast.textContent = `✓ ${target.total}件 削除しました`;
@@ -5004,7 +5137,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== INIT =====
-initState(); load(); initAppVersionLabel(); applyTheme(loadTheme()); renderCal(); renderSummary();
+initState(); load(); initAppVersionLabel(); applyTheme(loadTheme()); renderCal(); renderSummary(); initStorageUsageUI();
 setTimeout(flushPendingWebhookEvents, 0);
 setTimeout(checkAppUpdate, 1000);
 window.addEventListener('online', flushPendingWebhookEvents);

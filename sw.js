@@ -1,4 +1,4 @@
-const CACHE = 'shift-kanri-v1-4';
+const CACHE = 'shift-kanri-v1-5';
 
 const FILES = [
   './',
