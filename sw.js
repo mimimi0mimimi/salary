@@ -1,4 +1,4 @@
-const CACHE = 'shift-kanri-v1-5';
+﻿const CACHE = 'shift-kanri-v1-5-8';
 
 const FILES = [
   './',
@@ -28,7 +28,24 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const req = event.request;
+  const isHtmlRequest = req.mode === 'navigate' ||
+    (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHtmlRequest) {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE).then(cache => cache.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then(cached => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    caches.match(req).then(cached => cached || fetch(req))
   );
 });

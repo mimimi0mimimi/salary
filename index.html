@@ -569,7 +569,8 @@
     .dd-info { flex: 1; }
     .dd-title { font-size: .93rem; font-weight: 700; color: #3d1a2e; }
     .dd-wp { font-size: .75rem; color: #f9a8d4; margin-top: 2px; }
-    .dd-pay { font-size: .88rem; font-weight: 700; color: #ec4899; white-space: nowrap; }
+    .dd-pay { font-size: .88rem; font-weight: 700; color: #ec4899; white-space: nowrap; display:flex; align-items:center; gap:8px; }
+    .dd-hours { font-size:.74rem; font-weight:700; color:#718096; }
     .dd-foot { padding: 10px 16px 20px; flex-shrink: 0; }
     .dd-pencil {
       background: none; border: none; cursor: pointer;
@@ -666,6 +667,8 @@
       padding: 12px 14px; border-bottom: 1px solid #fce7f3;
     }
     .disp-row:last-of-type { border-bottom: none; }
+    .disp-group-title { padding: 10px 14px 4px; font-size: .72rem; font-weight: 800; color: #be185d; letter-spacing: .04em; }
+    .disp-row.child { padding-left: 24px; }
     .disp-lbl { font-size: .85rem; font-weight: 600; color: #3d1a2e; }
     .disp-opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .disp-opt-btn {
@@ -981,10 +984,10 @@
         <div style="padding:8px 16px 12px;display:flex;justify-content:flex-end"><button id="btn-theme-save" style="padding:8px 16px;background:linear-gradient(135deg,#f9a8d4,#ec4899);border:none;border-radius:10px;color:white;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">💾 マイカラー保存</button></div>
       </div>
     <div class="set-sec">
-      <div class="set-sec-title">カレンダーの見た目設定</div>
+      <div class="set-sec-title">見た目設定</div>
       <div class="disp-card" id="disp-card">
-        <!-- タイトル表示設定 -->
-        <div class="disp-row">
+        <div class="disp-group-title">カレンダー</div>
+        <div class="disp-row child">
           <span class="disp-lbl">タイトル</span>
           <div class="disp-opts" id="disp-title-opts">
             <button class="disp-opt-btn on" data-val="char1">1文字</button>
@@ -992,8 +995,7 @@
             <button class="disp-opt-btn" data-val="hide">表示しない</button>
           </div>
         </div>
-        <!-- 時間表示設定 -->
-        <div class="disp-row">
+        <div class="disp-row child">
           <span class="disp-lbl">時間</span>
           <div class="disp-opts" id="disp-time-opts">
             <button class="disp-opt-btn on" data-val="short">9-15</button>
@@ -1001,12 +1003,19 @@
             <button class="disp-opt-btn" data-val="hide">表示しない</button>
           </div>
         </div>
-        <!-- 週始まり設定 -->
-        <div class="disp-row">
+        <div class="disp-row child">
           <span class="disp-lbl">週の始まり</span>
           <div class="disp-opts" id="disp-week-opts">
             <button class="disp-opt-btn on" data-val="sun">日曜</button>
             <button class="disp-opt-btn" data-val="mon">月曜</button>
+          </div>
+        </div>
+        <div class="disp-group-title">明細</div>
+        <div class="disp-row child">
+          <span class="disp-lbl">勤務時間</span>
+          <div class="disp-opts" id="disp-duration-opts">
+            <button class="disp-opt-btn on" data-val="clock">1:30</button>
+            <button class="disp-opt-btn" data-val="decimal">1.5h</button>
           </div>
         </div>
       </div>
@@ -1163,7 +1172,7 @@ if (typeof Chart === 'undefined') {
 
 // ===== PERSIST =====
 const KEY = 'payapp_v4';
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.5.8';
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDZBuPl-fy9Ixs9fPfqRhD4vz26vdv1Aw_Pt5kHGMmNsKjjrB02OkO3B5oqzsBTEuV/exec';
 const WEBHOOK_SECRET = 'shift-kanri-2026-very-long-family-secret-253110';
 const PENDING_WEBHOOK_EVENTS_KEY = 'pendingWebhookEvents';
@@ -1375,15 +1384,23 @@ function addDay(s,n=1) {
   return ds(d.getFullYear(),d.getMonth()+1,d.getDate());
 }
 function daysInMonth(y,m) { return new Date(y,m,0).getDate(); }
-// 時間を h:mm 形式に変換（例: 6.5→6:30, 1.3→1:18）
+// 時間を h:mm 形式に変換（例: 6.5→6:30）
 function fmtH(h) {
-  const totalMin = Math.round(h * 60);
-  const hh = Math.floor(totalMin / 60);
-  const mm = totalMin % 60;
-  return `${hh}:${String(mm).padStart(2,'0')}`;
+  const totalMinutes = Math.round((+h || 0) * 60);
+  const sign = totalMinutes < 0 ? '-' : '';
+  const absMinutes = Math.abs(totalMinutes);
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+  return `${sign}${hours}:${String(minutes).padStart(2,'0')}`;
 }
-
-// ===== SALARY CALC =====
+function fmtHDecimal(h) {
+  const value = Math.round((+h || 0) * 100) / 100;
+  const text = value.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  return `${text}h`;
+}
+function fmtDuration(h) {
+  return loadDisplaySettings().durationMode === 'decimal' ? fmtHDecimal(h) : fmtH(h);
+}
 function getWage(wp, dateS) {
   if (!wp.wageHistory?.length) return wp.baseWage||0;
   const sorted=[...wp.wageHistory].sort((a,b)=>b.startDate.localeCompare(a.startDate));
@@ -1431,7 +1448,7 @@ function shiftPay(sh) {
 
   const np = (normalMin / 60) * wage;
   const dp = (nightMin / 60) * (+wp.nightWage?.wage || 0);
-  // 深夜割増＝深夜時間帯に対して「深夜時給－通常時給」の差額分のみ
+  // dpPremium は旧表示互換用の差額。明細表示と合計には特殊時給の実額 dp を使う。
   const dpPremium = (nightMin / 60) * Math.max(0, (+wp.nightWage?.wage || 0) - wage);
   const baseSal = np + dp;
 
@@ -1442,16 +1459,21 @@ function shiftPay(sh) {
     });
   }
 
+  let dayPreTaxDeductions = 0;
   let dayDeductions = 0;
   if (wp.deductions?.length) {
     wp.deductions.forEach(d => {
-      if (d.timing === 'day' && d.mode === 'fix') dayDeductions += (+d.value||0);
+      if (d.timing === 'day' && d.mode === 'fix') {
+        if (d.beforeTax) dayPreTaxDeductions += (+d.value||0);
+        else dayDeductions += (+d.value||0);
+      }
     });
   }
 
-  const gross = baseSal + dayAllowances;
   const adjustment = sh.adjustment || 0;
-  return {nh:normalMin/60,dh:nightMin/60,np,dp,dpPremium,gross,total:gross-dayDeductions+adjustment,allowances:dayAllowances,deductions:dayDeductions,adjustment};
+  const grossBeforeDeductions = baseSal + dayAllowances + adjustment;
+  const gross = Math.max(0, grossBeforeDeductions - dayPreTaxDeductions);
+  return {nh:normalMin/60,dh:nightMin/60,np,dp,dpPremium,gross,total:gross-dayDeductions,allowances:dayAllowances,deductions:dayDeductions,adjustment};
 }
 
 // 指定年月における、勤務先の全締め日期間リストを返す。
@@ -1521,19 +1543,37 @@ function calcPeriodSummary(wp, start, end) {
     });
   }
 
-  const gross = timeSalaryTotal + totalAllowances;
+  const grossBeforeDeductions = timeSalaryTotal + totalAllowances + totalAdjustment;
+
+  const calcDeduction = (d, baseAmount) => {
+    if (d.timing === 'day') {
+      if (d.mode === 'fix') return (+d.value || 0) * workDays;
+      return 0;
+    }
+    if (d.mode === 'fix') return (+d.value || 0);
+    if (d.mode === 'pct') return baseAmount * ((+d.value || 0) / 100);
+    return 0;
+  };
+
+  let preTaxDeductions = 0;
+  let preTaxDeductionDetails = [];
+  if (wp.deductions?.length) {
+    wp.deductions.filter(d => d.beforeTax).forEach(d => {
+      const amt = calcDeduction(d, grossBeforeDeductions);
+      if (amt >= 0) {
+        preTaxDeductions += amt;
+        preTaxDeductionDetails.push({ name: d.name, value: amt });
+      }
+    });
+  }
+
+  const gross = Math.max(0, grossBeforeDeductions - preTaxDeductions);
 
   let totalDeductions = 0;
   let deductionDetails = [];
   if (wp.deductions?.length) {
-    wp.deductions.forEach(d => {
-      let amt = 0;
-      if (d.timing === 'day') {
-        if (d.mode === 'fix') amt = (+d.value || 0) * workDays;
-      } else {
-        if (d.mode === 'fix') amt = (+d.value || 0);
-        else if (d.mode === 'pct') amt = gross * ((+d.value || 0) / 100);
-      }
+    wp.deductions.filter(d => !d.beforeTax).forEach(d => {
+      const amt = calcDeduction(d, gross);
       if (amt >= 0) {
         totalDeductions += amt;
         deductionDetails.push({ name: d.name, value: amt });
@@ -1541,12 +1581,12 @@ function calcPeriodSummary(wp, start, end) {
     });
   }
 
-  const netPay = Math.max(0, gross - totalDeductions + totalAdjustment);
+  const netPay = Math.max(0, gross - totalDeductions);
 
   return {
     workDays, nh, dh, np, dp, dpPremium, gross, netPay,
-    allowances: totalAllowances, deductions: totalDeductions,
-    allowanceDetails, deductionDetails, totalAdjustment
+    allowances: totalAllowances, deductions: totalDeductions, preTaxDeductions,
+    allowanceDetails, deductionDetails, preTaxDeductionDetails, totalAdjustment
   };
 }
 
@@ -2350,13 +2390,19 @@ function renderDetailSummary() {
         effGrossSm = parseFloat(sr.gross);
       } else {
         const eNp = (sr.np !== '' && !isNaN(parseFloat(sr.np))) ? parseFloat(sr.np) : res.np;
-        const eDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dpPremium;
+        const eDp = (sr.dp !== '' && !isNaN(parseFloat(sr.dp))) ? parseFloat(sr.dp) : res.dp;
         let eAllow = 0;
         res.allowanceDetails.forEach(a => {
           const av = sr[`allowance_${a.name}`];
           eAllow += (av !== '' && !isNaN(parseFloat(av))) ? parseFloat(av) : a.value;
         });
-        effGrossSm = eNp + eDp + eAllow;
+        const eAdj = (sr.adjustment !== '' && !isNaN(parseFloat(sr.adjustment))) ? parseFloat(sr.adjustment) : res.totalAdjustment;
+        let ePreTax = 0;
+        res.preTaxDeductionDetails.forEach(d => {
+          const v = sr[`deduct_${d.name}`];
+          ePreTax += (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : d.value;
+        });
+        effGrossSm = Math.max(0, eNp + eDp + eAllow + eAdj - ePreTax);
       }
       let effDeductSm = 0;
       res.deductionDetails.forEach(d => {
@@ -2384,7 +2430,7 @@ function renderDetailSummary() {
         <span class="thb-dot" style="background:${safeColor(wp.color, th.ac)}"></span>
         <span class="thb-name">${esc(wp.name)}${cdLabel}</span>
         <span class="thb-days">${effDays}日</span>
-        <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtH(totalH)}<span class="thb-night">⭐</span>` : fmtH(totalH)}</span>
+        <span class="thb-hours">${hasNightWage && effDh > 0 ? `${fmtDuration(totalH)}<span class="thb-night">⭐</span>` : fmtDuration(totalH)}</span>
         <span class="thb-pay">${fmt(effNet)}</span>
       </div>`);
     });
@@ -2407,7 +2453,7 @@ function renderDetailSummary() {
     ${wpRows.length > 1 ? `<div class="thb-total">
       <span style="flex:1;font-size:.72rem;font-weight:700">合計</span>
       <span class="thb-days" style="font-weight:700">${grandDays}日</span>
-      <span class="thb-hours" style="font-weight:700">${fmtH(grandH)}<span style="font-size:.6rem;opacity:.65">（計）</span></span>
+      <span class="thb-hours" style="font-weight:700">${fmtDuration(grandH)}<span style="font-size:.6rem;opacity:.65">（計）</span></span>
       <span class="thb-pay" style="font-weight:800">${fmt(grandNet)}</span>
     </div>` : ''}`;
   // 先頭に挿入
@@ -2478,12 +2524,17 @@ function renderDetailCards() {
       dynamicAllowHTML += mRow(a.name, fmt(a.value), `allowance_${a.name}`, false, false);
     });
 
+    let preTaxDeductHTML = '';
+    res.preTaxDeductionDetails.forEach(d => {
+      preTaxDeductHTML += mRow(d.name, fmt(d.value), `deduct_${d.name}`, true, false);
+    });
+
     let dynamicDeductHTML = '';
     res.deductionDetails.forEach(d => {
       dynamicDeductHTML += mRow(d.name, fmt(d.value), `deduct_${d.name}`, true, false);
     });
 
-    // gross手入力がなければ np + dp（深夜割増） + 手当 の単純合計
+    // gross手入力がなければ np + dp（特殊時給） + 手当 + 課税対象の調整額
     let effGross;
     if (sr.gross !== '' && !isNaN(parseFloat(sr.gross))) {
       effGross = parseFloat(sr.gross);
@@ -2495,7 +2546,13 @@ function renderDetailCards() {
         const av = sr[`allowance_${a.name}`];
         effAllow += (av !== '' && !isNaN(parseFloat(av))) ? parseFloat(av) : a.value;
       });
-      effGross = effNp + effDp + effAllow;
+      const effAdj = (sr.adjustment !== '' && !isNaN(parseFloat(sr.adjustment))) ? parseFloat(sr.adjustment) : res.totalAdjustment;
+      let effPreTax = 0;
+      res.preTaxDeductionDetails.forEach(d => {
+        const v = sr[`deduct_${d.name}`];
+        effPreTax += (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : d.value;
+      });
+      effGross = Math.max(0, effNp + effDp + effAllow + effAdj - effPreTax);
     }
     // 控除合計：手入力値（正の数）or 自動計算値 を引く
     let effDeductions = 0;
@@ -2505,7 +2562,7 @@ function renderDetailCards() {
       const manualAmt = (v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
       effDeductions += manualAmt !== null ? manualAmt : d.value;
     });
-    const manualNet = Math.max(0, effGross - effDeductions + res.totalAdjustment);
+    const manualNet = Math.max(0, effGross - effDeductions);
     // 全フィールドにひとつでも入力があるか
     const hasAnyManual = Object.values(sr).some(v => v !== '' && !isNaN(parseFloat(v)));
 
@@ -2541,14 +2598,15 @@ function renderDetailCards() {
           <span style="font-size:.62rem;color:${th.txMuted};width:88px;text-align:right">実績入力</span>
         </div>
         ${mRow('出勤日数', res.workDays + '日', 'workDays', false, false)}
-        ${mRow('勤務時間', fmtH(res.nh + res.dh), 'nh', false, false, 'text')}
-        ${res.dh > 0 || hasVal('dh') ? mRow('└ 深夜時間', fmtH(res.dh), 'dh', false, false, 'text') : ''}
+        ${mRow('勤務時間', fmtDuration(res.nh + res.dh), 'nh', false, false, 'text')}
+        ${res.dh > 0 || hasVal('dh') ? mRow('└ 深夜時間', fmtDuration(res.dh), 'dh', false, false, 'text') : ''}
         ${mRow('通常給料', fmt(res.np), 'np', false, false)}
-        ${res.dh > 0 || hasVal('dp') ? mRow('深夜割増', fmt(res.dpPremium), 'dp', false, false) : ''}
+        ${res.dh > 0 || hasVal('dp') ? mRow('特殊時給', fmt(res.dp), 'dp', false, false) : ''}
         ${dynamicAllowHTML}
-        ${mRow('総支給額', fmt(effGross), 'gross', false, true, null, `gross-row-${cardId}`)}
+        ${res.totalAdjustment!==0 || hasVal('adjustment') ? mRow('調整額合計', (res.totalAdjustment>0?'+':'')+fmt(Math.abs(res.totalAdjustment)), 'adjustment', false, false) : ''}
+        ${preTaxDeductHTML}
+        ${mRow(res.preTaxDeductionDetails.length ? '所得合計' : '総支給額', fmt(effGross), 'gross', false, true, null, `gross-row-${cardId}`)}
         ${dynamicDeductHTML}
-        ${res.totalAdjustment!==0 ? mRow('調整額合計', (res.totalAdjustment>0?'+':'')+fmt(Math.abs(res.totalAdjustment)), 'adjustment', false, false) : ''}
         <div class="det-total-manual" id="det-total-${cardId}">
           <span class="lbl">💰 手取り${hasAnyManual?`<span class="manual-sync-badge">実績</span>`:''}</span>
           <span class="val">${fmt(hasAnyManual ? manualNet : res.netPay)}</span>
@@ -2572,11 +2630,11 @@ function renderDetailCards() {
             const shiftNet = pay.total + listNetAdjust;
             const adjStr = s.adjustment ? `<span style="font-size:.65rem;color:${s.adjustment>0?'#16a34a':'#e11d48'}">${s.adjustment>0?'+':''}${Math.round(s.adjustment).toLocaleString('ja-JP')}</span>` : '';
             const memoStr = s.memo ? `<span style="font-size:.65rem;color:#aaa"> ${esc(s.memo)}</span>` : '';
-            const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">⭐${fmtH(pay.dh)}</span>` : '';
+            const nightStr = (wp.nightWage?.enabled && pay.dh > 0) ? `<span class="sli-night">⭐${fmtDuration(pay.dh)}</span>` : '';
             return `<div class="sli" style="grid-template-columns:56px 1fr auto auto auto auto">
               <span class="sli-date" style="color:${th.tx}">${sm}/${sd}<span class="sli-dow" style="color:${dowColor}">${dow}</span></span>
               <span class="sli-time">${s.startTime}〜${s.endTime}${memoStr}</span>
-              <span class="sli-h">${fmtH(h)}</span>
+              <span class="sli-h">${fmtDuration(h)}</span>
               ${nightStr}
               ${adjStr}
               <span class="sli-pay" style="color:${th.ac}">${fmt(shiftNet)}</span>
@@ -2646,7 +2704,13 @@ function renderDetailCards() {
             const av = getInpVal(`allowance_${a.name}`);
             effAllowances2 += av !== null ? av : a.value;
           });
-          effGross2 = effNp2 + effDp2 + effAllowances2;
+          const effAdjustment2 = getInpVal('adjustment') ?? res.totalAdjustment;
+          let effPreTax2 = 0;
+          res.preTaxDeductionDetails.forEach(d => {
+            const dv = getInpVal(`deduct_${d.name}`);
+            effPreTax2 += dv !== null ? dv : d.value;
+          });
+          effGross2 = Math.max(0, effNp2 + effDp2 + effAllowances2 + effAdjustment2 - effPreTax2);
         }
 
         // 控除合計もDOMから直接読む
@@ -2656,7 +2720,7 @@ function renderDetailCards() {
           deductions2 += dv !== null ? dv : d.value;
         });
 
-        const net = Math.max(0, effGross2 - deductions2 + res.totalAdjustment);
+        const net = Math.max(0, effGross2 - deductions2);
         const hasAny = [...card.querySelectorAll('.manual-inp')].some(el => el.value !== '');
 
         // 総支給額の表示を更新（gross手入力がない場合）
@@ -2761,13 +2825,19 @@ function bindSwatches(container,cb){
   });
 }
 
-function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', value:'', isSocialInsurance: false}) {
+function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', value:'', isSocialInsurance: false, beforeTax: false}) {
   const div = document.createElement('div');
   div.className = 'dyn-item';
-  const siCheck = type === 'deduct'
-    ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding:4px 2px">
-        <input type="checkbox" class="dyn-si" id="dyn-si-${Math.random().toString(36).slice(2)}"${item.isSocialInsurance?' checked':''}>
-        <label style="font-size:.75rem;font-weight:600;cursor:pointer" class="theme-tx">社会保険対象（年末調整で社保控除に算入）</label>
+  const deductOptions = type === 'deduct'
+    ? `<div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;padding:4px 2px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;cursor:pointer" class="theme-tx">
+          <input type="checkbox" class="dyn-before-tax"${item.beforeTax?' checked':''}>
+          所得税の前に引く
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;cursor:pointer" class="theme-tx">
+          <input type="checkbox" class="dyn-si"${item.isSocialInsurance?' checked':''}>
+          社会保険対象（年末調整で社保控除に算入）
+        </label>
        </div>`
     : '';
   div.innerHTML = `
@@ -2786,7 +2856,7 @@ function createDynamicItemRow(type, item = {name:'', timing:'day', mode:'fix', v
       </select>
       <input type="number" class="fi dyn-value" style="flex:1.2; padding:6px 8px; font-size:0.82rem;" value="${item.value}" placeholder="金額 / ％">
     </div>
-    ${siCheck}
+    ${deductOptions}
   `;
   
   const timingSel = div.querySelector('.dyn-timing');
@@ -2863,9 +2933,9 @@ function openWpModal(wpId){
     <div id="wm-wages">${wageRowsHTML}</div>
     <button class="btn-awage" id="btn-awage">＋ 昇給を追加</button>
     
-    <div class="fsec">深夜時給</div>
+    <div class="fsec">時間帯別時給</div>
     <div class="tog-row">
-      <span class="tog-lbl">深夜割増を設定する</span>
+      <span class="tog-lbl">時間帯別時給を設定する</span>
       <label class="tog"><input type="checkbox" id="wm-ne"${nw.enabled?' checked':''}><span class="tog-sl"></span></label>
     </div>
     <div id="wm-nf" style="${nw.enabled?'':'display:none'}">
@@ -2875,7 +2945,7 @@ function openWpModal(wpId){
         <span style="font-size:.75rem;flex-shrink:0;padding:0 2px">〜</span>
         <input type="time" class="fi" id="wm-ne2" value="${nw.endTime||'05:00'}" style="flex:1;padding:7px 10px;font-size:.87rem">
       </div>
-      <div class="fg"><label>深夜時給（円）</label><input type="number" class="fi" id="wm-nw" value="${nw.wage||''}" placeholder="例: 1375"></div>
+      <div class="fg"><label>特殊時給（円）</label><input type="number" class="fi" id="wm-nw" value="${nw.wage||''}" placeholder="例: 1375"></div>
     </div>
     
     <div class="fsec">手当設定</div>
@@ -2997,7 +3067,10 @@ function openWpModal(wpId){
         const m = el.querySelector('.dyn-mode').value;
         const v = parseFloat(el.querySelector('.dyn-value').value) || 0;
         const si = el.querySelector('.dyn-si')?.checked || false;
-        deductions.push({ name: n, timing: t, mode: m, value: v, isSocialInsurance: si });
+
+        const beforeTax = el.querySelector('.dyn-before-tax')?.checked || false;
+
+        deductions.push({ name: n, timing: t, mode: m, value: v, isSocialInsurance: si, beforeTax });
       });
 
       const obj={id:wpId||uid(),name,color,
@@ -3097,6 +3170,10 @@ function fillDayDetail(dstr) {
   D.shifts.filter(s => s.date === dstr).forEach(sh => {
     const wp = D.workplaces.find(w => w.id === sh.workplaceId);
     const pay = shiftPay(sh);
+    const endMin = toMin(sh.endTime), startMin = toMin(sh.startTime);
+    let workMin = (endMin <= startMin ? endMin + 1440 - startMin : endMin - startMin) - (sh.breakMinutes || 0);
+    workMin = Math.max(0, workMin);
+    const workHours = workMin / 60;
     const wrapper = document.createElement('div');
 
     const item = document.createElement('div');
@@ -3109,7 +3186,7 @@ function fillDayDetail(dstr) {
         <div class="dd-wp">[${wp ? esc(wp.name) : '未設定'}]${sh.memo ? ` <span style="color:#aaa">${esc(sh.memo)}</span>` : ''}</div>
         ${sh.adjustment ? `<div style="font-size:.7rem;color:${sh.adjustment>0?'#16a34a':'#e11d48'};margin-top:2px;">${sh.adjustment>0?'▲':'▼'} 調整 ${sh.adjustment>0?'+':''}${Math.round(sh.adjustment).toLocaleString('ja-JP')}円</div>` : ''}
       </div>
-      <div class="dd-pay">${fmt(pay.total)}</div>
+      <div class="dd-pay"><span class="dd-hours">${fmtDuration(workHours)}</span><span>${fmt(pay.total)}</span></div>
       <button class="dd-trash" title="削除" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px;opacity:.5">🗑</button>
       <button class="dd-pencil" title="編集">✏️</button>`;
 
@@ -3494,7 +3571,7 @@ function loadTheme() {
 
 // ===== DISPLAY SETTINGS =====
 const DISP_KEY = 'payapp_display';
-const DISP_DEFAULT = { titleShow: 'char1', timeMode: 'short', weekStart: 'sun' };
+const DISP_DEFAULT = { titleShow: 'char1', timeMode: 'short', weekStart: 'sun', durationMode: 'clock' };
 
 function saveDisplaySettings(s) {
   localStorage.setItem(DISP_KEY, JSON.stringify(s));
@@ -3553,6 +3630,18 @@ function initDispUI() {
       saveDisplaySettings(ns);
       document.querySelectorAll('#disp-week-opts .disp-opt-btn').forEach(b => b.classList.toggle('on', b.dataset.val === btn.dataset.val));
       renderCal();
+    };
+  });
+
+  document.querySelectorAll('#disp-duration-opts .disp-opt-btn').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.val === s.durationMode);
+    btn.onclick = () => {
+      const ns = loadDisplaySettings();
+      ns.durationMode = btn.dataset.val;
+      saveDisplaySettings(ns);
+      document.querySelectorAll('#disp-duration-opts .disp-opt-btn').forEach(b => b.classList.toggle('on', b.dataset.val === btn.dataset.val));
+      renderCal(); renderSummary();
+      if (document.getElementById('pane-detail')?.classList.contains('active')) renderDetail();
     };
   });
 
@@ -3840,10 +3929,13 @@ function renderTaxSummary() {
           const field = `deduct_${d.name}`;
           const manualVal = sr[field];
           const hasManual = manualVal !== '' && !isNaN(parseFloat(manualVal));
-          const autoDetail = autoRes.deductionDetails.find(x => x.name === d.name);
+          const sourceDetails = d.beforeTax ? autoRes.preTaxDeductionDetails : autoRes.deductionDetails;
+          const autoDetail = sourceDetails.find(x => x.name === d.name);
           const autoAmt = autoDetail ? autoDetail.value : 0;
           const amt = hasManual ? parseFloat(manualVal) : autoAmt;
-          if (d.isSocialInsurance) totalSI += amt;
+          if (d.beforeTax) {
+            if (d.isSocialInsurance) totalSI += amt;
+          } else if (d.isSocialInsurance) totalSI += amt;
           else totalWithholding += amt;
         });
       }
@@ -4018,6 +4110,7 @@ function renderTax() {
 
       const income = (sr.gross !== '' && !isNaN(parseFloat(sr.gross)))
         ? parseFloat(sr.gross) : autoRes.gross;
+      const incomeLabel = autoRes.preTaxDeductionDetails.length ? '所得合計' : '額面給与';
 
       // 控除をisSocialInsuranceで分類して合計
       let siTotal = 0, withholdingTotal = 0;
@@ -4026,9 +4119,12 @@ function renderTax() {
           const field = `deduct_${d.name}`;
           const manualVal = sr[field];
           const hasManual = manualVal !== '' && !isNaN(parseFloat(manualVal));
-          const autoDetail = autoRes.deductionDetails.find(x => x.name === d.name);
+          const sourceDetails = d.beforeTax ? autoRes.preTaxDeductionDetails : autoRes.deductionDetails;
+          const autoDetail = sourceDetails.find(x => x.name === d.name);
           const amt = hasManual ? parseFloat(manualVal) : (autoDetail ? autoDetail.value : 0);
-          if (d.isSocialInsurance) siTotal += amt;
+          if (d.beforeTax) {
+            if (d.isSocialInsurance) siTotal += amt;
+          } else if (d.isSocialInsurance) siTotal += amt;
           else withholdingTotal += amt;
         });
       }
@@ -4043,7 +4139,7 @@ function renderTax() {
         </div>
         <div class="tax-val-grid${siTotal > 0 ? '' : ' no-si'}">
           <div class="tax-inp-wrap">
-            <span class="tax-inp-lbl">額面給与</span>
+            <span class="tax-inp-lbl">${incomeLabel}</span>
             <div class="tax-val-display${income === 0 ? ' empty' : ''}">${income > 0 ? fmt(income) : '―'}</div>
           </div>
           <div class="tax-inp-wrap">
@@ -4521,10 +4617,13 @@ document.getElementById('btn-share').onclick = () => {
         shareGross = parseFloat(sr.gross);
       } else {
         const sNp = srV('np', res.np);
-        const sDp = srV('dp', res.dpPremium);
+        const sDp = srV('dp', res.dp);
         let sAllow = 0;
         res.allowanceDetails.forEach(a => { sAllow += srV(`allowance_${a.name}`, a.value); });
-        shareGross = sNp + sDp + sAllow;
+        const sAdj = srV('adjustment', res.totalAdjustment);
+        let sPreTax = 0;
+        res.preTaxDeductionDetails.forEach(d => { sPreTax += srV(`deduct_${d.name}`, d.value); });
+        shareGross = Math.max(0, sNp + sDp + sAllow + sAdj - sPreTax);
       }
       let shareDeduct = 0;
       res.deductionDetails.forEach(d => { shareDeduct += srV(`deduct_${d.name}`, d.value); });
@@ -4557,13 +4656,19 @@ document.getElementById('btn-share').onclick = () => {
           lines.push(`  [手当] ${a.name}: +${fmt(v)}`);
         });
       }
+      if (res.preTaxDeductionDetails.length) {
+        res.preTaxDeductionDetails.forEach(d => {
+          const v = srV(`deduct_${d.name}`, d.value);
+          lines.push(`  [所得税前控除] ${d.name}: -${fmt(v)}`);
+        });
+      }
       if (res.deductionDetails.length) {
         res.deductionDetails.forEach(d => {
           const v = srV(`deduct_${d.name}`, d.value);
           lines.push(`  [控除] ${d.name}: -${fmt(v)}`);
         });
       }
-      lines.push(`  総支給額: ${fmt(shareGross)}`);
+      lines.push(`  ${res.preTaxDeductionDetails.length ? '所得合計' : '総支給額'}: ${fmt(shareGross)}`);
       lines.push(`  💰 手取り ${fmt(shareNet)}`);
       grandTotal += shareNet;
     });
